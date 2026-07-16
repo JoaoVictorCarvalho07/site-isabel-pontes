@@ -1,0 +1,15 @@
+{{- /*
+  404. Diferente da SPA, que devolvia 200 em qualquer URL inexistente e fazia o
+  Google indexar pagina de erro como conteudo, aqui o status e 404 de verdade.
+
+  Tambem nao ha o redirect automatico em 3s que a versao React fazia via
+  window.location.href: redirect nao anunciado sequestra o botao voltar e
+  desorienta quem usa leitor de tela. O link e explicito.
+*/ -}}
+{{ define "conteudo" }}
+<section class="erro">
+  <h1>Página não encontrada</h1>
+  <p>O endereço que você acessou não existe ou foi movido.</p>
+  <p><a href="/">Voltar para a página inicial</a></p>
+</section>
+{{ end }}

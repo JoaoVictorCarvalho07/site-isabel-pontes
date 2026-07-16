@@ -1,0 +1,115 @@
+// Tokens de design. Portados de src/index.css do projeto React.
+//
+// Duas mudancas deliberadas em relacao ao original:
+//
+// 1. Cores completas, nao componentes soltos.
+//    O Tailwind exigia guardar `35 29% 92%` para depois envelopar em
+//    `hsl(var(--background))` no bloco @theme. Sem Tailwind essa indirecao nao
+//    serve para nada, entao o token ja e a cor: `hsl(35 29% 92%)`.
+//
+// 2. Continuam sendo custom properties CSS, NAO variaveis SCSS.
+//    Variavel SCSS ($x) e resolvida em tempo de compilacao e nao existe no
+//    browser -- o dark mode abaixo, que troca valores em runtime via media
+//    query, simplesmente nao funcionaria. Este e o erro classico de migrar
+//    Tailwind/CSS-vars para SCSS. Use $ so para coisas que nunca mudam em
+//    runtime (breakpoints, espacamentos).
+
+:root {
+  // Fundo claro (creme)
+  --background: hsl(35 29% 92%);
+  --foreground: hsl(23 24% 9%);
+
+  --card: hsl(30 29% 93%);
+  --card-foreground: hsl(23 24% 9%);
+
+  --popover: hsl(30 33% 97%);
+  --popover-foreground: hsl(23 24% 9%);
+
+  // Base (marrom)
+  --primary: hsl(22 26% 18%);
+  --primary-foreground: hsl(30 33% 97%);
+
+  // "fixed" = nao inverte no dark. Usado onde o fundo e sempre escuro
+  // (ex.: hero com overlay), entao o texto tem que ficar claro nos dois temas.
+  --primary-fixed: hsl(22 26% 18%);
+  --primary-foreground-fixed: hsl(30 33% 97%);
+  // NOTA: o original tinha `--color-foreground-fixed: hsl(var(--foreground-fixed))`
+  // no @theme (src/index.css:132) mas nunca definia --foreground-fixed em lugar
+  // nenhum -- o token resolvia para nada. Definido aqui pelo par obvio.
+  --foreground-fixed: hsl(23 24% 9%);
+
+  // Superficies
+  --secondary: hsl(30 29% 93%);
+  --secondary-foreground: hsl(22 26% 18%);
+
+  --muted: hsl(30 20% 90%);
+  --muted-foreground: hsl(22 12% 38%);
+
+  // Verde amazonico como accent
+  --accent: hsl(166 30% 21%);
+  --accent-foreground: hsl(30 33% 97%);
+
+  // Danger (vinho)
+  --destructive: hsl(346 50% 24%);
+  --destructive-foreground: hsl(30 33% 97%);
+
+  --border: hsl(24 15% 84%);
+  --input: hsl(24 15% 84%);
+  --ring: hsl(166 30% 21%);
+
+  // Dourado, para detalhes
+  --gold: hsl(43 38% 63%);
+  --gold-soft: hsl(43 52% 85%);
+
+  --bege: #f5e6d3;
+  --gray-light: #e9e3c68a;
+
+  // Tipografia. No React isto so existia como classes arbitrarias soltas
+  // (font-['Jost']) espalhadas pelo JSX, e por isso a maior parte do site caia
+  // em ui-sans-serif sem ninguem perceber. Aqui e token.
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Jost', ui-sans-serif, system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: hsl(22 26% 18%);
+    --foreground: hsl(23.5 40.4% 88.8%);
+
+    --card: hsl(22 22% 12%);
+    --card-foreground: hsl(30 33% 97%);
+
+    --popover: hsl(22 22% 12%);
+    --popover-foreground: hsl(30 33% 97%);
+
+    // primary inverte no dark; os *-fixed acima nao.
+    --primary: hsl(30 33% 97%);
+    --primary-foreground: hsl(22 26% 18%);
+
+    --secondary: hsl(22 18% 16%);
+    --secondary-foreground: hsl(30 33% 97%);
+
+    --muted: hsl(22 18% 16%);
+    --muted-foreground: hsl(30 10% 75%);
+
+    // verde mais claro no dark, senao some no fundo
+    --accent: hsl(166 26% 28%);
+    --accent-foreground: hsl(30 33% 97%);
+
+    --destructive: hsl(350 42% 32%);
+    --destructive-foreground: hsl(30 33% 97%);
+
+    --border: hsl(30 12% 28%);
+    --input: hsl(30 12% 28%);
+    --ring: hsl(166 26% 28%);
+
+    --gold: hsl(43 48% 76%);
+    --gold-soft: hsl(43 60% 88%);
+  }
+}
+
+// Breakpoints. Estes sim sao variaveis SCSS: nao mudam em runtime.
+// Os valores vem dos breakpoints que o react-masonry-css usava.
+$bp-lg: 1100px;
+$bp-md: 750px;
+$bp-sm: 480px;

@@ -1,0 +1,113 @@
+@use 'tokens';
+
+// Reset minimo + base. Substitui o preflight do Tailwind.
+// So o que o site realmente usa -- nao e um normalize.css completo.
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--background);
+  color: var(--foreground);
+  // Aqui esta a correcao do problema encontrado no React: a tipografia da marca
+  // nunca chegava ao site. body, h1 do hero, nav e cards todos computavam
+  // ui-sans-serif porque o font-family so existia nas classes .gallery-*, e
+  // Cormorant/Jost eram aplicadas a mao via classes arbitrarias soltas.
+  // Definir no body faz a fonte herdar por padrao, que era a intencao.
+  font-family: var(--font-sans);
+  font-weight: 300;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+picture,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+// Imagem sem width/height causa layout shift no masonry -- por isso as
+// dimensoes sao guardadas no SQLite e emitidas em todo <img>.
+img {
+  height: auto;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+// O React nao tinha nenhum estilo de foco visivel, e o lightbox nao tinha focus
+// trap -- o Tab escapava para a pagina atras. O <dialog> nativo resolve o trap;
+// isto resolve a visibilidade.
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// Pular para o conteudo: nao existia no React. Com uma navbar fixa e 190
+// imagens na galeria, navegar por teclado sem isto e cruel.
+.skip-link {
+  position: absolute;
+  left: -9999px;
+
+  &:focus {
+    left: 1rem;
+    top: 1rem;
+    z-index: 100;
+    padding: 0.75rem 1rem;
+    background: var(--background);
+    color: var(--foreground);
+    border-radius: 4px;
+  }
+}

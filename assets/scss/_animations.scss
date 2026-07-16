@@ -1,0 +1,60 @@
+// Keyframes portados de src/App.css do projeto React.
+//
+// Sao os 4 unicos que sobrevivem: das 423 linhas de App.css, o resto e CSS morto
+// da galeria antiga mais o `logo-spin` que veio do template do Vite e nunca foi
+// removido. Nao ha framer-motion nem GSAP no projeto -- toda a animacao do site
+// e CSS, e porta 1:1 sem perda.
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+// O React nao respeitava isto: as animacoes rodavam sempre, inclusive para quem
+// pede reducao de movimento no SO. Na galeria, 190 itens com fadeUp escalonado
+// e bastante movimento para quem tem sensibilidade vestibular.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

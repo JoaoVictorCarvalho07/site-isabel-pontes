@@ -1,0 +1,119 @@
+package web
+
+import (
+	"io/fs"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
+	site "github.com/JoaoVictorCarvalho07/site-da-bebel-htmx"
+	"github.com/JoaoVictorCarvalho07/site-da-bebel-htmx/internal/config"
+)
+
+func novoServidor(t *testing.T) *Server {
+	t.Helper()
+	s, err := New(&config.Config{BaseURL: "https://exemplo.test"}, site.Assets)
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	return s
+}
+
+// TestTodosOsTemplatesExecutam e a defesa contra o unico buraco real de trocar
+// React por html/template: renomear um campo do struct e esquecer o template
+// nao da erro de compilacao -- da pagina quebrada em producao.
+//
+// Executa TODA pagina com dado preenchido. Se um template referenciar campo que
+// nao existe no pageData, ExecuteTemplate falha e o teste pega aqui, nao o
+// visitante. Toda pagina nova entra nesta lista.
+func TestTodosOsTemplatesExecutam(t *testing.T) {
+	s := novoServidor(t)
+
+	paginas, err := fs.Glob(site.Assets, "templates/pages/*.gohtml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(paginas) == 0 {
+		t.Fatal("nenhum template encontrado -- o //go:embed pegou?")
+	}
+
+	for _, p := range paginas {
+		nome := strings.TrimSuffix(strings.TrimPrefix(p, "templates/pages/"), ".gohtml")
+		t.Run(nome, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodGet, "/", nil)
+			// Dado preenchido de proposito: campo vazio esconde erro de tipo.
+			s.render.Page(w, r, nome, http.StatusOK, pageData{
+				Titulo:    "titulo",
+				Descricao: "descricao",
+				Canonical: "https://exemplo.test/x",
+				BodyClass: "classe",
+				Ano:       2026,
+			})
+			if w.Code != http.StatusOK {
+				t.Fatalf("status = %d, quero 200. Corpo: %s", w.Code, w.Body.String())
+			}
+			if !strings.Contains(w.Body.String(), "</html>") {
+				t.Errorf("HTML truncado -- o template falhou no meio:\n%s", w.Body.String())
+			}
+		})
+	}
+}
+
+// TestPaginaTemSEO protege a razao de ser do projeto. A SPA servia
+// <div id="root"></div> e o titulo "siteisabelpontes", entao o card de preview
+// no WhatsApp e no Instagram (de onde vem o cliente da Isabel) saia vazio --
+// aqueles bots nao executam JavaScript.
+//
+// Se alguem quebrar o <title> ou o canonical, isso tem que falhar no CI, nao
+// ser descoberto quando um cliente nao clicar no link.
+func TestPaginaTemSEO(t *testing.T) {
+	s := novoServidor(t)
+	w := httptest.NewRecorder()
+	s.Handler().ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/", nil))
+
+	corpo := w.Body.String()
+	for _, esperado := range []string{
+		"<title>Isabel Pontes",
+		`<meta name="description"`,
+		`<link rel="canonical" href="https://exemplo.test/"`,
+		"<h1>",
+	} {
+		if !strings.Contains(corpo, esperado) {
+			t.Errorf("falta no HTML: %q", esperado)
+		}
+	}
+}
+
+// TestRotaInexistenteDa404: a SPA devolvia 200 em qualquer URL, o que faz o
+// Google indexar pagina de erro como se fosse conteudo.
+func TestRotaInexistenteDa404(t *testing.T) {
+	s := novoServidor(t)
+	w := httptest.NewRecorder()
+	s.Handler().ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/nao-existe", nil))
+	if w.Code != http.StatusNotFound {
+		t.Errorf("status = %d, quero 404", w.Code)
+	}
+}
+
+// TestAssetTemHash: sem identificador de conteudo na URL, o Cache-Control
+// immutable de um ano deixaria o visitante preso ao CSS antigo apos o deploy.
+func TestAssetTemHash(t *testing.T) {
+	s := novoServidor(t)
+	w := httptest.NewRecorder()
+	s.Handler().ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/", nil))
+
+	if !strings.Contains(w.Body.String(), "/static/css/app.css?v=") {
+		t.Error("o <link> do CSS saiu sem hash de conteudo")
+	}
+}
+
+// TestAssetFaltandoNaoDerrubaPagina: asset ausente deve degradar para um 404
+// daquele recurso, nao para uma pagina em branco.
+func TestAssetFaltandoNaoDerrubaPagina(t *testing.T) {
+	h := newAssetHasher(site.Assets)
+	if got := h.url("/static/nao-existe.css"); got != "/static/nao-existe.css" {
+		t.Errorf("url = %q, quero o caminho original de volta", got)
+	}
+}

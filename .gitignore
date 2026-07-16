@@ -1,0 +1,20 @@
+# binário compilado
+/site
+/site.exe
+
+# banco: gerado por `site sync`, nunca versionado.
+# Em prod vive num volume; o backup é o Litestream replicando para o R2.
+/data/
+
+# credenciais. O .env do projeto React ja vazou uma vez para o historico
+# (chaves R2 recuperaveis ate hoje) -- nao repetir aqui.
+.env
+*.env
+!.env.example
+
+# dart-sass standalone. E ferramenta de build local, baixada pelo `make tools`,
+# nao codigo do projeto -- ~5 MB de binario nao entram no repo.
+/tools/
+
+# NAO ignorar /static/: o CSS compilado E versionado de proposito.
+# E isso que mantem o runtime 100% Go -- deploy nunca precisa do sass.

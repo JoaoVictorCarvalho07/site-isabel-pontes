@@ -1,0 +1,39 @@
+{{- /*
+  Layout base. Tudo que a SPA nao conseguia entregar mora aqui.
+
+  O ponto do projeto: WhatsApp e Instagram geram o card de preview com um bot
+  que NAO executa JavaScript. Na SPA ele recebia <div id="root"></div> e o
+  titulo "siteisabelpontes", e o preview saia vazio. Aqui o HTML ja chega
+  pronto, com title/description/og por rota.
+*/ -}}
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{{ .Titulo }}</title>
+    {{- with .Descricao }}
+    <meta name="description" content="{{ . }}" />
+    {{- end }}
+    {{- with .Canonical }}
+    <link rel="canonical" href="{{ . }}" />
+    {{- end }}
+    <meta name="theme-color" content="#3a2a22" />
+
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset "/static/img/favicon-32.png" }}" />
+    <link rel="apple-touch-icon" href="{{ asset "/static/img/apple-touch-icon.png" }}" />
+
+    {{- /* Sem preload de fonte de proposito: nada acima da dobra usa Cormorant
+           ou Jost, entao preload aqui so competiria com o hero pelo bandwidth. */}}
+    <link rel="stylesheet" href="{{ asset "/static/css/app.css" }}" />
+  </head>
+
+  <body{{ with .BodyClass }} class="{{ . }}"{{ end }}>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+    <main id="conteudo">{{ template "conteudo" . }}</main>
+
+    {{ template "footer" . }}
+  </body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "site-go",
+      "runtimeExecutable": "D:\\joao\\tools\\go\\bin\\go.exe",
+      "runtimeArgs": ["run", "./cmd/site", "serve"],
+      "port": 8080
+    }
+  ]
+}
