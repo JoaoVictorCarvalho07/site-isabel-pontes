@@ -29,3 +29,7 @@
 
 # NAO ignorar /static/: o CSS compilado E versionado de proposito.
 # E isso que mantem o runtime 100% Go -- deploy nunca precisa do sass.
+
+# bytecode Python do script de migracao
+__pycache__/
+*.pyc
