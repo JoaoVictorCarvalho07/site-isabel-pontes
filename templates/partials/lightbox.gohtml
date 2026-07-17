@@ -1,0 +1,22 @@
+{{- /*
+  Lightbox: <dialog> nativo. Fica FORA do #galeria-body para o HTMX nao troca-lo
+  a cada filtro. As imagens ja estao no grid; o app.js le data-full/data-alt do
+  item clicado -- sem hx-get, sem request por foto. O <dialog> da Esc, focus trap
+  e ::backdrop de graca (o React fazia a mao e sem focus trap).
+*/ -}}
+{{ define "lightbox" }}
+<dialog id="lightbox" class="lightbox" aria-label="Visualizador de fotos">
+  <button class="lightbox__close" data-lb-close aria-label="Fechar">✕</button>
+  <button class="lightbox__nav lightbox__nav--prev" data-lb-prev aria-label="Anterior">‹</button>
+
+  <figure class="lightbox__fig">
+    <img data-lb-img alt="" />
+    <figcaption class="lightbox__cap">
+      <span data-lb-tema></span>
+      <span class="lightbox__count" data-lb-count></span>
+    </figcaption>
+  </figure>
+
+  <button class="lightbox__nav lightbox__nav--next" data-lb-next aria-label="Próxima">›</button>
+</dialog>
+{{ end }}

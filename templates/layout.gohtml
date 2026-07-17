@@ -37,5 +37,11 @@
     <main id="conteudo">{{ template "conteudo" . }}</main>
 
     {{ template "footer" . }}
+
+    {{- /* htmx self-hospedado (sem CDN), defer preserva a ordem. app.js le
+           htmx:afterSwap, entao o htmx carrega antes. app.js e inofensivo fora
+           da galeria (guarda em #lightbox). */}}
+    <script src="{{ asset "/static/js/htmx.min.js" }}" defer></script>
+    <script src="{{ asset "/static/js/app.js" }}" defer></script>
   </body>
 </html>

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/JoaoVictorCarvalho07/site-da-bebel-htmx/internal/config"
+	"github.com/JoaoVictorCarvalho07/site-da-bebel-htmx/internal/store"
 )
 
 var logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
@@ -18,10 +19,12 @@ type Server struct {
 	cfg    *config.Config
 	render *Renderer
 	static fs.FS
+	snap   *store.Snapshot // fotos em RAM; carregado no boot
 }
 
-// New monta o servidor. `assets` e o FS embutido com templates/ e static/.
-func New(cfg *config.Config, assets fs.FS) (*Server, error) {
+// New monta o servidor. `assets` e o FS embutido com templates/ e static/;
+// `snap` e o snapshot da galeria carregado do SQLite no boot.
+func New(cfg *config.Config, assets fs.FS, snap *store.Snapshot) (*Server, error) {
 	hasher := newAssetHasher(assets)
 	funcs := template.FuncMap{
 		"asset": hasher.url,
@@ -45,7 +48,7 @@ func New(cfg *config.Config, assets fs.FS) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Server{cfg: cfg, render: r, static: static}, nil
+	return &Server{cfg: cfg, render: r, static: static, snap: snap}, nil
 }
 
 func (s *Server) Handler() http.Handler {
@@ -56,7 +59,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /{$}", s.home) // {$} = so a raiz exata, nao um catch-all
 	mux.HandleFunc("GET /sobre", s.todo("sobre"))
 	mux.HandleFunc("GET /contato", s.todo("contato"))
-	mux.HandleFunc("GET /galeria", s.todo("galeria"))
+	mux.HandleFunc("GET /galeria", s.galeria)               // pagina completa
+	mux.HandleFunc("GET /galeria/fotos", s.galeriaFragment) // fragmento HTMX
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))
@@ -72,7 +76,7 @@ func (s *Server) Handler() http.Handler {
 	// indexar paginas de erro como se fossem conteudo.
 	mux.HandleFunc("GET /", s.notFound)
 
-	return recoverer(requestLog(mux))
+	return recoverer(requestLog(gzipMW(mux)))
 }
 
 // pageData e o ViewModel base. Sempre struct, nunca map[string]any: um campo

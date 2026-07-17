@@ -1,0 +1,56 @@
+{{- /*
+  #galeria-body: o unico bloco que o HTMX troca. Contem o filtro E o grid num
+  wrapper so, para o botao ativo atualizar junto com as fotos (hx-swap outerHTML).
+
+  A REGRA DE OURO: este mesmo partial e renderizado pela pagina completa
+  (/galeria) e pelo fragmento (/galeria/fotos). Se divergirem, colar
+  /galeria?tema=casal no WhatsApp mostraria coisa diferente do clique no filtro,
+  e o SEO quebraria em silencio. Um partial so garante que nao diverge.
+*/ -}}
+{{ define "galeria_body" }}
+<div id="galeria-body">
+  <nav class="filtros" aria-label="Filtrar por tema">
+    {{- range .Temas }}
+    <button
+      type="button"
+      hx-get="/galeria/fotos{{ if .Slug }}?tema={{ .Slug }}{{ end }}"
+      hx-target="#galeria-body"
+      hx-swap="outerHTML"
+      hx-push-url="/galeria{{ if .Slug }}?tema={{ .Slug }}{{ end }}"
+      hx-indicator="#galeria-load"
+      class="filtro{{ if .Active }} filtro--ativo{{ end }}"
+      {{ if .Active }}aria-current="true"{{ end }}>{{ .Label }}</button>
+    {{- end }}
+  </nav>
+
+  <div id="galeria-load" class="galeria-load" aria-hidden="true"></div>
+
+  {{ if .Fotos }}
+  <div class="masonry">
+    {{- range .Fotos }}
+    <button
+      type="button"
+      class="masonry__item"
+      data-idx="{{ .Idx }}"
+      data-full="{{ .Full }}"
+      data-alt="{{ .Alt }}"
+      data-tema-label="{{ .TemaLabel }}"
+      style="aspect-ratio: {{ .W }} / {{ .H }}; animation-delay: {{ .DelayMS }}ms"
+      aria-label="Abrir {{ .Alt }}">
+      <img class="masonry__lqip" src="{{ .LQIP }}" alt="" aria-hidden="true">
+      <img
+        class="masonry__img"
+        src="{{ .Grid }}"
+        srcset="{{ .Grid }} 400w, {{ .Grid2x }} 800w"
+        sizes="(max-width:480px) 100vw, (max-width:750px) 50vw, (max-width:1100px) 33vw, 25vw"
+        width="{{ .W }}" height="{{ .H }}"
+        alt="{{ .Alt }}" loading="lazy" decoding="async">
+      <span class="masonry__tema">{{ .TemaLabel }}</span>
+    </button>
+    {{- end }}
+  </div>
+  {{ else }}
+  <p class="galeria-vazia">Nenhuma foto encontrada.</p>
+  {{ end }}
+</div>
+{{ end }}

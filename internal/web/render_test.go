@@ -1,19 +1,33 @@
 package web
 
 import (
+	"context"
 	"io/fs"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	site "github.com/JoaoVictorCarvalho07/site-da-bebel-htmx"
 	"github.com/JoaoVictorCarvalho07/site-da-bebel-htmx/internal/config"
+	"github.com/JoaoVictorCarvalho07/site-da-bebel-htmx/internal/store"
 )
 
 func novoServidor(t *testing.T) *Server {
 	t.Helper()
-	s, err := New(&config.Config{BaseURL: "https://exemplo.test"}, site.Assets)
+	// snapshot vazio de um banco temporario: basta para os testes de layout/SEO;
+	// os testes da galeria em si vivem no pacote store e num teste dedicado.
+	st, err := store.Open(filepath.Join(t.TempDir(), "t.db"))
+	if err != nil {
+		t.Fatalf("store.Open: %v", err)
+	}
+	t.Cleanup(func() { st.Close() })
+	snap, err := st.LoadSnapshot(context.Background())
+	if err != nil {
+		t.Fatalf("LoadSnapshot: %v", err)
+	}
+	s, err := New(&config.Config{BaseURL: "https://exemplo.test"}, site.Assets, snap)
 	if err != nil {
 		t.Fatalf("New: %v", err)
 	}
@@ -40,6 +54,11 @@ func TestTodosOsTemplatesExecutam(t *testing.T) {
 
 	for _, p := range paginas {
 		nome := strings.TrimSuffix(strings.TrimPrefix(p, "templates/pages/"), ".gohtml")
+		// galeria precisa de um galleryView (com Temas/Fotos), nao do pageData
+		// generico -- e coberta por TestGaleriaPaginaEFragmento.
+		if nome == "galeria" {
+			continue
+		}
 		t.Run(nome, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "/", nil)

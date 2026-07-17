@@ -84,7 +84,23 @@ func serve() error {
 		return err
 	}
 
-	srv, err := web.New(cfg, site.Assets)
+	// Abre o banco e carrega o snapshot para a RAM UMA vez, no boot. Dai em
+	// diante os requests leem so da memoria. Se o banco ainda nao foi populado
+	// (sem `sync`), o snapshot vem vazio e a galeria mostra "nenhuma foto" --
+	// o servidor sobe do mesmo jeito.
+	st, err := store.Open(cfg.DBPath)
+	if err != nil {
+		return err
+	}
+	defer st.Close()
+
+	snap, err := st.LoadSnapshot(context.Background())
+	if err != nil {
+		return err
+	}
+	slog.Info("snapshot carregado", "fotos", len(snap.Fotos("")), "temas", len(snap.Temas()))
+
+	srv, err := web.New(cfg, site.Assets, snap)
 	if err != nil {
 		return err
 	}

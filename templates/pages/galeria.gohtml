@@ -1,0 +1,11 @@
+{{- /*
+  Galeria. "conteudo" e o que o layout injeta. O #galeria-body (filtro + grid) e
+  o unico bloco que o HTMX troca; o lightbox fica fora dele para sobreviver aos
+  swaps de filtro.
+*/ -}}
+{{ define "conteudo" }}
+<section class="galeria">
+  {{ template "galeria_body" . }}
+</section>
+{{ template "lightbox" . }}
+{{ end }}
