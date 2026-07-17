@@ -16,5 +16,10 @@
 # nao codigo do projeto -- ~5 MB de binario nao entram no repo.
 /tools/
 
+# saida da migracao de midia (manifest gerado + amostras de validacao).
+# O manifest final vai para onde o site le, num passo separado -- nao daqui.
+/scripts/out/
+/out/
+
 # NAO ignorar /static/: o CSS compilado E versionado de proposito.
 # E isso que mantem o runtime 100% Go -- deploy nunca precisa do sass.
