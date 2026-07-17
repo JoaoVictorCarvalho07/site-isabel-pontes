@@ -9,10 +9,11 @@ import (
 )
 
 type Config struct {
-	Addr    string // porta HTTP
-	DBPath  string // caminho do SQLite
-	BaseURL string // URL canonica; entra no og:url, canonical e sitemap
-	Dev     bool   // reparse de template por request
+	Addr         string // porta HTTP
+	DBPath       string // caminho do SQLite
+	ManifestPath string // manifest de midia que o `sync` ingere
+	BaseURL      string // URL canonica; entra no og:url, canonical e sitemap
+	Dev          bool   // reparse de template por request
 
 	// R2: usado somente pelo `site sync`, nunca ao servir request.
 	R2PublicBase string
@@ -36,6 +37,7 @@ func Load(needR2 bool) (*Config, error) {
 	c := &Config{
 		Addr:         env("ADDR", ":8080"),
 		DBPath:       env("DB_PATH", "data/site.db"),
+		ManifestPath: env("MANIFEST_PATH", "data/manifest.json"),
 		BaseURL:      strings.TrimSuffix(env("BASE_URL", "http://localhost:8080"), "/"),
 		Dev:          env("DEV", "") != "",
 		R2PublicBase: strings.TrimSuffix(os.Getenv("R2_PUBLIC_BASE"), "/"),

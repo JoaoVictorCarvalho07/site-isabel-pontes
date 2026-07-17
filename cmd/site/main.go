@@ -1,12 +1,12 @@
 // Comando site: um binario, todos os subcomandos.
 //
-//	site serve   sobe o servidor HTTP
-//	site sync    le o bucket R2 e atualiza o SQLite
+//	site serve          sobe o servidor HTTP
+//	site sync [caminho] le o manifest de midia e popula o SQLite
 //
 // Um binario em vez de scripts separados porque `sync` e `serve` compartilham
-// config e store. No projeto React isso era um scripts/generate-manifest.ts que
-// rodava no build e exigia as credenciais R2 no ambiente da Vercel para o site
-// conseguir buildar.
+// config e store. O `sync` consome o manifest.json produzido pelo
+// migrate_media.py (que ja tem dimensoes, variantes e lqip prontos) em vez de
+// listar o R2 -- o Go nao processa imagem.
 package main
 
 import (
@@ -22,6 +22,7 @@ import (
 
 	site "github.com/JoaoVictorCarvalho07/site-da-bebel-htmx"
 	"github.com/JoaoVictorCarvalho07/site-da-bebel-htmx/internal/config"
+	"github.com/JoaoVictorCarvalho07/site-da-bebel-htmx/internal/store"
 	"github.com/JoaoVictorCarvalho07/site-da-bebel-htmx/internal/web"
 )
 
@@ -42,11 +43,39 @@ func run() error {
 	case "serve":
 		return serve()
 	case "sync":
-		// Fase 1.
-		return errors.New("`sync` ainda nao foi implementado (Fase 1)")
+		return sync()
 	default:
 		return fmt.Errorf("subcomando desconhecido: %q (use: serve | sync)", cmd)
 	}
+}
+
+// sync le o manifest de midia (saida do migrate_media.py) e popula o SQLite.
+// Roda como job manual ou cron -- nunca no boot. Se falhar, o site continua
+// servindo o snapshot anterior.
+func sync() error {
+	cfg, err := config.Load(false)
+	if err != nil {
+		return err
+	}
+	st, err := store.Open(cfg.DBPath)
+	if err != nil {
+		return err
+	}
+	defer st.Close()
+
+	manifest := cfg.ManifestPath
+	if len(os.Args) > 2 {
+		manifest = os.Args[2] // `site sync <caminho>`
+	}
+
+	rep, err := st.SyncFromManifest(context.Background(), manifest)
+	if err != nil {
+		return err
+	}
+	slog.Info("sync concluido",
+		"fotos", rep.Fotos, "temas", rep.Temas, "data_version", rep.DataVersion,
+		"manifest", manifest, "db", cfg.DBPath)
+	return nil
 }
 
 func serve() error {
