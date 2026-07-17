@@ -1,0 +1,70 @@
+@use 'tokens';
+
+// Navbar fixa, fundo transparente. A cor do texto (e do logo, via currentColor)
+// e a primaria por padrao; na home, que tem hero escuro, fica branca.
+.navbar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  color: var(--primary);
+}
+
+// Home: BodyClass "hero-escuro" -> logo e links brancos sobre o hero.
+body.hero-escuro .navbar {
+  color: #fff;
+}
+
+.navbar__logo {
+  display: block;
+  width: 160px;
+  max-width: 40vw;
+
+  // o svg herda a cor do header (fill=currentColor no proprio arquivo)
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+}
+
+.navbar__links {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.9rem;
+
+  a {
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+}
+
+// Animacao de entrada do logo: desfoque -> nitidez, a metafora da fotografia
+// dando foco. Escolhida entre 3 opcoes (fade / wipe / focus). Toca uma vez.
+@keyframes logoFocus {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
+}
+.logo-anim-focus svg {
+  animation: logoFocus 0.85s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-anim-focus svg {
+    animation: none;
+  }
+}

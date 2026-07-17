@@ -32,6 +32,8 @@
   <body{{ with .BodyClass }} class="{{ . }}"{{ end }}>
     <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
 
+    {{ template "navbar" . }}
+
     <main id="conteudo">{{ template "conteudo" . }}</main>
 
     {{ template "footer" . }}

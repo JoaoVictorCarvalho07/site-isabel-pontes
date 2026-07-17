@@ -25,6 +25,17 @@ func New(cfg *config.Config, assets fs.FS) (*Server, error) {
 	hasher := newAssetHasher(assets)
 	funcs := template.FuncMap{
 		"asset": hasher.url,
+		// svg embute um arquivo SVG inline no HTML. Precisa ser inline (nao
+		// <img>) para o fill=currentColor herdar a cor do texto -- e o que
+		// deixa o logo mudar de cor por pagina e no dark mode sem trocar
+		// arquivo. Vem do //go:embed, entao e conteudo nosso, seguro.
+		"svg": func(caminho string) (template.HTML, error) {
+			b, err := fs.ReadFile(assets, "static/"+caminho)
+			if err != nil {
+				return "", err
+			}
+			return template.HTML(b), nil //nolint:gosec // asset proprio, embutido
+		},
 	}
 	r, err := NewRenderer(assets, cfg.Dev, funcs)
 	if err != nil {
