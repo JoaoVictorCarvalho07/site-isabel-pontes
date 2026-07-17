@@ -21,5 +21,11 @@
 /scripts/out/
 /out/
 
+# script de migracao de midia: fica LOCAL. Contem credencial R2 em texto puro no
+# working tree; nunca deve ser versionado (foi o que vazou a chave antiga).
+# A logica nao se perde: existe na historia no commit dd2bfdf (versao os.getenv,
+# sem segredo) e sera reimplementada no `site sync` do Go.
+/scripts/migrate_media.py
+
 # NAO ignorar /static/: o CSS compilado E versionado de proposito.
 # E isso que mantem o runtime 100% Go -- deploy nunca precisa do sass.
