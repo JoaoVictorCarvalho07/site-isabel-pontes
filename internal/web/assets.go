@@ -35,33 +35,34 @@ func newAssetHasher(fsys fs.FS) *assetHasher {
 // pagina inteira. O log denuncia.
 func (a *assetHasher) url(caminho string) string {
 	a.mu.RLock()
-	h, ok := a.memo[caminho]
+	urlCacheada, ok := a.memo[caminho]
 	a.mu.RUnlock()
 	if ok {
-		return h
+		return urlCacheada
 	}
 
-	nome := caminho
-	if len(nome) > 0 && nome[0] == '/' {
-		nome = nome[1:]
+	// o FS embutido nao usa a barra inicial ("static/..." e nao "/static/...")
+	nomeNoFS := caminho
+	if len(nomeNoFS) > 0 && nomeNoFS[0] == '/' {
+		nomeNoFS = nomeNoFS[1:]
 	}
 
-	f, err := a.fsys.Open(nome)
+	arquivo, err := a.fsys.Open(nomeNoFS)
 	if err != nil {
 		logger.Warn("asset nao encontrado", "caminho", caminho, "erro", err)
 		return caminho
 	}
-	defer f.Close()
+	defer arquivo.Close()
 
-	sum := sha256.New()
-	if _, err := io.Copy(sum, f); err != nil {
+	hash := sha256.New()
+	if _, err := io.Copy(hash, arquivo); err != nil {
 		logger.Warn("falha ao ler asset", "caminho", caminho, "erro", err)
 		return caminho
 	}
-	out := caminho + "?v=" + hex.EncodeToString(sum.Sum(nil))[:8]
+	urlComHash := caminho + "?v=" + hex.EncodeToString(hash.Sum(nil))[:8]
 
 	a.mu.Lock()
-	a.memo[caminho] = out
+	a.memo[caminho] = urlComHash
 	a.mu.Unlock()
-	return out
+	return urlComHash
 }

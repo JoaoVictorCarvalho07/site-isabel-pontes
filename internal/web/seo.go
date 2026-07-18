@@ -17,31 +17,31 @@ func (s *Server) robots(w http.ResponseWriter, _ *http.Request) {
 // sitemap lista as URLs para o Google achar todas as paginas, inclusive uma por
 // tema da galeria (que sao URLs reais, gracas ao par pagina/fragmento).
 func (s *Server) sitemap(w http.ResponseWriter, _ *http.Request) {
-	var b strings.Builder
-	b.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n")
-	b.WriteString(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n")
+	var xml strings.Builder
+	xml.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n")
+	xml.WriteString(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n")
 
-	add := func(path string) {
-		b.WriteString("  <url><loc>" + xmlEscape(s.cfg.BaseURL+path) + "</loc></url>\n")
+	adicionar := func(caminho string) {
+		xml.WriteString("  <url><loc>" + xmlEscape(s.cfg.BaseURL+caminho) + "</loc></url>\n")
 	}
-	add("/")
-	add("/galeria")
-	for _, t := range s.snap.Temas() {
-		add("/galeria?tema=" + t.Slug)
+	adicionar("/")
+	adicionar("/galeria")
+	for _, tema := range s.snap.Temas() {
+		adicionar("/galeria?tema=" + tema.Slug)
 	}
-	add("/sobre")
-	add("/contato")
+	adicionar("/sobre")
+	adicionar("/contato")
 
-	b.WriteString("</urlset>\n")
+	xml.WriteString("</urlset>\n")
 
 	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
 	w.Header().Set("Cache-Control", "public, max-age=3600")
-	_, _ = w.Write([]byte(b.String()))
+	_, _ = w.Write([]byte(xml.String()))
 }
 
-func xmlEscape(s string) string {
-	s = strings.ReplaceAll(s, "&", "&amp;") // primeiro, senao re-escapa os outros
-	s = strings.ReplaceAll(s, "<", "&lt;")
-	s = strings.ReplaceAll(s, ">", "&gt;")
-	return s
+func xmlEscape(texto string) string {
+	texto = strings.ReplaceAll(texto, "&", "&amp;") // primeiro, senao re-escapa os outros
+	texto = strings.ReplaceAll(texto, "<", "&lt;")
+	texto = strings.ReplaceAll(texto, ">", "&gt;")
+	return texto
 }

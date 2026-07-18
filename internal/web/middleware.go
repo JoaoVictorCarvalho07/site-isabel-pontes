@@ -15,8 +15,8 @@ import (
 func recoverer(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
-			if rec := recover(); rec != nil {
-				logger.Error("panic no handler", "erro", rec, "path", r.URL.Path)
+			if panico := recover(); panico != nil {
+				logger.Error("panic no handler", "erro", panico, "path", r.URL.Path)
 				http.Error(w, "Erro interno", http.StatusInternalServerError)
 			}
 		}()
@@ -24,25 +24,27 @@ func recoverer(next http.Handler) http.Handler {
 	})
 }
 
+// statusWriter embrulha o ResponseWriter so para lembrar qual status foi escrito,
+// para o log conseguir registra-lo (o ResponseWriter padrao nao expoe isso).
 type statusWriter struct {
 	http.ResponseWriter
 	status int
 }
 
-func (w *statusWriter) WriteHeader(c int) {
-	w.status = c
-	w.ResponseWriter.WriteHeader(c)
+func (w *statusWriter) WriteHeader(codigo int) {
+	w.status = codigo
+	w.ResponseWriter.WriteHeader(codigo)
 }
 
 func requestLog(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		inicio := time.Now()
-		sw := &statusWriter{ResponseWriter: w, status: http.StatusOK}
-		next.ServeHTTP(sw, r)
+		resp := &statusWriter{ResponseWriter: w, status: http.StatusOK}
+		next.ServeHTTP(resp, r)
 		logger.Info("req",
 			"metodo", r.Method,
 			"path", r.URL.RequestURI(),
-			"status", sw.status,
+			"status", resp.status,
 			"ms", time.Since(inicio).Milliseconds(),
 		)
 	})
@@ -57,18 +59,22 @@ func cacheForever(next http.Handler) http.Handler {
 	})
 }
 
-var gzipPool = sync.Pool{New: func() any { return gzip.NewWriter(io.Discard) }}
+// poolCompressores reaproveita gzip.Writers entre requests (criar um a cada
+// request geraria lixo pro GC). O io.Discard e so um destino temporario -- o
+// Reset() troca pelo ResponseWriter real na hora de usar.
+var poolCompressores = sync.Pool{New: func() any { return gzip.NewWriter(io.Discard) }}
 
-// compressivel: so os tipos textuais. woff2 e avif ja sao comprimidos; gzipa-los
-// desperdicaria CPU e quebraria o Content-Length/range do FileServer sem ganho.
-func compressivel(ct string) bool {
-	ct = strings.ToLower(ct)
-	for _, p := range []string{
+// compressivel: so os tipos textuais valem a pena. woff2 e avif ja sao
+// comprimidos; gzipa-los desperdicaria CPU e quebraria o Content-Length/range
+// do FileServer sem ganho.
+func compressivel(tipoConteudo string) bool {
+	tipoConteudo = strings.ToLower(tipoConteudo)
+	for _, prefixo := range []string{
 		"text/html", "text/css", "text/plain",
 		"application/javascript", "text/javascript",
 		"application/json", "image/svg+xml", "application/xml", "text/xml",
 	} {
-		if strings.HasPrefix(ct, p) {
+		if strings.HasPrefix(tipoConteudo, prefixo) {
 			return true
 		}
 	}
@@ -80,36 +86,36 @@ func compressivel(ct string) bool {
 // e preserva Content-Length/Accept-Ranges dos assets estaticos.
 type gzipWriter struct {
 	http.ResponseWriter
-	gz       *gzip.Writer
-	decidido bool
-	usarGz   bool
+	compressor *gzip.Writer
+	jaDecidiu  bool
+	comprimir  bool
 }
 
 func (w *gzipWriter) decidir() {
-	if w.decidido {
+	if w.jaDecidiu {
 		return
 	}
-	w.decidido = true
+	w.jaDecidiu = true
 	if compressivel(w.Header().Get("Content-Type")) {
-		w.usarGz = true
+		w.comprimir = true
 		w.Header().Set("Content-Encoding", "gzip")
 		w.Header().Add("Vary", "Accept-Encoding")
 		w.Header().Del("Content-Length") // errado sob gzip
-		w.gz.Reset(w.ResponseWriter)
+		w.compressor.Reset(w.ResponseWriter)
 	}
 }
 
-func (w *gzipWriter) WriteHeader(code int) {
+func (w *gzipWriter) WriteHeader(codigo int) {
 	w.decidir()
-	w.ResponseWriter.WriteHeader(code)
+	w.ResponseWriter.WriteHeader(codigo)
 }
 
-func (w *gzipWriter) Write(b []byte) (int, error) {
+func (w *gzipWriter) Write(dados []byte) (int, error) {
 	w.decidir() // handlers que escrevem sem WriteHeader (200 implicito)
-	if w.usarGz {
-		return w.gz.Write(b)
+	if w.comprimir {
+		return w.compressor.Write(dados)
 	}
-	return w.ResponseWriter.Write(b)
+	return w.ResponseWriter.Write(dados)
 }
 
 func gzipMW(next http.Handler) http.Handler {
@@ -118,14 +124,14 @@ func gzipMW(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		gz := gzipPool.Get().(*gzip.Writer)
-		defer gzipPool.Put(gz)
-		gw := &gzipWriter{ResponseWriter: w, gz: gz}
+		compressor := poolCompressores.Get().(*gzip.Writer)
+		defer poolCompressores.Put(compressor)
+		respGzip := &gzipWriter{ResponseWriter: w, compressor: compressor}
 		defer func() {
-			if gw.usarGz {
-				_ = gz.Close()
+			if respGzip.comprimir {
+				_ = compressor.Close()
 			}
 		}()
-		next.ServeHTTP(gw, r)
+		next.ServeHTTP(respGzip, r)
 	})
 }

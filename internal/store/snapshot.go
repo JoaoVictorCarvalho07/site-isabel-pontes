@@ -59,23 +59,29 @@ func daySeed() int64 {
 // rebuild reembaralha e reindexa por tema. Fotos com sort_order definido ficam
 // fixas no topo, na ordem; o resto e embaralhado com a seed do dia.
 func (snap *Snapshot) rebuild(fotos []Photo, temas []Tema) {
-	rng := rand.New(rand.NewSource(daySeed()))
+	aleatorio := rand.New(rand.NewSource(daySeed()))
 
+	// separa as fotos com ordem definida (ficam fixas no topo) das que entram no
+	// shuffle
 	fixas := make([]Photo, 0)
 	soltas := make([]Photo, 0, len(fotos))
-	for _, p := range fotos {
-		if p.SortOrder != nil {
-			fixas = append(fixas, p)
+	for _, foto := range fotos {
+		if foto.SortOrder != nil {
+			fixas = append(fixas, foto)
 		} else {
-			soltas = append(soltas, p)
+			soltas = append(soltas, foto)
 		}
 	}
-	rng.Shuffle(len(soltas), func(i, j int) { soltas[i], soltas[j] = soltas[j], soltas[i] })
+	aleatorio.Shuffle(len(soltas), func(i, j int) {
+		soltas[i], soltas[j] = soltas[j], soltas[i]
+	})
 
 	todas := append(fixas, soltas...)
+
+	// indexa por tema para o filtro nao precisar percorrer tudo a cada request
 	porTema := make(map[string][]Photo, len(temas))
-	for _, p := range todas {
-		porTema[p.TemaSlug] = append(porTema[p.TemaSlug], p)
+	for _, foto := range todas {
+		porTema[foto.TemaSlug] = append(porTema[foto.TemaSlug], foto)
 	}
 
 	snap.mu.Lock()

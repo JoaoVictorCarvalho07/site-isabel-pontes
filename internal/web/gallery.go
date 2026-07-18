@@ -45,47 +45,54 @@ type galleryView struct {
 // buildGalleryView monta a ViewModel para um tema (slug vazio = Todos).
 func (s *Server) buildGalleryView(temaSlug string) galleryView {
 	temas := s.snap.Temas()
+
+	// mapa slug->label para nao repetir a busca a cada foto
 	labelPorSlug := map[string]string{}
-	tv := make([]temaView, 0, len(temas)+1)
-	tv = append(tv, temaView{Slug: "", Label: "Todos", Active: temaSlug == ""})
-	for _, t := range temas {
-		labelPorSlug[t.Slug] = t.Label
-		tv = append(tv, temaView{Slug: t.Slug, Label: t.Label, Active: t.Slug == temaSlug})
+
+	// os botoes do filtro: "Todos" + um por tema
+	botoesFiltro := make([]temaView, 0, len(temas)+1)
+	botoesFiltro = append(botoesFiltro, temaView{Slug: "", Label: "Todos", Active: temaSlug == ""})
+	for _, tema := range temas {
+		labelPorSlug[tema.Slug] = tema.Label
+		botoesFiltro = append(botoesFiltro, temaView{
+			Slug: tema.Slug, Label: tema.Label, Active: tema.Slug == temaSlug,
+		})
 	}
 
-	fotos := s.snap.Fotos(temaSlug)
-	pv := make([]photoView, len(fotos))
-	for i, p := range fotos {
-		label := labelPorSlug[p.TemaSlug]
-		alt := p.Alt
+	// os itens do grid, ja prontos para o template
+	fotosDoTema := s.snap.Fotos(temaSlug)
+	itensGrid := make([]photoView, len(fotosDoTema))
+	for i, foto := range fotosDoTema {
+		label := labelPorSlug[foto.TemaSlug]
+		alt := foto.Alt
 		if alt == "" {
 			alt = "Ensaio de " + label + " — Isabel Pontes"
 		}
-		pv[i] = photoView{
-			Grid: p.Grid, Grid2x: p.Grid2x, Full: p.Full,
-			LQIP: template.URL(p.LQIP), //nolint:gosec // data: URI proprio, do migrate_media
-			W:    p.W, H: p.H, Alt: alt, TemaLabel: label, Idx: i,
+		itensGrid[i] = photoView{
+			Grid: foto.Grid, Grid2x: foto.Grid2x, Full: foto.Full,
+			LQIP: template.URL(foto.LQIP), //nolint:gosec // data: URI proprio, do migrate_media
+			W:    foto.W, H: foto.H, Alt: alt, TemaLabel: label, Idx: i,
 			DelayMS: (i % 12) * 45, // onda por grupo de 12; o React usava i*60 (11s no fim)
 		}
 	}
 
 	titulo := "Galeria — Isabel Pontes"
-	canonPath := "/galeria"
+	caminhoCanonico := "/galeria"
 	if temaSlug != "" {
 		titulo = labelPorSlug[temaSlug] + " — Galeria — Isabel Pontes"
-		canonPath = "/galeria?tema=" + temaSlug
+		caminhoCanonico = "/galeria?tema=" + temaSlug
 	}
 
-	pd := s.novaPagina(titulo,
+	dadosBase := s.novaPagina(titulo,
 		"Ensaios de fotografia artística por Isabel Pontes, em Curitiba.",
-		canonPath)
+		caminhoCanonico)
 
 	return galleryView{
-		pageData:  pd,
-		Temas:     tv,
+		pageData:  dadosBase,
+		Temas:     botoesFiltro,
 		TemaAtivo: temaSlug,
-		Fotos:     pv,
-		Total:     len(pv),
+		Fotos:     itensGrid,
+		Total:     len(itensGrid),
 	}
 }
 

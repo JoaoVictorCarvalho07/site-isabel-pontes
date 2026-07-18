@@ -37,16 +37,16 @@ func (s *Store) LoadPhotos(ctx context.Context) ([]Photo, error) {
 	}
 	defer rows.Close()
 
-	var out []Photo
+	var fotos []Photo
 	for rows.Next() {
-		var p Photo
-		if err := rows.Scan(&p.ID, &p.Key, &p.TemaSlug, &p.W, &p.H,
-			&p.Grid, &p.Grid2x, &p.Full, &p.LQIP, &p.Alt, &p.SortOrder); err != nil {
+		var foto Photo
+		if err := rows.Scan(&foto.ID, &foto.Key, &foto.TemaSlug, &foto.W, &foto.H,
+			&foto.Grid, &foto.Grid2x, &foto.Full, &foto.LQIP, &foto.Alt, &foto.SortOrder); err != nil {
 			return nil, err
 		}
-		out = append(out, p)
+		fotos = append(fotos, foto)
 	}
-	return out, rows.Err()
+	return fotos, rows.Err()
 }
 
 // LoadTemas le os temas visiveis, ja ordenados para os botoes do filtro.
@@ -61,13 +61,13 @@ func (s *Store) LoadTemas(ctx context.Context) ([]Tema, error) {
 	}
 	defer rows.Close()
 
-	var out []Tema
+	var temas []Tema
 	for rows.Next() {
-		var t Tema
-		if err := rows.Scan(&t.Slug, &t.Label, &t.SortOrder); err != nil {
+		var tema Tema
+		if err := rows.Scan(&tema.Slug, &tema.Label, &tema.SortOrder); err != nil {
 			return nil, err
 		}
-		out = append(out, t)
+		temas = append(temas, tema)
 	}
-	return out, rows.Err()
+	return temas, rows.Err()
 }

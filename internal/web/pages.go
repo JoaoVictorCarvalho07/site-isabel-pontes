@@ -23,7 +23,7 @@ type homeView struct {
 }
 
 func (s *Server) home(w http.ResponseWriter, r *http.Request) {
-	d := s.novaPagina(
+	dados := s.novaPagina(
 		"Isabel Pontes — Fotografia artística e direção criativa em Curitiba",
 		"Ensaios conceituais, fotografia artística e direção criativa em Curitiba.",
 		"/",
@@ -31,13 +31,13 @@ func (s *Server) home(w http.ResponseWriter, r *http.Request) {
 	// Hero escuro -> logo/nav brancos nos dois temas. No React era useState +
 	// matchMedia + dois useEffect, com flash de logo errada ate hidratar; aqui o
 	// servidor ja decide.
-	d.BodyClass = "hero-escuro"
+	dados.BodyClass = "hero-escuro"
 
-	foto := ""
-	if fs := s.snap.Fotos(""); len(fs) > 0 {
-		foto = fs[0].Full
+	fotoDoDia := ""
+	if fotos := s.snap.Fotos(""); len(fotos) > 0 {
+		fotoDoDia = fotos[0].Full
 	}
-	s.render.Page(w, r, "home", http.StatusOK, homeView{pageData: d, FotoDoDia: foto})
+	s.render.Page(w, r, "home", http.StatusOK, homeView{pageData: dados, FotoDoDia: fotoDoDia})
 }
 
 // ── Sobre ─────────────────────────────────────────────────────────────────────
@@ -65,12 +65,12 @@ var sobreCarrossel = []sobreImg{
 }
 
 func (s *Server) sobre(w http.ResponseWriter, r *http.Request) {
-	d := s.novaPagina(
+	dados := s.novaPagina(
 		"Sobre — Isabel Pontes",
 		"Fotógrafa artística e criadora visual em Curitiba. Conheça a trajetória de Isabel Pontes.",
 		"/sobre",
 	)
-	s.render.Page(w, r, "sobre", http.StatusOK, sobreView{pageData: d, Carrossel: sobreCarrossel})
+	s.render.Page(w, r, "sobre", http.StatusOK, sobreView{pageData: dados, Carrossel: sobreCarrossel})
 }
 
 // ── Contato ───────────────────────────────────────────────────────────────────
@@ -85,7 +85,7 @@ type contatoView struct {
 }
 
 func (s *Server) contato(w http.ResponseWriter, r *http.Request) {
-	d := s.novaPagina(
+	dados := s.novaPagina(
 		"Contato — Isabel Pontes",
 		"Fale com Isabel Pontes por WhatsApp, Instagram ou e-mail. Base em Curitiba.",
 		"/contato",
@@ -94,7 +94,7 @@ func (s *Server) contato(w http.ResponseWriter, r *http.Request) {
 	// brasileiro tem 13 no E.164 (falta um digito) -- provavelmente o wa.me nao
 	// resolve. Portado como esta; confirmar com a Isabel.
 	s.render.Page(w, r, "contato", http.StatusOK, contatoView{
-		pageData: d,
+		pageData: dados,
 		WhatsAppHref: "https://wa.me/554191977011?text=" +
 			urlEncode("Oi! Vim pelo seu site ✨\n\nQuero falar sobre: (ensaio / evento / UGC)\nData/cidade: \nReferências (se tiver): \n"),
 		InstagramHref: "https://instagram.com/isapontesfoto",

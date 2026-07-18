@@ -34,7 +34,7 @@ func env(k, def string) string {
 // precisa de credencial nenhuma, e exigir isso no boot do servidor faria o
 // deploy carregar segredo que ele nao usa.
 func Load(needR2 bool) (*Config, error) {
-	c := &Config{
+	cfg := &Config{
 		Addr:         env("ADDR", ":8080"),
 		DBPath:       env("DB_PATH", "data/site.db"),
 		ManifestPath: env("MANIFEST_PATH", "data/manifest.json"),
@@ -49,15 +49,15 @@ func Load(needR2 bool) (*Config, error) {
 
 	if needR2 {
 		faltando := []string{}
-		for k, v := range map[string]string{
-			"R2_PUBLIC_BASE":       c.R2PublicBase,
-			"R2_ACCOUNT_ID":        c.R2AccountID,
-			"R2_ACCESS_KEY_ID":     c.R2AccessKey,
-			"R2_SECRET_ACCESS_KEY": c.R2SecretKey,
-			"R2_BUCKET":            c.R2Bucket,
+		for nomeVar, valor := range map[string]string{
+			"R2_PUBLIC_BASE":       cfg.R2PublicBase,
+			"R2_ACCOUNT_ID":        cfg.R2AccountID,
+			"R2_ACCESS_KEY_ID":     cfg.R2AccessKey,
+			"R2_SECRET_ACCESS_KEY": cfg.R2SecretKey,
+			"R2_BUCKET":            cfg.R2Bucket,
 		} {
-			if v == "" {
-				faltando = append(faltando, k)
+			if valor == "" {
+				faltando = append(faltando, nomeVar)
 			}
 		}
 		if len(faltando) > 0 {
@@ -65,5 +65,5 @@ func Load(needR2 bool) (*Config, error) {
 		}
 	}
 
-	return c, nil
+	return cfg, nil
 }

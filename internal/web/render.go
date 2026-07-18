@@ -50,19 +50,19 @@ func (r *Renderer) warm() error {
 
 func (r *Renderer) parse(page string) (*template.Template, error) {
 	if !r.dev {
-		if t, ok := r.cache[page]; ok {
-			return t, nil
+		if emCache, ok := r.cache[page]; ok {
+			return emCache, nil
 		}
 	}
 	patterns := []string{"templates/layout.gohtml", "templates/partials/*.gohtml", page}
-	t, err := template.New("layout.gohtml").Funcs(r.funcs).ParseFS(r.fsys, patterns...)
+	tmpl, err := template.New("layout.gohtml").Funcs(r.funcs).ParseFS(r.fsys, patterns...)
 	if err != nil {
 		return nil, err
 	}
 	if !r.dev {
-		r.cache[page] = t
+		r.cache[page] = tmpl
 	}
-	return t, nil
+	return tmpl, nil
 }
 
 // Page renderiza uma pagina completa (layout + conteudo).
@@ -71,13 +71,13 @@ func (r *Renderer) parse(page string) (*template.Template, error) {
 // do template ja teria mandado 200 e meio HTML para o cliente, e o erro viraria
 // lixo no meio da pagina em vez de um 500 honesto. Nao remova.
 func (r *Renderer) Page(w http.ResponseWriter, req *http.Request, name string, status int, data any) {
-	t, err := r.parse("templates/pages/" + name + ".gohtml")
+	tmpl, err := r.parse("templates/pages/" + name + ".gohtml")
 	if err != nil {
 		r.fail(w, name, err)
 		return
 	}
 	var buf bytes.Buffer
-	if err := t.ExecuteTemplate(&buf, "layout.gohtml", data); err != nil {
+	if err := tmpl.ExecuteTemplate(&buf, "layout.gohtml", data); err != nil {
 		r.fail(w, name, err)
 		return
 	}
@@ -92,13 +92,13 @@ func (r *Renderer) Page(w http.ResponseWriter, req *http.Request, name string, s
 // struct. E isso que garante que /galeria?tema=casal colado no WhatsApp mostre o
 // mesmo que o clique no filtro. Se divergirem, o SEO quebra em silencio.
 func (r *Renderer) Fragment(w http.ResponseWriter, page, partial string, data any) {
-	t, err := r.parse("templates/pages/" + page + ".gohtml")
+	tmpl, err := r.parse("templates/pages/" + page + ".gohtml")
 	if err != nil {
 		r.fail(w, partial, err)
 		return
 	}
 	var buf bytes.Buffer
-	if err := t.ExecuteTemplate(&buf, partial, data); err != nil {
+	if err := tmpl.ExecuteTemplate(&buf, partial, data); err != nil {
 		r.fail(w, partial, err)
 		return
 	}

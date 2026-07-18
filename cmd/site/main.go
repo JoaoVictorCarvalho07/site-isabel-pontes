@@ -57,24 +57,24 @@ func sync() error {
 	if err != nil {
 		return err
 	}
-	st, err := store.Open(cfg.DBPath)
+	banco, err := store.Open(cfg.DBPath)
 	if err != nil {
 		return err
 	}
-	defer st.Close()
+	defer banco.Close()
 
-	manifest := cfg.ManifestPath
+	caminhoManifest := cfg.ManifestPath
 	if len(os.Args) > 2 {
-		manifest = os.Args[2] // `site sync <caminho>`
+		caminhoManifest = os.Args[2] // `site sync <caminho>`
 	}
 
-	rep, err := st.SyncFromManifest(context.Background(), manifest)
+	relatorio, err := banco.SyncFromManifest(context.Background(), caminhoManifest)
 	if err != nil {
 		return err
 	}
 	slog.Info("sync concluido",
-		"fotos", rep.Fotos, "temas", rep.Temas, "data_version", rep.DataVersion,
-		"manifest", manifest, "db", cfg.DBPath)
+		"fotos", relatorio.Fotos, "temas", relatorio.Temas, "data_version", relatorio.DataVersion,
+		"manifest", caminhoManifest, "db", cfg.DBPath)
 	return nil
 }
 
@@ -88,26 +88,26 @@ func serve() error {
 	// diante os requests leem so da memoria. Se o banco ainda nao foi populado
 	// (sem `sync`), o snapshot vem vazio e a galeria mostra "nenhuma foto" --
 	// o servidor sobe do mesmo jeito.
-	st, err := store.Open(cfg.DBPath)
+	banco, err := store.Open(cfg.DBPath)
 	if err != nil {
 		return err
 	}
-	defer st.Close()
+	defer banco.Close()
 
-	snap, err := st.LoadSnapshot(context.Background())
+	snapshot, err := banco.LoadSnapshot(context.Background())
 	if err != nil {
 		return err
 	}
-	slog.Info("snapshot carregado", "fotos", len(snap.Fotos("")), "temas", len(snap.Temas()))
+	slog.Info("snapshot carregado", "fotos", len(snapshot.Fotos("")), "temas", len(snapshot.Temas()))
 
-	srv, err := web.New(cfg, site.Assets, snap)
+	servidor, err := web.New(cfg, site.Assets, snapshot)
 	if err != nil {
 		return err
 	}
 
-	httpSrv := &http.Server{
+	servidorHTTP := &http.Server{
 		Addr:    cfg.Addr,
-		Handler: srv.Handler(),
+		Handler: servidor.Handler(),
 		// Sem timeout, um cliente lento segura a conexao para sempre.
 		// O default do net/http e nao ter nenhum, o que e uma armadilha.
 		ReadHeaderTimeout: 5 * time.Second,
@@ -117,24 +117,24 @@ func serve() error {
 	}
 
 	// Shutdown limpo: sem isto, um deploy corta requests no meio.
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
+	ctx, pararSinal := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer pararSinal()
 
-	parou := make(chan struct{})
+	desligou := make(chan struct{})
 	go func() {
 		<-ctx.Done()
 		slog.Info("desligando...")
-		shutCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		_ = httpSrv.Shutdown(shutCtx)
-		close(parou)
+		ctxDesligar, cancelar := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancelar()
+		_ = servidorHTTP.Shutdown(ctxDesligar)
+		close(desligou)
 	}()
 
 	slog.Info("no ar", "addr", cfg.Addr, "dev", cfg.Dev, "base_url", cfg.BaseURL)
 	// ListenAndServe sempre devolve erro nao-nil; ErrServerClosed e o caso feliz.
-	if err := httpSrv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+	if err := servidorHTTP.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
-	<-parou // deixa o Shutdown drenar as conexoes antes de sair
+	<-desligou // deixa o Shutdown drenar as conexoes antes de sair
 	return nil
 }

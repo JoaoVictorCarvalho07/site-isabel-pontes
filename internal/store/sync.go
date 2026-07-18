@@ -50,48 +50,48 @@ type SyncReport struct {
 // colunas editaveis a mao (temas.label, futuramente photos.alt curado) sao
 // preservadas por merge -- ver abaixo.
 func (s *Store) SyncFromManifest(ctx context.Context, caminho string) (SyncReport, error) {
-	var rep SyncReport
+	var relatorio SyncReport
 
-	raw, err := os.ReadFile(caminho)
+	conteudo, err := os.ReadFile(caminho)
 	if err != nil {
-		return rep, fmt.Errorf("ler manifest %s: %w", caminho, err)
+		return relatorio, fmt.Errorf("ler manifest %s: %w", caminho, err)
 	}
 	var entradas []manifestEntry
-	if err := json.Unmarshal(raw, &entradas); err != nil {
-		return rep, fmt.Errorf("parse do manifest: %w", err)
+	if err := json.Unmarshal(conteudo, &entradas); err != nil {
+		return relatorio, fmt.Errorf("parse do manifest: %w", err)
 	}
 	if len(entradas) == 0 {
-		return rep, fmt.Errorf("manifest vazio -- abortando para nao esvaziar o banco")
+		return relatorio, fmt.Errorf("manifest vazio -- abortando para nao esvaziar o banco")
 	}
 
 	// labels editados a mao no banco nao devem ser sobrescritos pelo sync.
 	labelsExistentes, err := s.labelsAtuais(ctx)
 	if err != nil {
-		return rep, err
+		return relatorio, err
 	}
 
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
-		return rep, err
+		return relatorio, err
 	}
 	defer func() { _ = tx.Rollback() }()
 
-	// temas presentes no manifest, na ordem de labelsTema
-	temas := map[string]bool{}
-	for _, e := range entradas {
-		temas[e.Tema] = true
+	// junta os slugs de tema presentes no manifest (sem repetir), ordenados
+	temasPresentes := map[string]bool{}
+	for _, entrada := range entradas {
+		temasPresentes[entrada.Tema] = true
 	}
-	slugs := make([]string, 0, len(temas))
-	for slug := range temas {
+	slugs := make([]string, 0, len(temasPresentes))
+	for slug := range temasPresentes {
 		slugs = append(slugs, slug)
 	}
 	sort.Strings(slugs)
 
 	if _, err := tx.ExecContext(ctx, "DELETE FROM photos"); err != nil {
-		return rep, err
+		return relatorio, err
 	}
 	if _, err := tx.ExecContext(ctx, "DELETE FROM temas"); err != nil {
-		return rep, err
+		return relatorio, err
 	}
 
 	for _, slug := range slugs {
@@ -103,36 +103,37 @@ func (s *Store) SyncFromManifest(ctx context.Context, caminho string) (SyncRepor
 		if _, err := tx.ExecContext(ctx,
 			"INSERT INTO temas(slug,label,sort_order,visible) VALUES(?,?,?,1)",
 			slug, label, ordem); err != nil {
-			return rep, fmt.Errorf("inserir tema %s: %w", slug, err)
+			return relatorio, fmt.Errorf("inserir tema %s: %w", slug, err)
 		}
 	}
 
-	stmt, err := tx.PrepareContext(ctx, `
+	inserirFoto, err := tx.PrepareContext(ctx, `
 		INSERT INTO photos(key,tema_slug,w,h,grid,grid2x,full,lqip)
 		VALUES(?,?,?,?,?,?,?,?)`)
 	if err != nil {
-		return rep, err
+		return relatorio, err
 	}
-	defer stmt.Close()
+	defer inserirFoto.Close()
 
-	for _, e := range entradas {
-		if _, err := stmt.ExecContext(ctx,
-			e.Key, e.Tema, e.W, e.H, e.Grid, e.Grid2x, e.Full, e.LQIP); err != nil {
-			return rep, fmt.Errorf("inserir foto %s: %w", e.Key, err)
+	for _, entrada := range entradas {
+		if _, err := inserirFoto.ExecContext(ctx,
+			entrada.Key, entrada.Tema, entrada.W, entrada.H,
+			entrada.Grid, entrada.Grid2x, entrada.Full, entrada.LQIP); err != nil {
+			return relatorio, fmt.Errorf("inserir foto %s: %w", entrada.Key, err)
 		}
 	}
 
 	if err := s.bumpDataVersion(ctx, tx); err != nil {
-		return rep, err
+		return relatorio, err
 	}
 	if err := tx.Commit(); err != nil {
-		return rep, err
+		return relatorio, err
 	}
 
-	rep.Fotos = len(entradas)
-	rep.Temas = len(slugs)
-	rep.DataVersion = s.DataVersion()
-	return rep, nil
+	relatorio.Fotos = len(entradas)
+	relatorio.Temas = len(slugs)
+	relatorio.DataVersion = s.DataVersion()
+	return relatorio, nil
 }
 
 func (s *Store) labelsAtuais(ctx context.Context) (map[string]string, error) {
@@ -141,15 +142,15 @@ func (s *Store) labelsAtuais(ctx context.Context) (map[string]string, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	out := map[string]string{}
+	labels := map[string]string{}
 	for rows.Next() {
 		var slug, label string
 		if err := rows.Scan(&slug, &label); err != nil {
 			return nil, err
 		}
-		out[slug] = label
+		labels[slug] = label
 	}
-	return out, rows.Err()
+	return labels, rows.Err()
 }
 
 func rotuloTema(slug string) (string, int) {

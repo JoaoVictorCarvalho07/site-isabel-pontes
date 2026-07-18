@@ -39,42 +39,42 @@ func New(cfg *config.Config, assets fs.FS, snap *store.Snapshot) (*Server, error
 		// Cache-Control immutable de /static/ nao prender uma imagem trocada.
 		//   {{ srcset "/static/img/hero/hero-land" "avif" "960 1280 1920" }}
 		"srcset": func(base, ext, larguras string) string {
-			var b strings.Builder
-			for i, w := range strings.Fields(larguras) {
+			var sb strings.Builder
+			for i, largura := range strings.Fields(larguras) {
 				if i > 0 {
-					b.WriteString(", ")
+					sb.WriteString(", ")
 				}
-				b.WriteString(hasher.url(base + "-" + w + "." + ext))
-				b.WriteString(" " + w + "w")
+				sb.WriteString(hasher.url(base + "-" + largura + "." + ext))
+				sb.WriteString(" " + largura + "w")
 			}
-			return b.String()
+			return sb.String()
 		},
 		// svg embute um arquivo SVG inline no HTML. Precisa ser inline (nao
 		// <img>) para o fill=currentColor herdar a cor do texto -- e o que
 		// deixa o logo mudar de cor por pagina e no dark mode sem trocar
 		// arquivo. Vem do //go:embed, entao e conteudo nosso, seguro.
 		"svg": func(caminho string) (template.HTML, error) {
-			b, err := fs.ReadFile(assets, "static/"+caminho)
+			conteudo, err := fs.ReadFile(assets, "static/"+caminho)
 			if err != nil {
 				return "", err
 			}
-			return template.HTML(b), nil //nolint:gosec // asset proprio, embutido
+			return template.HTML(conteudo), nil //nolint:gosec // asset proprio, embutido
 		},
 		// dict monta um map inline para passar varios campos a um partial (o Go
 		// template so passa um valor). Usado por {{ template "picture" (dict ...) }}.
-		"dict": func(kv ...any) (map[string]any, error) {
-			if len(kv)%2 != 0 {
+		"dict": func(paresChaveValor ...any) (map[string]any, error) {
+			if len(paresChaveValor)%2 != 0 {
 				return nil, fmt.Errorf("dict: numero impar de argumentos")
 			}
-			m := make(map[string]any, len(kv)/2)
-			for i := 0; i < len(kv); i += 2 {
-				k, ok := kv[i].(string)
+			resultado := make(map[string]any, len(paresChaveValor)/2)
+			for i := 0; i < len(paresChaveValor); i += 2 {
+				chave, ok := paresChaveValor[i].(string)
 				if !ok {
-					return nil, fmt.Errorf("dict: chave %v nao e string", kv[i])
+					return nil, fmt.Errorf("dict: chave %v nao e string", paresChaveValor[i])
 				}
-				m[k] = kv[i+1]
+				resultado[chave] = paresChaveValor[i+1]
 			}
-			return m, nil
+			return resultado, nil
 		},
 	}
 	r, err := NewRenderer(assets, cfg.Dev, funcs)

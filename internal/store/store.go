@@ -52,10 +52,10 @@ func (s *Store) migrate() error {
 	if _, err := s.db.Exec(schemaSQL); err != nil {
 		return fmt.Errorf("aplicar schema: %w", err)
 	}
-	atual := s.metaInt("schema_version", 0)
+	versaoAtual := s.metaInt("schema_version", 0)
 	// (nenhuma migracao incremental ainda; o proximo case entra aqui)
-	// switch { case atual < 2: ...; }
-	if atual < schemaVersion {
+	// switch { case versaoAtual < 2: ...; }
+	if versaoAtual < schemaVersion {
 		if err := s.setMeta("schema_version", strconv.Itoa(schemaVersion)); err != nil {
 			return err
 		}
@@ -63,25 +63,25 @@ func (s *Store) migrate() error {
 	return nil
 }
 
-// --- meta ---
+// --- meta (tabela chave-valor de sistema; colunas k e v no SQL) ---
 
-func (s *Store) metaInt(k string, def int) int {
-	var v string
-	err := s.db.QueryRow("SELECT v FROM meta WHERE k = ?", k).Scan(&v)
+func (s *Store) metaInt(chave string, padrao int) int {
+	var valorStr string
+	err := s.db.QueryRow("SELECT v FROM meta WHERE k = ?", chave).Scan(&valorStr)
 	if err != nil {
-		return def
+		return padrao
 	}
-	n, err := strconv.Atoi(v)
+	numero, err := strconv.Atoi(valorStr)
 	if err != nil {
-		return def
+		return padrao
 	}
-	return n
+	return numero
 }
 
-func (s *Store) setMeta(k, v string) error {
+func (s *Store) setMeta(chave, valor string) error {
 	_, err := s.db.Exec(
 		"INSERT INTO meta(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v",
-		k, v)
+		chave, valor)
 	return err
 }
 
@@ -89,10 +89,10 @@ func (s *Store) setMeta(k, v string) error {
 func (s *Store) DataVersion() int { return s.metaInt("data_version", 0) }
 
 func (s *Store) bumpDataVersion(ctx context.Context, tx *sql.Tx) error {
-	var v int
-	_ = tx.QueryRowContext(ctx, "SELECT v FROM meta WHERE k='data_version'").Scan(&v)
+	var versao int
+	_ = tx.QueryRowContext(ctx, "SELECT v FROM meta WHERE k='data_version'").Scan(&versao)
 	_, err := tx.ExecContext(ctx,
 		"INSERT INTO meta(k,v) VALUES('data_version',?) ON CONFLICT(k) DO UPDATE SET v=excluded.v",
-		strconv.Itoa(v+1))
+		strconv.Itoa(versao+1))
 	return err
 }
