@@ -1,0 +1,32 @@
+# systemd unit do site. Instalar em /etc/systemd/system/site.service
+#
+# Roda o binario Go ENVOLVIDO pelo Litestream: enquanto o servidor serve, o
+# Litestream replica o site.db para o R2 continuamente. Quando o servidor sai,
+# o Litestream sai junto. O Litestream le /etc/litestream.yml.
+
+[Unit]
+Description=Site Isabel Pontes (Go + Litestream)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=site
+Group=site
+WorkingDirectory=/opt/site
+# .env traz BASE_URL, ADDR, DB_PATH e as credenciais R2 que o Litestream usa
+# para expandir /etc/litestream.yml.
+EnvironmentFile=/opt/site/.env
+ExecStart=/usr/local/bin/litestream replicate -exec "/opt/site/site serve"
+Restart=always
+RestartSec=3
+
+# Endurecimento: o servico so precisa escrever no proprio data/.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/site/data
+
+[Install]
+WantedBy=multi-user.target

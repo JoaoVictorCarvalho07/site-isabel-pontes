@@ -1,0 +1,19 @@
+# Fora do contexto de build do Docker.
+
+.git/
+.claude/
+tools/            # dart-sass standalone; nao entra no build
+node_modules/
+out/              # saida da migracao de midia
+*.exe
+*.exe~
+/site             # binario linux compilado localmente
+
+# banco: a imagem popula do manifest / restaura do R2. So o manifest entra.
+data/site.db
+data/site.db-shm
+data/site.db-wal
+
+# SEGREDO: o script de migracao guarda a chave R2 em texto puro -- nunca deve
+# ir para o contexto/camadas do build.
+scripts/

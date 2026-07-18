@@ -1,0 +1,23 @@
+# Litestream: replica o SQLite para o R2 continuamente (backup + restore).
+# Instalar em /etc/litestream.yml
+#
+# Os ${...} sao expandidos das variaveis de ambiente (vem do /opt/site/.env via
+# systemd). NAO coloque segredo aqui -- so referencia.
+#
+# >>> O bucket de backup TEM QUE SER PRIVADO. <<<
+# NAO use o bucket de midia (isabel-portfolio-gallery), que e de leitura publica
+# -- o backup do banco ficaria baixavel por qualquer um. Crie um bucket separado
+# e privado (ex.: isabel-litestream).
+
+dbs:
+  - path: /opt/site/data/site.db
+    replicas:
+      - type: s3
+        endpoint: https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
+        bucket: ${R2_BACKUP_BUCKET}
+        path: site-db
+        access-key-id: ${R2_ACCESS_KEY_ID}
+        secret-access-key: ${R2_SECRET_ACCESS_KEY}
+        region: auto
+        # R2 exige path-style; o endpoint acima ja aponta o account.
+        force-path-style: true

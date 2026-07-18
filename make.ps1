@@ -67,13 +67,29 @@ switch ($Task) {
   'build' { go build -o site.exe ./cmd/site; Write-Host "site.exe" }
 
   'deploy' {
-    # ARM64 porque o free tier da Oracle e Ampere A1.
-    # CGO_ENABLED=0 so e possivel porque o driver SQLite e modernc (Go puro).
-    # Com mattn/go-sqlite3 isto exigiria um cross-toolchain C para ARM.
+    # Cross-compila o binario linux/arm64 e, se SITE_HOST estiver setado, faz o
+    # scp + restart. ARM64 porque o free tier da Oracle e Ampere A1. CGO_ENABLED=0
+    # so e possivel porque o driver SQLite e modernc (Go puro) -- com
+    # mattn/go-sqlite3 isto exigiria um cross-toolchain C para ARM.
+    #
+    #   $env:SITE_HOST='opc@1.2.3.4'; .\make.ps1 deploy
+    #
+    # Sem SITE_HOST, so compila (voce faz o scp na mao). Primeira instalacao:
+    # siga deploy/README.md.
     $env:GOOS = 'linux'; $env:GOARCH = 'arm64'; $env:CGO_ENABLED = '0'
     go build -ldflags '-s -w' -o site ./cmd/site
     Remove-Item Env:GOOS, Env:GOARCH, Env:CGO_ENABLED
     $mb = [math]::Round((Get-Item site).Length / 1MB, 1)
-    Write-Host "site (linux/arm64, $mb MB) -- pronto para scp"
+    Write-Host "site (linux/arm64, $mb MB) compilado"
+
+    if ($env:SITE_HOST) {
+      Write-Host "enviando para $env:SITE_HOST ..."
+      scp site "$($env:SITE_HOST):/tmp/site"
+      # move para o lugar e reinicia (systemd). Requer o setup do README feito.
+      ssh $env:SITE_HOST 'sudo mv /tmp/site /opt/site/site && sudo chown site:site /opt/site/site && sudo chmod +x /opt/site/site && sudo systemctl restart site && echo reiniciado'
+    }
+    else {
+      Write-Host "SITE_HOST nao setado -- so compilei. Veja deploy/README.md."
+    }
   }
 }

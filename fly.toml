@@ -1,0 +1,31 @@
+# Fly.io — fallback caso a VM Oracle demore. Regiao gru (Sao Paulo).
+# Deploy: fly deploy   (segredos R2 via `fly secrets set`, ver deploy/README.md)
+
+app = "isabel-pontes"
+primary_region = "gru"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  ADDR = "0.0.0.0:8080"
+  DB_PATH = "/data/site.db"
+  MANIFEST_PATH = "/app/manifest.json"
+  BASE_URL = "https://isabelpontes.com.br"
+  R2_BACKUP_BUCKET = "isabel-litestream"
+
+# volume persistente para o SQLite (o Litestream tambem replica pro R2)
+[[mounts]]
+  source = "data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
