@@ -125,7 +125,7 @@ func (s *Server) galeriaFragment(w http.ResponseWriter, r *http.Request) {
 // o shuffle do dia vira ou quando um sync incrementa data_version -- exatamente
 // as duas coisas que mudam o HTML. Retorna true se ja respondeu 304.
 func (s *Server) setGalleryCache(w http.ResponseWriter, r *http.Request, tema string) bool {
-	etag := fmt.Sprintf(`W/"g-%s-%s-v%d"`, tema, s.snap.DiaSeed(), s.snap.DataVersion())
+	etag := fmt.Sprintf(`W/"g-%s-%s-v%d-b%s"`, tema, s.snap.DiaSeed(), s.snap.DataVersion(), s.boot)
 	w.Header().Set("ETag", etag)
 	// s-maxage deixa a CDN cachear por 1h; stale-while-revalidate serve o antigo
 	// enquanto revalida. max-age=0 obriga o browser a revalidar (barato: 304).

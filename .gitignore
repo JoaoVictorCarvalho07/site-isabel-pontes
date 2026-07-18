@@ -1,6 +1,6 @@
 # binário compilado
 /site
-/site.exe
+/site.exe*
 
 # banco: gerado por `site sync`, nunca versionado.
 # Em prod vive num volume; o backup é o Litestream replicando para o R2.

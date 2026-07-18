@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,6 +23,10 @@ type Server struct {
 	render *Renderer
 	static fs.FS
 	snap   *store.Snapshot // fotos em RAM; carregado no boot
+	// boot muda a cada restart (= cada deploy). Entra no ETag da galeria para
+	// que uma troca de template/CSS/JS invalide o cache -- o data_version
+	// sozinho so cobre mudanca de DADOS, nao de codigo.
+	boot string
 }
 
 // New monta o servidor. `assets` e o FS embutido com templates/ e static/;
@@ -80,7 +85,10 @@ func New(cfg *config.Config, assets fs.FS, snap *store.Snapshot) (*Server, error
 	if err != nil {
 		return nil, err
 	}
-	return &Server{cfg: cfg, render: r, static: static, snap: snap}, nil
+	return &Server{
+		cfg: cfg, render: r, static: static, snap: snap,
+		boot: strconv.FormatInt(time.Now().Unix(), 36),
+	}, nil
 }
 
 func (s *Server) Handler() http.Handler {

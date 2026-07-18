@@ -1,20 +1,37 @@
 {{- /*
   Navbar. O logo e o SVG inline (funcao `svg`) para herdar currentColor -- a cor
   vem do texto do header, que muda por pagina via a classe no <body> (BodyClass).
-  Substitui, no lado Go, todo o NavBar.tsx do React: sem estado de logoSrc, sem
-  matchMedia, sem os dois useEffect, e sem o flash de logo errada.
+  Substitui o NavBar.tsx: sem estado de logoSrc, sem matchMedia, sem os useEffect,
+  sem o flash de logo errada.
 
-  Hide-on-scroll e menu mobile entram na Fase 2 (aqui e so o logo + links).
+  No mobile os links viram um menu <dialog> (mesmo padrao do lightbox: um padrao,
+  dois usos -- Esc, focus trap e ::backdrop de graca), substituindo o Radix Sheet
+  + HamburgerMenu do React.
 */ -}}
 {{ define "navbar" }}
-<header class="navbar">
+<header class="navbar" data-navbar>
   <a href="/" class="navbar__logo logo-anim-focus" aria-label="Isabel Pontes">
     {{ svg "img/logo.svg" }}
   </a>
+
   <nav class="navbar__links" aria-label="Principal">
     <a href="/galeria">Galeria</a>
     <a href="/sobre">Sobre</a>
     <a href="/contato">Contato</a>
   </nav>
+
+  <button class="navbar__hamburguer" data-menu-abrir aria-label="Abrir menu"
+          aria-haspopup="dialog">
+    <span></span><span></span><span></span>
+  </button>
 </header>
+
+<dialog id="menu" class="menu" aria-label="Menu">
+  <button class="menu__fechar" data-menu-fechar aria-label="Fechar">✕</button>
+  <nav class="menu__links" aria-label="Principal">
+    <a href="/galeria">Galeria</a>
+    <a href="/sobre">Sobre</a>
+    <a href="/contato">Contato</a>
+  </nav>
+</dialog>
 {{ end }}

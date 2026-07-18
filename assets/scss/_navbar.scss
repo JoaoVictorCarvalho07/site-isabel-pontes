@@ -12,6 +12,13 @@
   gap: 1rem;
   padding: 0.75rem 1.5rem;
   color: var(--primary);
+  transition: transform 0.3s ease;
+}
+
+// Hide-on-scroll: some ao descer, volta ao subir (classe no body via app.js).
+// Libera tela no mobile, onde a navbar fixa cobre bastante coisa.
+body.nav-oculta .navbar {
+  transform: translateY(-100%);
 }
 
 // Home: BodyClass "hero-escuro" -> logo e links brancos sobre o hero.
@@ -42,6 +49,93 @@ body.hero-escuro .navbar {
 
     &:hover {
       opacity: 0.7;
+    }
+  }
+
+  // no mobile os links viram o menu <dialog>
+  @media (max-width: 767px) {
+    display: none;
+  }
+}
+
+// ── Hamburguer (so no mobile) ─────────────────────────────────────────────────
+.navbar__hamburguer {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.5rem;
+
+  span {
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: currentColor; // herda a cor da navbar (branca na home)
+    border-radius: 2px;
+  }
+
+  @media (max-width: 767px) {
+    display: flex;
+  }
+}
+
+// ── Menu mobile (<dialog> como sheet lateral) ─────────────────────────────────
+.menu {
+  margin: 0 0 0 auto; // encosta na direita
+  height: 100dvh;
+  max-height: 100dvh;
+  width: min(18rem, 78vw);
+  padding: 4.5rem 2rem 2rem;
+  border: none;
+  background: var(--background);
+  color: var(--foreground);
+
+  &::backdrop {
+    background: rgba(30, 22, 14, 0.5);
+    backdrop-filter: blur(2px);
+  }
+
+  &[open] {
+    animation: menuEntra 0.25s ease;
+  }
+}
+
+@keyframes menuEntra {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.menu__fechar {
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--muted-foreground);
+
+  &:hover {
+    color: var(--foreground);
+  }
+}
+
+.menu__links {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  a {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.65;
     }
   }
 }

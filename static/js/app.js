@@ -127,4 +127,49 @@
         track.scrollBy({ left: passo(), behavior: 'smooth' }),
       );
   });
+
+  // ── Menu mobile ──────────────────────────────────────────────────────────────
+  // Mesmo padrao do lightbox: <dialog> + guard justOpened contra o clique que
+  // abre vazar para o backdrop. Substitui o Radix Sheet do React.
+  const menu = document.getElementById('menu');
+  if (menu) {
+    let menuJustOpened = false;
+    document.querySelectorAll('[data-menu-abrir]').forEach((b) =>
+      b.addEventListener('click', () => {
+        menu.showModal();
+        menuJustOpened = true;
+        requestAnimationFrame(() => {
+          menuJustOpened = false;
+        });
+      }),
+    );
+    menu
+      .querySelectorAll('[data-menu-fechar], .menu__links a')
+      .forEach((el) => el.addEventListener('click', () => menu.close()));
+    menu.addEventListener('click', (e) => {
+      if (menuJustOpened) return;
+      if (e.target === menu) menu.close();
+    });
+  }
+
+  // ── Navbar hide-on-scroll ────────────────────────────────────────────────────
+  // Some ao descer, volta ao subir. No React essa logica estava DUPLICADA em
+  // NavBar.tsx e PhotoGallery.tsx; aqui e uma classe no <body>, uma vez so.
+  let ultimoY = window.scrollY;
+  window.addEventListener(
+    'scroll',
+    () => {
+      const y = window.scrollY;
+      const d = y - ultimoY;
+      if (y < 25) {
+        document.body.classList.remove('nav-oculta');
+        ultimoY = y;
+        return;
+      }
+      if (Math.abs(d) < 8) return; // ignora micro-scroll (tremida)
+      document.body.classList.toggle('nav-oculta', d > 0); // desceu -> esconde
+      ultimoY = y;
+    },
+    { passive: true },
+  );
 })();
