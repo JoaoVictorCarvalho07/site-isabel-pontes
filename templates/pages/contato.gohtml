@@ -1,0 +1,71 @@
+{{- /* Contato. Porta o ContactSection.tsx: 3 cards de link (nao e formulario). */ -}}
+{{ define "conteudo" }}
+<section class="contato">
+  <header class="contato__head">
+    <h1>Contato</h1>
+    <p>Me chama por onde for melhor — eu respondo em até 24h úteis. 🤍</p>
+  </header>
+
+  <div class="contato__cards">
+    <a class="contato-card contato-card--destaque" href="{{ .WhatsAppHref }}"
+       target="_blank" rel="noopener noreferrer">
+      <div class="contato-card__topo">
+        <div>
+          <h2>WhatsApp</h2>
+          <p>Mais rápido para orçamento e disponibilidade.</p>
+        </div>
+        <span class="contato-card__seta" aria-hidden="true">→</span>
+      </div>
+      <span class="contato-card__cta">Chamar no WhatsApp</span>
+    </a>
+
+    <a class="contato-card" href="{{ .InstagramHref }}"
+       target="_blank" rel="noopener noreferrer">
+      <div class="contato-card__topo">
+        <div>
+          <h2>Instagram</h2>
+          <p>Bate-papo, referências e bastidores.</p>
+        </div>
+        <span class="contato-card__seta" aria-hidden="true">→</span>
+      </div>
+      <span class="contato-card__cta">Abrir Instagram</span>
+    </a>
+
+    <a class="contato-card" href="{{ .MailtoHref }}">
+      <div class="contato-card__topo">
+        <div>
+          <h2>E-mail</h2>
+          <p>Para propostas, marcas e demandas formais.</p>
+        </div>
+        <span class="contato-card__seta" aria-hidden="true">→</span>
+      </div>
+      <span class="contato-card__cta">Enviar e-mail</span>
+    </a>
+  </div>
+
+  <div class="contato__info">
+    <div class="contato-info-box">
+      <h3>Como falar comigo</h3>
+      <ul>
+        <li>Me diga o que você procura (ensaio / evento / UGC).</li>
+        <li>Se tiver, mande tema + referências (Pinterest/prints).</li>
+        <li>Data e cidade ajudam a eu te responder mais rápido.</li>
+      </ul>
+    </div>
+    <div class="contato-info-box">
+      <h3>Atendimento</h3>
+      <p>Base em <strong>{{ .Cidade }}</strong>. Outros locais sob consulta.</p>
+      <div class="contato-tags">
+        <span>Ensaios artísticos</span>
+        <span>Direção de arte</span>
+        <span>Conteúdo / UGC</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="contato__dica">
+    Dica: se preferir, pode mandar só “vim pelo site” que eu te guio com as
+    perguntas ✨
+  </p>
+</section>
+{{ end }}

@@ -1,0 +1,70 @@
+{{- /* Sobre. Porta o SobreMim.tsx: bio com float da imagem + carrossel. */ -}}
+{{ define "conteudo" }}
+<div class="sobre">
+  <div class="sobre__bloco">
+    {{ template "picture" (dict
+      "Base" "/static/img/sobre/SobreMim4" "W" 800 "H" 1200
+      "Alt" "Isabel Pontes, fotógrafa" "Class" "sobre__float sobre__float--esq") }}
+    <p>
+      Meu nome é Isabel Pontes, sou fotógrafa artística e criadora visual atuando
+      em Curitiba. Minha relação com a arte começou muito antes da fotografia
+      entrar oficialmente na minha vida. Desde criança sempre fui movida por
+      imaginação, movimento e criação. Participei de companhia de dança e sempre
+      tive uma curiosidade natural sobre expressão artística. Gostava de montar
+      cenários, inventar histórias e transformar ideias em pequenas encenações —
+      muitas vezes sem perceber que esse impulso criativo acabaria se tornando
+      parte fundamental da minha profissão no futuro.
+    </p>
+  </div>
+
+  <div class="sobre__bloco">
+    {{ template "picture" (dict
+      "Base" "/static/img/sobre/SobreMim6" "W" 433 "H" 728
+      "Alt" "Ensaio de Isabel Pontes" "Class" "sobre__float sobre__float--dir") }}
+    <p>
+      Desde cedo também desenvolvi o hábito de buscar inspiração em livros,
+      filmes, pinturas e diferentes formas de arte. Gosto de observar como a
+      imaginação humana se manifesta através das imagens, das histórias e das
+      simbologias que atravessam diferentes culturas. Essa curiosidade constante
+      sobre o imaginário e sobre as formas de expressão artística acabou moldando
+      profundamente o meu olhar criativo.
+    </p>
+    <p class="sobre__so-desktop">
+      Nasci em Manaus, cercada por natureza, e esse ambiente sempre teve uma
+      influência muito forte na forma como eu enxergo o mundo. A presença da
+      floresta, dos rios e da vida natural despertou em mim uma sensibilidade
+      especial para observar detalhes, atmosferas e símbolos presentes na
+      natureza. Ao mesmo tempo, sempre me senti atraída por temas que exploram o
+      imaginário, o simbólico e o espiritual. O universo das mitologias, do
+      místico e das narrativas arquetípicas sempre despertou minha curiosidade.
+    </p>
+  </div>
+
+  <div class="carrossel-wrap">
+    <button class="carrossel-seta carrossel-seta--prev" data-carrossel-prev aria-label="Anterior">‹</button>
+    <div class="carrossel" data-carrossel>
+      {{- range .Carrossel }}
+      <div class="carrossel__item">
+        {{ template "picture" (dict
+          "Base" .Base "W" .W "H" .H
+          "Alt" "Fotografia de Isabel Pontes" "Class" "carrossel__img") }}
+      </div>
+      {{- end }}
+    </div>
+    <button class="carrossel-seta carrossel-seta--next" data-carrossel-next aria-label="Próxima">›</button>
+  </div>
+
+  <p class="sobre__fecho">
+    Fora das telas me considero uma pessoa bastante reservada, mas que valoriza
+    muito as conexões profundas e significativas. Gosto de ocupar meu tempo com
+    atividades que me mantenham ativa tanto na mente quanto no corpo. Sou
+    apaixonada por dança mas atualmente tenho me dedicado ao Crossfit o que me
+    ajuda a manter o equilíbrio físico e mental. Gosto de assistir animes no meu
+    tempo livre e atualmente junto com meu parceiro estou entrando aos poucos no
+    mundo dos games, o que tem sido uma experiência divertida e desafiadora.
+    Acredito que essas atividades complementam minha prática artística, pois me
+    permitem explorar diferentes formas de expressão e conexão com o mundo ao meu
+    redor.
+  </p>
+</div>
+{{ end }}

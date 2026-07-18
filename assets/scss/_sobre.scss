@@ -1,0 +1,135 @@
+@use 'tokens';
+
+.sobre {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 7.5rem 2.5rem 4rem;
+  color: var(--primary);
+  font-family: var(--font-sans);
+
+  p {
+    font-size: clamp(0.95rem, 2vw, 1.25rem);
+    line-height: 1.7;
+    letter-spacing: 0.02em;
+  }
+}
+
+.sobre__bloco {
+  margin-top: 2.5rem;
+
+  // limpa o float para o proximo bloco nao subir ao lado da imagem
+  &::after {
+    content: '';
+    display: block;
+    clear: both;
+  }
+}
+
+// float da imagem com o texto correndo em volta (equivalente ao
+// ImageWithWrappedText do React).
+.sobre__float {
+  width: 45%;
+  max-width: 25rem;
+  height: auto;
+  border-radius: 0.75rem;
+  object-fit: cover;
+
+  @media (min-width: 1024px) {
+    width: 30%;
+  }
+
+  &--esq {
+    float: left;
+    margin: 0 1rem 0.5rem 0;
+  }
+  &--dir {
+    float: right;
+    margin: 0 0 0.5rem 1rem;
+  }
+}
+
+// o 2o paragrafo do bloco de Manaus so aparece no desktop (era hidden md:block)
+.sobre__so-desktop {
+  display: none;
+  @media (min-width: 768px) {
+    display: block;
+    margin-top: 1rem;
+  }
+}
+
+.sobre__fecho {
+  margin-top: 2.5rem;
+}
+
+// ── Carrossel (scroll-snap, substitui o Embla) ────────────────────────────────
+.carrossel-wrap {
+  position: relative;
+  margin: 3rem 0;
+}
+
+.carrossel {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  scroll-padding: 0 1rem;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.carrossel__item {
+  flex: 0 0 33%;
+  scroll-snap-align: start;
+
+  @media (max-width: 768px) {
+    flex-basis: 60%;
+  }
+  @media (max-width: 480px) {
+    flex-basis: 85%;
+  }
+}
+
+.carrossel__img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 0.75rem;
+}
+
+.carrossel-seta {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.75rem;
+  line-height: 1;
+  color: var(--primary);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(42, 32, 24, 0.15);
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.85;
+  }
+  &--prev {
+    left: -0.5rem;
+  }
+  &--next {
+    right: -0.5rem;
+  }
+
+  // no touch o arrasto ja resolve; as setas atrapalhariam
+  @media (max-width: 768px) {
+    display: none;
+  }
+}

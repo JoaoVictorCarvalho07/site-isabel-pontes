@@ -106,4 +106,25 @@
     // Unica armadilha de integracao HTMX<->JS do projeto.
     document.body.addEventListener('htmx:afterSwap', refresh);
   }
+
+  // ── Carrossel (/sobre) ───────────────────────────────────────────────────────
+  // scroll-snap CSS faz o arrasto/touch; as setas so empurram um item. Substitui
+  // o Embla. Perde o loop infinito -- aceitavel para 8 fotos.
+  document.querySelectorAll('.carrossel-wrap').forEach((wrap) => {
+    const track = wrap.querySelector('[data-carrossel]');
+    if (!track) return;
+    const passo = () =>
+      track.querySelector('.carrossel__item')?.offsetWidth ||
+      track.clientWidth * 0.8;
+    wrap
+      .querySelector('[data-carrossel-prev]')
+      ?.addEventListener('click', () =>
+        track.scrollBy({ left: -passo(), behavior: 'smooth' }),
+      );
+    wrap
+      .querySelector('[data-carrossel-next]')
+      ?.addEventListener('click', () =>
+        track.scrollBy({ left: passo(), behavior: 'smooth' }),
+      );
+  });
 })();

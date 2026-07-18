@@ -1,0 +1,169 @@
+@use 'tokens';
+
+.contato {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 7.5rem 1rem 4rem;
+  font-family: var(--font-sans);
+  color: var(--foreground);
+}
+
+.contato__head {
+  margin-bottom: 2.5rem;
+
+  h1 {
+    font-size: clamp(1.875rem, 4vw, 2.25rem);
+  }
+  p {
+    margin-top: 0.5rem;
+    color: var(--muted-foreground);
+    font-size: 1.05rem;
+  }
+}
+
+.contato__cards {
+  display: grid;
+  gap: 1rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.contato-card {
+  display: block;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--background);
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+
+  &:hover {
+    background: var(--muted);
+  }
+
+  &__topo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+
+    h2 {
+      font-size: 1.15rem;
+      font-family: var(--font-sans);
+      font-weight: 500;
+    }
+    p {
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--muted-foreground);
+    }
+  }
+
+  &__seta {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    transition: transform 0.2s;
+  }
+  &:hover &__seta {
+    transform: translateX(2px);
+  }
+
+  &__cta {
+    display: inline-flex;
+    margin-top: 1.25rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+  }
+
+  // card em destaque (WhatsApp): invertido
+  &--destaque {
+    background: var(--foreground);
+    color: var(--background);
+
+    h2,
+    .contato-card__cta {
+      color: var(--background);
+    }
+    p {
+      color: rgba(240, 236, 229, 0.8);
+    }
+    .contato-card__seta,
+    .contato-card__cta {
+      border-color: rgba(240, 236, 229, 0.3);
+    }
+    &:hover {
+      opacity: 0.95;
+      background: var(--foreground);
+    }
+  }
+}
+
+.contato__info {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+
+  @media (min-width: 1024px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.contato-info-box {
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+
+  h3 {
+    font-size: 1.05rem;
+    font-family: var(--font-sans);
+    font-weight: 500;
+  }
+  ul {
+    margin-top: 0.75rem;
+    padding-left: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+  p {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+}
+
+.contato-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+
+  span {
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.85rem;
+  }
+}
+
+.contato__dica {
+  margin-top: 2rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}

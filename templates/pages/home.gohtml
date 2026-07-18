@@ -1,13 +1,66 @@
 {{- /*
-  Home. Fase 0: prova que o layout, o embed, o asset hashing e o SCSS batem.
-  O hero real (<picture> com srcset), os cards editoriais e a foto do dia
-  entram na Fase 4.
+  Home. Hero fullscreen + 2 cards editoriais. Porta o HomeEditorial.tsx.
+  BodyClass "hero-escuro" (setado no handler) deixa navbar/logo brancos.
 */ -}}
 {{ define "conteudo" }}
 <section class="hero">
+  {{- /* Art direction: telas largas recebem o recorte 16:9; estreitas, o
+         retrato. As fontes com media vem primeiro. srcset com hash de conteudo. */}}
+  <picture>
+    <source
+      media="(min-width:768px)"
+      type="image/avif"
+      sizes="100vw"
+      srcset="{{ srcset "/static/img/hero/hero-land" "avif" "960 1280 1920 2560" }}" />
+    <source
+      media="(min-width:768px)"
+      type="image/webp"
+      sizes="100vw"
+      srcset="{{ srcset "/static/img/hero/hero-land" "webp" "960 1280 1920 2560" }}" />
+    <source
+      type="image/avif"
+      sizes="100vw"
+      srcset="{{ srcset "/static/img/hero/hero" "avif" "640 960 1280 1920" }}" />
+    <source
+      type="image/webp"
+      sizes="100vw"
+      srcset="{{ srcset "/static/img/hero/hero" "webp" "640 960 1280 1920" }}" />
+    <img
+      src="{{ asset "/static/img/hero/hero-1280.webp" }}"
+      alt="Isabel Pontes, fotógrafa e diretora criativa, em ensaio artístico"
+      width="4000" height="6000"
+      fetchpriority="high" decoding="async"
+      class="hero__img" />
+  </picture>
+  <div class="hero__overlay"></div>
   <div class="hero__texto">
     <h1>Bem-vindo(a) ao meu universo</h1>
     <p>Direção criativa, fotografia artística e storytelling.</p>
   </div>
+</section>
+
+<section class="cards-editoriais">
+  <a href="/galeria" class="card-ed">
+    {{- if .FotoDoDia }}
+    <img class="card-ed__img" src="{{ .FotoDoDia }}" alt="Ensaio artístico — Isabel Pontes"
+         loading="lazy" decoding="async" />
+    {{- end }}
+    <div class="card-ed__overlay"></div>
+    <div class="card-ed__texto">
+      <h2>Fotografia artística</h2>
+      <p>Ensaios conceituais e direção de pessoas.</p>
+    </div>
+  </a>
+
+  <a href="https://xn--isabelpontesportflio-r8b.com.br/" class="card-ed"
+     target="_blank" rel="noopener noreferrer">
+    <img class="card-ed__img" src="{{ asset "/static/img/MidiaKit.jpg" }}"
+         alt="Mídia kit e conteúdo de creator" loading="lazy" decoding="async" />
+    <div class="card-ed__overlay"></div>
+    <div class="card-ed__texto">
+      <h2>Mídia kit &amp; creator</h2>
+      <p>Conteúdo autêntico com estética elevada.</p>
+    </div>
+  </a>
 </section>
 {{ end }}

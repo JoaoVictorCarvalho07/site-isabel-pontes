@@ -1,0 +1,16 @@
+{{- /*
+  Picture: <picture> AVIF + fallback WebP para as imagens estaticas de /sobre.
+  Uma largura por imagem (aparecem pequenas), entao sem srcset. Espera um dict
+  com Base/W/H/Alt/Class -- ver uso em sobre.gohtml.
+  WebP como fallback cobre 100% dos browsers desde 2020; sem JPEG.
+*/ -}}
+{{ define "picture" }}
+<picture>
+  <source type="image/avif" srcset="{{ asset (printf "%s.avif" .Base) }}" />
+  <img
+    src="{{ asset (printf "%s.webp" .Base) }}"
+    width="{{ .W }}" height="{{ .H }}"
+    alt="{{ .Alt }}" loading="lazy" decoding="async"
+    class="{{ .Class }}" />
+</picture>
+{{ end }}

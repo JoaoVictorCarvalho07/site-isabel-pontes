@@ -2,11 +2,13 @@
 package web
 
 import (
+	"fmt"
 	"html/template"
 	"io/fs"
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/JoaoVictorCarvalho07/site-da-bebel-htmx/internal/config"
@@ -28,6 +30,20 @@ func New(cfg *config.Config, assets fs.FS, snap *store.Snapshot) (*Server, error
 	hasher := newAssetHasher(assets)
 	funcs := template.FuncMap{
 		"asset": hasher.url,
+		// srcset monta um srcset com hash de conteudo em cada candidato, para o
+		// Cache-Control immutable de /static/ nao prender uma imagem trocada.
+		//   {{ srcset "/static/img/hero/hero-land" "avif" "960 1280 1920" }}
+		"srcset": func(base, ext, larguras string) string {
+			var b strings.Builder
+			for i, w := range strings.Fields(larguras) {
+				if i > 0 {
+					b.WriteString(", ")
+				}
+				b.WriteString(hasher.url(base + "-" + w + "." + ext))
+				b.WriteString(" " + w + "w")
+			}
+			return b.String()
+		},
 		// svg embute um arquivo SVG inline no HTML. Precisa ser inline (nao
 		// <img>) para o fill=currentColor herdar a cor do texto -- e o que
 		// deixa o logo mudar de cor por pagina e no dark mode sem trocar
@@ -38,6 +54,22 @@ func New(cfg *config.Config, assets fs.FS, snap *store.Snapshot) (*Server, error
 				return "", err
 			}
 			return template.HTML(b), nil //nolint:gosec // asset proprio, embutido
+		},
+		// dict monta um map inline para passar varios campos a um partial (o Go
+		// template so passa um valor). Usado por {{ template "picture" (dict ...) }}.
+		"dict": func(kv ...any) (map[string]any, error) {
+			if len(kv)%2 != 0 {
+				return nil, fmt.Errorf("dict: numero impar de argumentos")
+			}
+			m := make(map[string]any, len(kv)/2)
+			for i := 0; i < len(kv); i += 2 {
+				k, ok := kv[i].(string)
+				if !ok {
+					return nil, fmt.Errorf("dict: chave %v nao e string", kv[i])
+				}
+				m[k] = kv[i+1]
+			}
+			return m, nil
 		},
 	}
 	r, err := NewRenderer(assets, cfg.Dev, funcs)
@@ -57,8 +89,8 @@ func (s *Server) Handler() http.Handler {
 	// Os padroes com metodo ("GET /sobre") sao do ServeMux do Go 1.22+.
 	// E o que torna chi/echo desnecessario num site de 8 rotas.
 	mux.HandleFunc("GET /{$}", s.home) // {$} = so a raiz exata, nao um catch-all
-	mux.HandleFunc("GET /sobre", s.todo("sobre"))
-	mux.HandleFunc("GET /contato", s.todo("contato"))
+	mux.HandleFunc("GET /sobre", s.sobre)
+	mux.HandleFunc("GET /contato", s.contato)
 	mux.HandleFunc("GET /galeria", s.galeria)               // pagina completa
 	mux.HandleFunc("GET /galeria/fotos", s.galeriaFragment) // fragmento HTMX
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
@@ -103,31 +135,7 @@ func (s *Server) novaPagina(titulo, descricao, path string) pageData {
 	}
 }
 
-func (s *Server) home(w http.ResponseWriter, r *http.Request) {
-	d := s.novaPagina(
-		"Isabel Pontes — Fotografia artística e direção criativa em Curitiba",
-		"Ensaios conceituais, fotografia artística e direção criativa em Curitiba.",
-		"/",
-	)
-	// O hero e escuro, entao a logo tem que ser a branca nos dois temas.
-	// No React isto era useState + matchMedia + dois useEffect, e causava um
-	// flash de logo errada ate o React hidratar. Aqui o servidor ja decide.
-	d.BodyClass = "hero-escuro"
-	s.render.Page(w, r, "home", http.StatusOK, d)
-}
-
 func (s *Server) notFound(w http.ResponseWriter, r *http.Request) {
 	s.render.Page(w, r, "404", http.StatusNotFound,
 		s.novaPagina("Página não encontrada — Isabel Pontes", "", r.URL.Path))
-}
-
-// todo é um placeholder honesto: a rota existe e responde 501, em vez de 404
-// (que mentiria dizendo que a página não vai existir) ou de uma página vazia
-// (que fingiria estar pronta). Sai conforme cada fase entrega a página real.
-func (s *Server) todo(nome string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.WriteHeader(http.StatusNotImplemented)
-		_, _ = w.Write([]byte("501 — /" + nome + " ainda não foi portada.\n"))
-	}
 }

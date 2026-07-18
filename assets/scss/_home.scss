@@ -1,0 +1,110 @@
+@use 'tokens';
+
+// ── Hero ──────────────────────────────────────────────────────────────────────
+.hero {
+  position: relative;
+  height: 80vh;
+  min-height: 35rem;
+  overflow: hidden;
+}
+
+.hero__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+
+  @media (min-width: 768px) {
+    object-position: 40% 30%;
+  }
+}
+
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.hero__texto {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 1;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1.5rem 5rem;
+  color: #fff;
+
+  h1 {
+    max-width: 36rem;
+    font-size: clamp(2.25rem, 5vw, 3rem);
+    line-height: 1.1;
+  }
+  p {
+    margin-top: 1rem;
+    max-width: 28rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-family: var(--font-sans);
+  }
+}
+
+// ── Cards editoriais ──────────────────────────────────────────────────────────
+.cards-editoriais {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 100%;
+  padding: 6rem 1.5rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.card-ed {
+  position: relative;
+  display: block;
+  height: 32.5rem;
+  overflow: hidden;
+  border-radius: 1.5rem;
+
+  &__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  &:hover &__img {
+    transform: scale(1.05);
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    transition: background 0.3s;
+  }
+  &:hover &__overlay {
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  &__texto {
+    position: absolute;
+    inset: auto 0 0 0;
+    z-index: 1;
+    padding: 1.5rem;
+    color: #fff;
+
+    h2 {
+      font-size: 1.5rem;
+    }
+    p {
+      margin-top: 0.5rem;
+      font-family: var(--font-sans);
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+}

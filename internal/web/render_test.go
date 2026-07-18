@@ -52,11 +52,14 @@ func TestTodosOsTemplatesExecutam(t *testing.T) {
 		t.Fatal("nenhum template encontrado -- o //go:embed pegou?")
 	}
 
+	// Paginas com ViewModel proprio (nao o pageData generico) sao testadas pelos
+	// handlers reais em TestPaginasRenderizam / TestGaleriaPaginaEFragmento. Aqui
+	// fica so o que renderiza com pageData puro (ex.: 404).
+	viewProprio := map[string]bool{"home": true, "sobre": true, "contato": true, "galeria": true}
+
 	for _, p := range paginas {
 		nome := strings.TrimSuffix(strings.TrimPrefix(p, "templates/pages/"), ".gohtml")
-		// galeria precisa de um galleryView (com Temas/Fotos), nao do pageData
-		// generico -- e coberta por TestGaleriaPaginaEFragmento.
-		if nome == "galeria" {
+		if viewProprio[nome] {
 			continue
 		}
 		t.Run(nome, func(t *testing.T) {
