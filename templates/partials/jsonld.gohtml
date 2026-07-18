@@ -1,0 +1,27 @@
+{{- /*
+  JSON-LD LocalBusiness. Ajuda o Google a entender que e um negocio local de
+  fotografia em Curitiba (rich results, painel de conhecimento). URLs absolutas
+  via .BaseURL. O html/template escapa os valores no contexto de <script>, o que
+  e seguro aqui (sao URLs/texto).
+*/ -}}
+{{ define "jsonld" }}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "Isabel Pontes Fotoarte",
+  "description": "Fotografia artística, ensaios conceituais e direção criativa.",
+  "url": "{{ .BaseURL }}/",
+  "image": "{{ .OGImage }}",
+  "email": "isabelpontesfotografia@gmail.com",
+  "areaServed": "Curitiba, PR",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Curitiba",
+    "addressRegion": "PR",
+    "addressCountry": "BR"
+  },
+  "sameAs": ["https://instagram.com/isapontesfoto"]
+}
+</script>
+{{ end }}

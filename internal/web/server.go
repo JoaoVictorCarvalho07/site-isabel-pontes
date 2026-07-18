@@ -93,6 +93,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /contato", s.contato)
 	mux.HandleFunc("GET /galeria", s.galeria)               // pagina completa
 	mux.HandleFunc("GET /galeria/fotos", s.galeriaFragment) // fragmento HTMX
+	mux.HandleFunc("GET /robots.txt", s.robots)
+	mux.HandleFunc("GET /sitemap.xml", s.sitemap)
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))
@@ -121,6 +123,11 @@ type pageData struct {
 	Canonical string
 	BodyClass string
 	Ano       int
+	// SEO: URLs ABSOLUTAS. O bot do WhatsApp/Instagram que gera o card de preview
+	// nao resolve caminho relativo -- e a razao de todo o porte.
+	BaseURL string
+	OGImage string
+	OGType  string
 }
 
 // novaPagina preenche o que vale para toda pagina.
@@ -129,6 +136,9 @@ func (s *Server) novaPagina(titulo, descricao, path string) pageData {
 		Titulo:    titulo,
 		Descricao: descricao,
 		Canonical: s.cfg.BaseURL + path,
+		BaseURL:   s.cfg.BaseURL,
+		OGImage:   s.cfg.BaseURL + "/static/img/og-image.jpg",
+		OGType:    "website",
 		// O React tinha "© 2026" cravado no JSX, que envelhece sozinho em
 		// janeiro. Aqui o rodape nunca fica errado.
 		Ano: time.Now().Year(),
