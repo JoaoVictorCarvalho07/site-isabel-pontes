@@ -60,6 +60,11 @@ func New(cfg *config.Config, assets fs.FS, snap *store.Snapshot) (*Server, error
 			}
 			return template.HTML(conteudo), nil //nolint:gosec // asset proprio, embutido
 		},
+		// wpp monta o link do WhatsApp do midia kit com a mensagem ja pronta, no
+		// servidor (sem JS). donut monta o conic-gradient de um donut de metrica.
+		// Ambos vivem em midiakit.go.
+		"wpp":   wppURL,
+		"donut": donutGradient,
 		// dict monta um map inline para passar varios campos a um partial (o Go
 		// template so passa um valor). Usado por {{ template "picture" (dict ...) }}.
 		"dict": func(paresChaveValor ...any) (map[string]any, error) {

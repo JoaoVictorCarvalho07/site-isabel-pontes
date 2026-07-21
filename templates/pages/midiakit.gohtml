@@ -1,49 +1,188 @@
 {{- /*
   Mídia kit — one-page de pitch (docs/plano-juncao-midiakit.md §4b).
 
-  Esqueleto da FASE 7: a estrutura de seções por âncora, com layout/navbar/footer
-  compartilhados. Cada seção já traz seu id (deep-link + menu interno futuro). Os
-  placeholders ".mk-em-breve" saem na Fase 8 (conteúdo) e Fase 9 (vídeos) -- eles
-  existem só para o esqueleto renderizar navegável, não vão para produção.
+  FASE 8: conteúdo real. Bio, dicionário UGC/IGC, métricas (IG/TikTok), processo
+  (repensado na identidade, com <details> nativo) e investimento (pacotes com CTA
+  de WhatsApp montado no servidor pela função `wpp`). O #portfolio segue
+  placeholder até a Fase 9 (vídeos). Dados vêm de midiakit_content.go.
 */ -}}
 {{ define "conteudo" }}
 <div class="midiakit">
+
   {{- /* Hero: escuro (BodyClass hero-escuro deixa a navbar branca por cima). */}}
   <section class="mk-hero">
     <div class="mk-hero__texto">
       <h1>Isa Pontes</h1>
-      <p>UGC Creator &amp; Diretora Criativa</p>
+      <p class="mk-hero__sub">UGC Creator &amp; Diretora Criativa</p>
+      <p class="mk-hero__tag">
+        Publicidade orgânica com estética elevada — storytelling que conecta
+        marca e audiência.
+      </p>
+      <div class="mk-hero__ctas">
+        <a href="#portfolio" class="mk-btn mk-btn--claro">Ver trabalhos</a>
+        <a href="#investimento" class="mk-btn">Investimento</a>
+      </div>
     </div>
   </section>
 
-  <section id="bio" class="mk-secao">
-    <h2>Sobre</h2>
-    <p class="mk-em-breve">Bio e apresentação — Fase 8.</p>
+  {{- /* Bio */}}
+  <section id="bio" class="mk-secao mk-bio">
+    <h2>Oi! Eu sou a Isa <span aria-hidden="true">✨</span></h2>
+    <p>
+      Sou Diretora Criativa, Fotógrafa Artística e Creator. Atuo como Influencer
+      e também crio conteúdo para marcas.
+    </p>
+    <p>
+      Meu ponto forte é <strong>autenticidade e criatividade</strong>. Trago meu
+      repertório de cinema, direção de arte e artes visuais para transformar
+      produtos em histórias com estética e intenção. Você bate o olho e percebe
+      que tem storytelling — não é só mostrar o produto, é construir uma narrativa
+      que conecta.
+    </p>
+    <ul class="mk-tags">
+      {{- range .Tags }}
+      <li>{{ . }}</li>
+      {{- end }}
+    </ul>
   </section>
 
-  <section id="ugc" class="mk-secao">
-    <h2>UGC &amp; IGC</h2>
-    <p class="mk-em-breve">Definições e proposta de valor — Fase 8.</p>
+  {{- /* Dicionário UGC / IGC */}}
+  <section id="ugc" class="mk-secao mk-dic">
+    <article class="mk-verbete">
+      <h3>UGC</h3>
+      <span class="mk-verbete__fon">/juː dʒiː siː/ • substantivo</span>
+      <p>
+        <em>User Generated Content</em> (Conteúdo Gerado pelo Usuário). Material
+        autêntico criado para gerar identificação imediata. No meu método, o UGC
+        deixa de ser um vídeo caseiro e vira uma peça de
+        <strong>publicidade orgânica com estética elevada</strong>.
+      </p>
+      <p class="mk-verbete__por"><strong>Por que contratar?</strong> Humanização, quebra de objeção e conversão.</p>
+    </article>
+
+    <article class="mk-verbete">
+      <h3>IGC</h3>
+      <span class="mk-verbete__fon">/aɪ dʒiː siː/ • substantivo</span>
+      <p>
+        <em>Influencer Generated Content</em> (Conteúdo Gerado por Influenciadora).
+        Conteúdo de quem já tem presença e conexão com uma audiência. No meu
+        método, o IGC une <strong>autoridade, narrativa e estética elevada</strong>
+        — pensado para gerar desejo e confiança, sem cara de anúncio.
+      </p>
+      <p class="mk-verbete__por"><strong>Por que contratar?</strong> Alcance, credibilidade e conversão.</p>
+    </article>
   </section>
 
-  <section id="portfolio" class="mk-secao">
+  {{- /* Portfólio de vídeos — placeholder até a Fase 9 */}}
+  <section id="portfolio" class="mk-secao mk-portfolio">
     <h2>Trabalhos</h2>
-    <p class="mk-em-breve">Portfólio de vídeos por categoria — Fase 9.</p>
+    <p>
+      Uma curadoria de vídeos pensados para diferentes marcas nesse mundo UGC / IGC.
+    </p>
+    <p class="mk-em-breve">Portfólio de vídeos por categoria — chega na Fase 9.</p>
+    <a href="https://www.instagram.com/isabelpontesfotografia/" class="mk-btn"
+       target="_blank" rel="noopener">Ver trabalho no Instagram</a>
   </section>
 
-  <section id="metricas" class="mk-secao">
+  {{- /* Métricas */}}
+  <section id="metricas" class="mk-secao mk-metricas">
     <h2>Métricas</h2>
-    <p class="mk-em-breve">Instagram e TikTok — Fase 8.</p>
+    <div class="mk-metricas__grid">
+      {{- range .Metricas }}
+      <article class="mk-rede">
+        <h3>{{ .Rede }}</h3>
+
+        <div class="mk-kpis">
+          <div class="mk-kpi"><strong>{{ .Seguidores }}</strong><span>seguidores</span></div>
+          <div class="mk-kpi"><strong>{{ .Views }}</strong><span>visualizações</span></div>
+        </div>
+
+        <h4>Público</h4>
+        <div class="mk-barras">
+          {{- range .Locais }}
+          <div class="mk-barra">
+            <div class="mk-barra__topo"><span>{{ .Rotulo }}</span><strong>{{ .Pct }}%</strong></div>
+            <div class="mk-barra__trilha"><span class="mk-barra__preenche" style="width:{{ .Pct }}%"></span></div>
+          </div>
+          {{- end }}
+        </div>
+
+        <div class="mk-donuts">
+          <div class="mk-donut-linha">
+            <span class="mk-donut" style="background:{{ donut .Genero }}"></span>
+            <ul class="mk-legenda">
+              {{- range .Genero }}
+              <li><span class="mk-ponto" style="background:{{ .Cor }}"></span><strong>{{ .Pct }}%</strong> {{ .Rotulo }}</li>
+              {{- end }}
+            </ul>
+          </div>
+          <div class="mk-donut-linha">
+            <span class="mk-donut" style="background:{{ donut .Idades }}"></span>
+            <ul class="mk-legenda">
+              {{- range .Idades }}
+              <li><span class="mk-ponto" style="background:{{ .Cor }}"></span><strong>{{ .Pct }}%</strong> {{ .Rotulo }}</li>
+              {{- end }}
+            </ul>
+          </div>
+        </div>
+      </article>
+      {{- end }}
+    </div>
   </section>
 
-  <section id="processo" class="mk-secao">
-    <h2>Como funciona</h2>
-    <p class="mk-em-breve">Processo de contratação — Fase 8.</p>
+  {{- /* Processo — repensado na identidade, com <details> nativo (sem JS) */}}
+  <section id="processo" class="mk-secao mk-processo">
+    <h2>Como funciona a contratação (UGC)</h2>
+    <p class="mk-processo__pill">{{ .TempoMedio }}</p>
+
+    <ol class="mk-passos">
+      {{- range .Processo }}
+      <li class="mk-passo">
+        <span class="mk-passo__num" aria-hidden="true">{{ .Num }}</span>
+        <div class="mk-passo__corpo">
+          <h3>{{ .Titulo }}</h3>
+          <p>{{ .Resumo }}</p>
+          <details class="mk-passo__mais">
+            <summary>Entenda <span class="mk-passo__prazo">{{ .Prazo }}</span></summary>
+            <ul>
+              {{- range .Detalhes }}
+              <li>{{ . }}</li>
+              {{- end }}
+            </ul>
+          </details>
+        </div>
+      </li>
+      {{- end }}
+    </ol>
   </section>
 
-  <section id="investimento" class="mk-secao">
-    <h2>Investimento</h2>
-    <p class="mk-em-breve">Pacotes UGC e Influencer — Fase 8.</p>
+  {{- /* Investimento — pacotes com CTA de WhatsApp montado no servidor */}}
+  {{- range .Investimentos }}
+  {{- $tag := .Tag }}
+  <section
+    {{- if eq .Tag "UGC" }} id="investimento"{{ end }} class="mk-secao mk-invest">
+    <h2>{{ .Titulo }}</h2>
+    {{- with .Subtitulo }}<p class="mk-invest__sub">{{ . }}</p>{{ end }}
+
+    <div class="mk-pacotes">
+      {{- range .Pacotes }}
+      <article class="mk-pacote{{ if .Destaque }} mk-pacote--destaque{{ end }}">
+        {{- if .Destaque }}<span class="mk-pacote__selo">Mais popular</span>{{ end }}
+        <h3>{{ .Nome }}</h3>
+        <p class="mk-pacote__resumo">{{ .Resumo }}</p>
+        <ul class="mk-pacote__itens">
+          {{- range .Itens }}
+          <li>{{ . }}</li>
+          {{- end }}
+        </ul>
+        <p class="mk-pacote__preco">{{ .Preco }}</p>
+        {{- $msg := printf "Oii Isa! Tenho interesse no %s (%s) — %s. Pode me enviar detalhes, valores e como funciona o briefing? ^-^" .Nome $tag .Resumo }}
+        <a class="mk-btn mk-pacote__cta" href="{{ wpp $msg }}" target="_blank" rel="noopener">Solicitar</a>
+      </article>
+      {{- end }}
+    </div>
   </section>
+  {{- end }}
+
 </div>
 {{ end }}

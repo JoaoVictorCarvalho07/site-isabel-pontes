@@ -22,7 +22,13 @@ func TestPaginasRenderizam(t *testing.T) {
 		{"/", []string{"</html>", "hero", "Bem-vindo", "cards-editoriais"}},
 		{"/sobre", []string{"</html>", "Meu nome é Isabel Pontes", "carrossel"}},
 		{"/contato", []string{"</html>", "wa.me", "instagram.com", "mailto:"}},
-		{"/midiakit", []string{"</html>", "mk-hero", "Investimento", "Mídia kit"}},
+		{"/midiakit", []string{
+			"</html>", "mk-hero", "Mídia kit",
+			"Investimento UGC", "R$ 550", "Mais popular", // pacotes
+			"wa.me/554191977011", // CTA WhatsApp montado no servidor
+			"conic-gradient",     // donut de métrica
+			"Briefing &amp; objetivos", // processo
+		}},
 	}
 
 	for _, c := range casos {
