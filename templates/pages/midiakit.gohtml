@@ -121,6 +121,10 @@
     <div class="mk-metricas__grid">
       {{- range .Metricas }}
       <article class="mk-rede mk-rede--{{ .Lado }}">
+        {{- /* celular: flutua na lateral; as métricas fluem ao redor (float + shape-outside) */}}
+        <img class="mk-rede__phone" src="{{ asset .Foto }}"
+             alt="{{ if $en }}{{ .Rede }} profile metrics — Isabel Pontes{{ else }}Prints das métricas de {{ .Rede }} da Isabel Pontes{{ end }}"
+             width="398" height="799" loading="lazy" decoding="async" />
         <div class="mk-rede__conteudo">
           <h3>{{ .Rede }}</h3>
 
@@ -158,10 +162,6 @@
             </div>
           </div>
         </div>
-
-        <img class="mk-rede__phone" src="{{ asset .Foto }}"
-             alt="{{ if $en }}{{ .Rede }} profile metrics — Isabel Pontes{{ else }}Prints das métricas de {{ .Rede }} da Isabel Pontes{{ end }}"
-             width="398" height="799" loading="lazy" decoding="async" />
       </article>
       {{- end }}
     </div>

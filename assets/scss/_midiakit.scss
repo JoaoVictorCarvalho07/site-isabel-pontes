@@ -335,20 +335,17 @@
 }
 
 // painel escuro FIXO nos dois temas (as cores dos donuts contam com isso).
-// Conteúdo + celular SEMPRE lado a lado -- inclusive no mobile (a pedido): o
-// celular fica na lateral, nunca empilha embaixo. Ele encolhe pra caber.
+// O celular FLUTUA na lateral (float) e as métricas fluem ao redor dele -- fluido
+// e adaptável: onde o conteúdo é mais alto que o celular, ele contorna por baixo.
+// flow-root contém o float dentro do card.
 .mk-rede {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.25rem;
+  display: flow-root;
+  padding: 1.5rem;
   border-radius: 1rem;
   background: var(--primary-fixed);
   color: var(--primary-foreground-fixed);
 
   @media (min-width: 768px) {
-    gap: 1.5rem;
     padding: 2.5rem;
   }
 
@@ -366,33 +363,29 @@
   }
 }
 
-// TikTok (Lado "esq"): celular à esquerda, conteúdo à direita
-.mk-rede--esq {
-  grid-template-columns: auto 1fr;
-
-  .mk-rede__conteudo {
-    order: 2;
-  }
-  .mk-rede__phone {
-    order: 1;
-  }
+// o wrapper some do layout: seus filhos (h3, kpis, barras, donuts) fluem direto
+// no card, contornando o celular flutuante.
+.mk-rede__conteudo {
+  display: contents;
 }
 
+// celular flutuante. shape-outside faz o texto abraçar a silhueta real do celular
+// (o WebP tem alpha), não só a caixa retangular -- é o que dá o ar fluido.
+// Instagram (dir) flutua à direita; TikTok (esq), à esquerda.
 .mk-rede__phone {
-  justify-self: center;
-  width: clamp(84px, 24vw, 230px); // pequeno no mobile p/ caber ao lado do texto
+  float: right;
+  width: clamp(120px, 32vw, 250px);
   height: auto;
+  margin: 0 0 0.75rem 1.25rem;
   filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.45));
+  shape-outside: url("/static/img/midiakit/phone-instagram.webp");
+  shape-margin: 0.75rem;
 }
 
-// no mobile o conteúdo é estreito (celular ao lado) -- aperta os KPIs pra não vazar
-@media (max-width: 520px) {
-  .mk-kpis {
-    gap: 1rem;
-  }
-  .mk-kpi strong {
-    font-size: 1.3rem;
-  }
+.mk-rede--esq .mk-rede__phone {
+  float: left;
+  margin: 0 1.25rem 0.75rem 0;
+  shape-outside: url("/static/img/midiakit/phone-tiktok.webp");
 }
 
 .mk-kpis {
