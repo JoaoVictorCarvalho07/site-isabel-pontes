@@ -1,10 +1,12 @@
 # Junção Mídia Kit → site Go+HTMX — Decisões & Plano
 
-> Documento da fase de decisão. Consolida a análise dos dois projetos da Isabel
-> Pontes e o plano para fundir o **Mídia Kit** (UGC/IGC creator) dentro deste
-> app (fotografia, Go+HTMX). Última atualização: 2026-07-20.
+> Consolida a análise dos dois projetos da Isabel Pontes, as decisões tomadas e o
+> plano para fundir o **Mídia Kit** (UGC/IGC creator) dentro deste app
+> (fotografia, Go+HTMX). Última atualização: 2026-07-21.
 >
-> **Nenhum código foi escrito ainda.** Este doc é o alvo a aprovar antes de codar.
+> **Status:** Fases 7 a 10 implementadas, mais alguns extras (ver §10). Faltam a
+> **Fase 11** (formulários — bloqueada por insumos externos) e a **Fase 12**
+> (SEO/deploy). Tudo na branch `feat/midiakit-fase7`: local, ainda sem push.
 
 ---
 
@@ -68,14 +70,16 @@ isabelpontes.com.br
 ├── /galeria/fotos        Fragmento HTMX do filtro                    [existe]
 ├── /contato              Contato                                     [existe]
 │
-├── /midiakit             Mídia kit — ONE-PAGE de pitch (rolagem)     [novo]
-│     └ seções por âncora: #portfolio #metricas #processo #investimento
-├── /midiakit/videos      Fragmento HTMX (filtro de categoria)        [novo]
-├── /midiakit.pdf         Download do mídia kit (PDF pré-renderizado) [novo]
+├── /midiakit             Mídia kit — ONE-PAGE de pitch (rolagem)     [feito]
+│     └ âncoras: #bio #ugc #portfolio #metricas #processo #investimento
+├── /midiakit/videos      Fragmento HTMX (filtro de categoria)        [feito]
 │
-├── /en/...               Espelho em inglês de tudo acima             [novo, §7]
+├── /en/...               Espelho em inglês de tudo acima             [feito, §7]
 ├── /robots.txt /sitemap.xml /healthz                                 [existe]
 ```
+
+> Não há rota de PDF: o download é a **impressão da própria página** pelo
+> navegador (§4b), então não existe arquivo nem endpoint a manter.
 
 **O mídia kit é UMA página, não um subsite** (ver §4b). Marca grande espera
 receber um mídia kit como documento de pitch rolável — não como site com
@@ -83,8 +87,8 @@ navegação. As antigas "sub-rotas" viram âncoras (`#metricas` etc.) na mesma
 página. O site de fotografia é que segue multi-página (navegação de verdade).
 
 Rotas novas usam o mesmo `ServeMux` (Go 1.22+), o mesmo `Renderer`, o mesmo
-`pageData`/ViewModel e os partials compartilhados. Zero dependência nova no
-runtime — inclusive o PDF (ver §4b) é pré-gerado fora do servidor.
+`pageData`/ViewModel e os partials compartilhados. **Zero dependência nova no
+runtime** — o binário continua sendo só Go.
 
 ---
 
@@ -129,15 +133,25 @@ dígitos (possível falta de 1).
 - Interativa de verdade (vídeos, filtro HTMX, métricas animadas) — é o diferencial
   vs. um PDF morto.
 
-**PDF (`/midiakit.pdf`) — espelho, pré-renderizado, baixa prioridade:**
-- **Espelho fiel** da página, adaptado ao papel (frame estático/poster no lugar do
-  vídeo autoplay; links clicáveis pros vídeos).
-- **Pré-gerado por script** (Chrome headless *offline*, no mesmo espírito do
-  `migrate_media.py`), guardado em `static/` ou R2. **O runtime Go não gera PDF** —
-  nada de Chrome no container, o binário leve continua leve.
-- Regenera quando o conteúdo do mídia kit muda (passo manual/CI, junto do `sync`).
-- **É a última coisa a construir** (ver Fase 12). O site pode ir ao ar sem o PDF;
-  ele entra depois sem bloquear nada. PT e EN.
+**PDF — ✅ FEITO, via impressão da própria página (mudou em relação ao plano):**
+
+O plano previa um PDF **pré-renderizado por script** (Chrome headless offline,
+arquivo estático). Na implementação optamos por **imprimir a própria página**
+(`window.print()` + `_print.scss`), porque:
+- o PDF sai **sempre em sincronia** com o conteúdo — sem passo de regeneração;
+- resolve o **bilíngue de graça**: imprime no idioma que a pessoa está vendo, em
+  vez de exigir dois arquivos (`pt` e `en`) para manter;
+- zero binário versionado, zero toolchain no deploy.
+
+O `_print.scss` fixa uma paleta clara (imprimir o tema escuro gasta tinta),
+mantém as cores da marca (`print-color-adjust: exact`), esconde navegação/filtros/
+botões, evita quebrar cards no meio da página e mostra os contatos como **texto**
+(ícone sozinho não serve no papel). O `app.js` abre os `<details>` e carrega as
+imagens lazy antes de imprimir.
+
+> Se um dia quiser mesmo um **arquivo** `.pdf` estático (p.ex. pra anexar em
+> e-mail), o `_print.scss` já é a base: basta um `chrome --headless
+> --print-to-pdf` da rota num script. Continua sendo item de baixa prioridade.
 
 ---
 
@@ -178,29 +192,31 @@ precisar de AVIF com alpha como padrão, trocar o encoder por `avifenc`/libavif.
 
 ## 6. Vídeos do portfólio UGC — modelo de dados
 
-Hoje o mídia kit serve vídeos por `videos-index.json` + `labels.json` + URLs R2
-(`videos.js`). Isso é **o mesmo problema** que a galeria de fotos deste projeto
-já resolve melhor. Convergir:
+**Como ficou (Fase 9) — catálogo Go gerado, não SQLite.** O catálogo é um arquivo
+Go **gerado** (`internal/web/midiakit_videos.go`) por
+`scripts/gen_video_posters.py`, a partir do `videos-index.json` + `labels.json` do
+mídia kit antigo. O mesmo script gera os **posters** (AVIF + WebP), extraindo 1
+frame de cada vídeo direto do R2 com ffmpeg por *range-read* — sem baixar os
+322 MB.
 
-- Estender o **schema** (`internal/store/schema.sql`) com uma tabela `videos`
-  (ou generalizar `photos` → `media` com `kind`), espelhando o padrão: `key`,
-  `category`, variantes, `poster`/`lqip`, `published`, `sort_order`, `label`.
-- Estender `migrate_media.py` (ou script irmão) pra gerar o manifest dos vídeos:
-  poster/thumbnail + o que a hospedagem escolhida exigir.
-- `site sync` ingere; snapshot em RAM serve; HTMX filtra por categoria — igual à
-  galeria de fotos.
-- `labels.json`/`videos-index.json` atuais viram fonte do manifest inicial.
+O plano previa o caminho SQLite + `manifest` + `sync`, espelhando a galeria de
+fotos. Na prática são só **26 vídeos curados**, sem shuffle diário e sem precisar
+publicar/despublicar sem redeploy — então o catálogo tipado em Go ficou mais
+simples e consistente com o resto do conteúdo do mídia kit. Se um dia a Isa
+precisar mexer nos vídeos sem dev, aí vale migrar pro SQLite (mesma "Fase 2" do §8).
 
-### Hospedagem de vídeo — **decidido: manter Cloudflare R2**
+O filtro por categoria é HTMX, espelhando a galeria: um partial (`mk_portfolio`)
+serve tanto a página inteira quanto o fragmento `/midiakit/videos?cat=…`.
 
-R2 continua servindo os vídeos por enquanto — **custo zero** e já integrado. O
-trabalho da Fase 9 é só melhorar a *entrega*, não trocar de provedor:
+### Hospedagem de vídeo — **mantido: Cloudflare R2**
 
-- Gerar **poster/thumbnail** (AVIF/WebP) por vídeo no pipeline → sem tela preta
-  no carregamento, sem CLS.
-- `<video preload="metadata">` + `loading`/lazy fora da dobra; player enxuto
-  (o `videos.js` atual tem lógica de mute/play duplicada e frágil — reescrever
-  limpo no padrão do projeto).
+R2 segue servindo os vídeos — **custo zero** e já integrado. A Fase 9 melhorou só
+a *entrega*, sem trocar de provedor:
+
+- **Poster por vídeo** (AVIF + WebP, ~13 KB cada) → nada de tela preta, sem CLS.
+- O `.webm` (até 22 MB) **só carrega no clique**: autoplayar 26 vídeos = 322 MB,
+  que era o que o site antigo fazia. Player reescrito limpo (o `videos.js`
+  original tinha lógica de mute/play duplicada).
 
 Reavaliar migração pra **Cloudflare Stream / Bunny / Mux** só se aparecer
 necessidade real (HLS adaptativo, volume grande, analytics de vídeo). Fica
@@ -293,49 +309,68 @@ O Go guarda; falta o canal de leitura. Duas camadas:
 
 ---
 
-## 10. Plano de fases
+## 10. Plano de fases — status
 
-Seguindo a convenção de fases do repo (o histórico vai até "Fase 6").
+Convenção de fases do repo (o histórico ia até "Fase 6"). Tudo o que está feito
+vive na branch `feat/midiakit-fase7` (local, sem push).
 
-- **Fase 7 — Fundação da junção.** Design system unificado (tokens/fontes já
-  cobrem; validar contraste WCAG AA). Esqueleto de rotas `/midiakit*` servindo
-  páginas estáticas com layout/navbar/footer compartilhados. Navbar ganha o
-  ramo "Mídia kit".
-- **Fase 8 — One-page do mídia kit.** Montar a página `/midiakit` (rolagem,
-  âncoras, nav híbrida — §4b): hero, bio, dicionário UGC/IGC, processo (repensado,
-  na identidade), investimento (pacotes em JSON editável + CTA WhatsApp). Métricas
-  redesenhadas (dados em struct/JSON). **Sem PDF ainda** — ele é Fase 12.
-- **Fase 9 — Portfólio de vídeos.** Manter R2 (§6). Estender schema +
-  `migrate_media.py` (gerar poster/thumb) + `sync`. Reescrever o player frágil.
-  Filtro por categoria via HTMX (espelha a galeria de fotos). Migrar
-  `videos-index.json`/`labels.json`.
-- **Fase 10 — i18n.** Rota `/en`, mapa de traduções, hreflang, sitemap bilíngue.
-- **Fase 11 — Conversão (formulários de briefing).** Dois forms separados
-  (fotografia + UGC, §8): perguntas em arquivo, handlers Go, tabela
-  `submissions` no SQLite, envio HTMX. Integrar e-mail transacional (Resend/Brevo)
-  pra notificar a Isa. `/admin` de leitura fica pra fase 2.
-- **Fase 12 — SEO/deploy final + PDF.** 301 do domínio antigo, JSON-LD de
-  serviço, analytics, OG por rota, auditoria A11y AA, atualizar `deploy/README.md`.
-  Por último e de baixa prioridade (§4b): script de **pré-render do PDF** (Chrome
-  headless offline) espelhando `/midiakit`, em PT e EN, servido de `static/`/R2.
+- **✅ Fase 7 — Fundação da junção.** Rota `/midiakit` com layout/navbar/footer
+  compartilhados; navbar ganhou o ramo "Mídia kit"; contraste WCAG AA validado
+  (todo par de texto passa AA/AAA — `gold` fica só decorativo, 1.8:1).
+- **✅ Fase 8 — One-page do mídia kit.** Hero, bio, dicionário UGC/IGC, métricas
+  (KPIs, barras, donuts em `conic-gradient`), processo repensado na identidade
+  com `<details>` nativo (sem JS) e investimento com CTA de WhatsApp montado no
+  servidor. Conteúdo curado em struct Go (`midiakit_content.go`).
+- **✅ Fase 9 — Portfólio de vídeos.** Filtro por categoria via HTMX (espelha a
+  galeria). Poster AVIF+WebP por vídeo, gerado offline por
+  `scripts/gen_video_posters.py` (ffmpeg lê o R2 por range, sem baixar os
+  322 MB); o `.webm` só carrega no clique. Player reescrito, limpo.
+- **✅ Fase 10 — i18n.** Espelho `/en` do site inteiro, hreflang + og:locale,
+  seletor de idioma, sitemap bilíngue. A copy EN é **rascunho** — Isa revisa.
+- **✅ Extras (fora do plano original).** Rodapé padrão centralizado; rodapé
+  próprio do mídia kit (contato + redes); **seletor de tema claro/escuro**;
+  métricas com o celular em *float* fluido; botão "Baixar em PDF" na navbar
+  (só no mídia kit).
+- **⬜ Fase 11 — Conversão (formulários de briefing).** Dois forms separados
+  (§8): perguntas em arquivo, handlers Go, tabela `submissions` no SQLite, envio
+  por HTMX, e-mail via Resend. **BLOQUEADA** por dois insumos externos: a lista
+  final de perguntas da Isa e a conta/API key do Resend.
+- **⬜ Fase 12 — SEO/deploy final.** 301 do domínio antigo, JSON-LD de
+  `Service`/`Offer` pros pacotes, analytics, OG por rota, auditoria A11y AA,
+  atualizar `deploy/README.md`. (O PDF saiu desta fase: já foi feito por
+  impressão — §4b.)
 
-Ordem é por impacto e independência — dá pra publicar incrementalmente (o mídia
-kit no ar em PT já na Fase 8, antes de i18n/vídeo maduros).
+**Pode fazer a 12 antes da 11.** A Fase 12 não depende da 11, e a 11 está travada
+nos insumos externos acima. O site já converte sem os formulários (os CTAs de
+WhatsApp funcionam), então dá pra publicar e encaixar os forms depois. Única
+ressalva: a auditoria A11y ganha um complemento quando os forms entrarem
+(labels, mensagens de erro, foco) — delta pequeno, feito junto com eles.
 
 ---
 
-## 11. Questões em aberto (decidir antes da fase relevante)
+## 11. Questões em aberto
 
-1. **As perguntas exatas** de cada form (§8) — a Isa fecha a lista final de
-   perguntas dos dois briefings antes da Fase 11.
-2. **Analytics** (§9) — Plausible/GoatCounter self-host vs GA4.
-3. **Número de WhatsApp E.164** — confirmar dígitos com a Isabel (nota em
-   `pages.go`).
-4. **Slug da rota** — `/midiakit` vs `/mídia-kit` vs `/ugc`. (Recomendo
-   `/midiakit`, ASCII, sem acento.)
+### Travam a Fase 11 (formulários)
+1. **As perguntas exatas** de cada form (§8) — a Isa fecha a lista final dos dois
+   briefings (fotografia e UGC).
+2. **Conta/API key do Resend** — criar a conta, gerar a key (`RESEND_API_KEY`) e
+   verificar o domínio `isabelpontes.com.br` no DNS da Cloudflare.
 
-**Fechadas:** arquitetura (fundir no Go+HTMX), domínio (tudo em
-`isabelpontes.com.br`), hospedagem de vídeo (mantém R2, custo zero), backend do
-formulário (Go + SQLite + dois forms separados), e-mail transacional (**Resend**),
-**formato do mídia kit** (one-page híbrida de pitch — §4b) e **PDF** (espelho fiel,
-pré-renderizado por script offline, baixa prioridade, a página vem primeiro).
+### Travam parte da Fase 12
+3. **Analytics** (§9) — Plausible/GoatCounter self-host vs GA4. (O resto da Fase
+   12 — 301, JSON-LD, OG, A11y — não depende disto.)
+
+### Menores, a confirmar com a Isa
+4. **Número de WhatsApp E.164** — `554191977011` tem 12 dígitos; celular
+   brasileiro tem 13. Confirmar (nota no código, em `pages.go`).
+5. **Revisão da copy EN** — toda a tradução é rascunho meu; a Isa deve ajustar a
+   voz de marca dela.
+
+### Fechadas
+Arquitetura (fundir no Go+HTMX), domínio (tudo em `isabelpontes.com.br`),
+hospedagem de vídeo (mantém R2, custo zero), backend do formulário (Go + SQLite +
+dois forms separados), e-mail transacional (**Resend**), formato do mídia kit
+(one-page de pitch — §4b), **PDF** (por impressão da página — §4b), formato de
+imagem (AVIF padrão, WebP onde precisa de alpha — §5), slug da rota
+(**`/midiakit`**, ASCII) e tema claro/escuro (seletor manual + preferência do
+sistema).
