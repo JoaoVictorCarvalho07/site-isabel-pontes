@@ -40,22 +40,36 @@ type galleryView struct {
 	TemaAtivo string // slug; "" = Todos
 	Fotos     []photoView
 	Total     int
+	// caminhos lang-aware para o HTMX (com prefixo /en quando for o caso)
+	PathPagina    string // "/galeria" ou "/en/galeria"
+	PathFragmento string // "/galeria/fotos" ou "/en/galeria/fotos"
 }
 
-// buildGalleryView monta a ViewModel para um tema (slug vazio = Todos).
-func (s *Server) buildGalleryView(temaSlug string) galleryView {
+// buildGalleryView monta a ViewModel para um tema (slug vazio = Todos), no idioma.
+func (s *Server) buildGalleryView(lang, temaSlug string) galleryView {
 	temas := s.snap.Temas()
 
-	// mapa slug->label para nao repetir a busca a cada foto
+	// rotulo traduz o label do tema (o slug e estavel; so o rotulo muda no EN)
+	rotulo := func(slug, labelPT string) string {
+		if lang == "en" {
+			if en, ok := temaLabelEN[slug]; ok {
+				return en
+			}
+		}
+		return labelPT
+	}
+
+	// mapa slug->label (ja traduzido) para nao repetir a busca a cada foto
 	labelPorSlug := map[string]string{}
 
-	// os botoes do filtro: "Todos" + um por tema
+	// os botoes do filtro: "Todos"/"All" + um por tema
 	botoesFiltro := make([]temaView, 0, len(temas)+1)
-	botoesFiltro = append(botoesFiltro, temaView{Slug: "", Label: "Todos", Active: temaSlug == ""})
+	botoesFiltro = append(botoesFiltro, temaView{Slug: "", Label: t(lang, "comum.todos"), Active: temaSlug == ""})
 	for _, tema := range temas {
-		labelPorSlug[tema.Slug] = tema.Label
+		lbl := rotulo(tema.Slug, tema.Label)
+		labelPorSlug[tema.Slug] = lbl
 		botoesFiltro = append(botoesFiltro, temaView{
-			Slug: tema.Slug, Label: tema.Label, Active: tema.Slug == temaSlug,
+			Slug: tema.Slug, Label: lbl, Active: tema.Slug == temaSlug,
 		})
 	}
 
@@ -66,7 +80,11 @@ func (s *Server) buildGalleryView(temaSlug string) galleryView {
 		label := labelPorSlug[foto.TemaSlug]
 		alt := foto.Alt
 		if alt == "" {
-			alt = "Ensaio de " + label + " — Isabel Pontes"
+			if lang == "en" {
+				alt = label + " shoot — Isabel Pontes"
+			} else {
+				alt = "Ensaio de " + label + " — Isabel Pontes"
+			}
 		}
 		itensGrid[i] = photoView{
 			Grid: foto.Grid, Grid2x: foto.Grid2x, Full: foto.Full,
@@ -77,22 +95,34 @@ func (s *Server) buildGalleryView(temaSlug string) galleryView {
 	}
 
 	titulo := "Galeria — Isabel Pontes"
+	descr := "Ensaios de fotografia artística por Isabel Pontes, em Curitiba."
+	sufixo := " — Galeria — Isabel Pontes"
+	if lang == "en" {
+		titulo = "Gallery — Isabel Pontes"
+		descr = "Fine art photography shoots by Isabel Pontes, in Curitiba."
+		sufixo = " — Gallery — Isabel Pontes"
+	}
 	caminhoCanonico := "/galeria"
 	if temaSlug != "" {
-		titulo = labelPorSlug[temaSlug] + " — Galeria — Isabel Pontes"
+		titulo = labelPorSlug[temaSlug] + sufixo
 		caminhoCanonico = "/galeria?tema=" + temaSlug
 	}
 
-	dadosBase := s.novaPagina(titulo,
-		"Ensaios de fotografia artística por Isabel Pontes, em Curitiba.",
-		caminhoCanonico)
+	dadosBase := s.novaPagina(lang, titulo, descr, caminhoCanonico)
+
+	basePagina, baseFragmento := "/galeria", "/galeria/fotos"
+	if lang == "en" {
+		basePagina, baseFragmento = "/en/galeria", "/en/galeria/fotos"
+	}
 
 	return galleryView{
-		pageData:  dadosBase,
-		Temas:     botoesFiltro,
-		TemaAtivo: temaSlug,
-		Fotos:     itensGrid,
-		Total:     len(itensGrid),
+		pageData:      dadosBase,
+		Temas:         botoesFiltro,
+		TemaAtivo:     temaSlug,
+		Fotos:         itensGrid,
+		Total:         len(itensGrid),
+		PathPagina:    basePagina,
+		PathFragmento: baseFragmento,
 	}
 }
 
@@ -109,7 +139,7 @@ func (s *Server) galeria(w http.ResponseWriter, r *http.Request) {
 	if s.setGalleryCache(w, r, tema) {
 		return // 304
 	}
-	s.render.Page(w, r, "galeria", http.StatusOK, s.buildGalleryView(tema))
+	s.render.Page(w, r, "galeria", http.StatusOK, s.buildGalleryView(idioma(r), tema))
 }
 
 // galeriaFragment serve SO o corpo (#galeria-body), sem layout -- a resposta do
@@ -124,7 +154,7 @@ func (s *Server) galeriaFragment(w http.ResponseWriter, r *http.Request) {
 	if s.setGalleryCache(w, r, tema) {
 		return
 	}
-	s.render.Fragment(w, "galeria", "galeria_body", s.buildGalleryView(tema))
+	s.render.Fragment(w, "galeria", "galeria_body", s.buildGalleryView(idioma(r), tema))
 }
 
 // setGalleryCache põe o ETag (tema + dia do shuffle + data_version) e o

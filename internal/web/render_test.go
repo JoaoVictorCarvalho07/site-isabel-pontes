@@ -83,6 +83,46 @@ func TestTodosOsTemplatesExecutam(t *testing.T) {
 	}
 }
 
+// TestI18nEN protege o espelho em ingles: /en serve HTML em EN, com hreflang para
+// as duas versoes, e o conteudo estruturado do midia kit resolve para o ingles --
+// enquanto a raiz (PT) continua intacta.
+func TestI18nEN(t *testing.T) {
+	s := novoServidor(t)
+	h := s.Handler()
+
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/en", nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("/en status %d, quero 200", w.Code)
+	}
+	corpo := w.Body.String()
+	for _, m := range []string{
+		`<html lang="en">`, "Welcome to my universe",
+		`hreflang="pt-BR"`, `hreflang="en"`, `hreflang="x-default"`,
+		">Gallery<", // nav traduzida
+	} {
+		if !strings.Contains(corpo, m) {
+			t.Errorf("/en nao contem %q", m)
+		}
+	}
+
+	w = httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/en/midiakit", nil))
+	mk := w.Body.String()
+	for _, m := range []string{"UGC Investment", "Most popular", "Beauty", "/en/midiakit/videos"} {
+		if !strings.Contains(mk, m) {
+			t.Errorf("/en/midiakit nao contem %q", m)
+		}
+	}
+
+	// regressao: a raiz continua em PT
+	w = httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/", nil))
+	if !strings.Contains(w.Body.String(), `<html lang="pt-br">`) {
+		t.Error("/ deveria continuar em pt-br")
+	}
+}
+
 // TestPaginaTemSEO protege a razao de ser do projeto. A SPA servia
 // <div id="root"></div> e o titulo "siteisabelpontes", entao o card de preview
 // no WhatsApp e no Instagram (de onde vem o cliente da Isabel) saia vazio --

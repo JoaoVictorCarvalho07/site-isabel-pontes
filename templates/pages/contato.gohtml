@@ -1,9 +1,11 @@
-{{- /* Contato. Porta o ContactSection.tsx: 3 cards de link (nao e formulario). */ -}}
+{{- /* Contato. 3 cards de link (nao e formulario). Bilingue (Fase 10) por
+       inline if/else -- prosa de pagina, uma estrutura so. */ -}}
 {{ define "conteudo" }}
+{{- $en := eq .Lang "en" }}
 <section class="contato">
   <header class="contato__head">
-    <h1>Contato</h1>
-    <p>Me chama por onde for melhor — eu respondo em até 24h úteis. 🤍</p>
+    <h1>{{ if $en }}Contact{{ else }}Contato{{ end }}</h1>
+    <p>{{ if $en }}Reach out however works best — I reply within 24 business hours. 🤍{{ else }}Me chama por onde for melhor — eu respondo em até 24h úteis. 🤍{{ end }}</p>
   </header>
 
   <div class="contato__cards">
@@ -12,11 +14,11 @@
       <div class="contato-card__topo">
         <div>
           <h2>WhatsApp</h2>
-          <p>Mais rápido para orçamento e disponibilidade.</p>
+          <p>{{ if $en }}Fastest for quotes and availability.{{ else }}Mais rápido para orçamento e disponibilidade.{{ end }}</p>
         </div>
         <span class="contato-card__seta" aria-hidden="true">→</span>
       </div>
-      <span class="contato-card__cta">Chamar no WhatsApp</span>
+      <span class="contato-card__cta">{{ if $en }}Message on WhatsApp{{ else }}Chamar no WhatsApp{{ end }}</span>
     </a>
 
     <a class="contato-card" href="{{ .InstagramHref }}"
@@ -24,48 +26,60 @@
       <div class="contato-card__topo">
         <div>
           <h2>Instagram</h2>
-          <p>Bate-papo, referências e bastidores.</p>
+          <p>{{ if $en }}Chat, references and behind the scenes.{{ else }}Bate-papo, referências e bastidores.{{ end }}</p>
         </div>
         <span class="contato-card__seta" aria-hidden="true">→</span>
       </div>
-      <span class="contato-card__cta">Abrir Instagram</span>
+      <span class="contato-card__cta">{{ if $en }}Open Instagram{{ else }}Abrir Instagram{{ end }}</span>
     </a>
 
     <a class="contato-card" href="{{ .MailtoHref }}">
       <div class="contato-card__topo">
         <div>
-          <h2>E-mail</h2>
-          <p>Para propostas, marcas e demandas formais.</p>
+          <h2>{{ if $en }}Email{{ else }}E-mail{{ end }}</h2>
+          <p>{{ if $en }}For proposals, brands and formal requests.{{ else }}Para propostas, marcas e demandas formais.{{ end }}</p>
         </div>
         <span class="contato-card__seta" aria-hidden="true">→</span>
       </div>
-      <span class="contato-card__cta">Enviar e-mail</span>
+      <span class="contato-card__cta">{{ if $en }}Send email{{ else }}Enviar e-mail{{ end }}</span>
     </a>
   </div>
 
   <div class="contato__info">
     <div class="contato-info-box">
-      <h3>Como falar comigo</h3>
+      <h3>{{ if $en }}How to reach me{{ else }}Como falar comigo{{ end }}</h3>
       <ul>
+        {{- if $en }}
+        <li>Tell me what you're looking for (shoot / event / UGC).</li>
+        <li>If you have them, send theme + references (Pinterest/screenshots).</li>
+        <li>Date and city help me reply faster.</li>
+        {{- else }}
         <li>Me diga o que você procura (ensaio / evento / UGC).</li>
         <li>Se tiver, mande tema + referências (Pinterest/prints).</li>
         <li>Data e cidade ajudam a eu te responder mais rápido.</li>
+        {{- end }}
       </ul>
     </div>
     <div class="contato-info-box">
-      <h3>Atendimento</h3>
-      <p>Base em <strong>{{ .Cidade }}</strong>. Outros locais sob consulta.</p>
+      <h3>{{ if $en }}Availability{{ else }}Atendimento{{ end }}</h3>
+      <p>{{ if $en }}Based in <strong>{{ .Cidade }}</strong>. Other locations on request.{{ else }}Base em <strong>{{ .Cidade }}</strong>. Outros locais sob consulta.{{ end }}</p>
       <div class="contato-tags">
+        {{- if $en }}
+        <span>Artistic shoots</span>
+        <span>Art direction</span>
+        <span>Content / UGC</span>
+        {{- else }}
         <span>Ensaios artísticos</span>
         <span>Direção de arte</span>
         <span>Conteúdo / UGC</span>
+        {{- end }}
       </div>
     </div>
   </div>
 
   <p class="contato__dica">
-    Dica: se preferir, pode mandar só “vim pelo site” que eu te guio com as
-    perguntas ✨
+    {{- if $en }}Tip: if you prefer, just say “I came from the website” and I'll guide you with the questions ✨
+    {{- else }}Dica: se preferir, pode mandar só “vim pelo site” que eu te guio com as perguntas ✨{{ end }}
   </p>
 </section>
 {{ end }}

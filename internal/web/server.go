@@ -65,6 +65,10 @@ func New(cfg *config.Config, assets fs.FS, snap *store.Snapshot) (*Server, error
 		// Ambos vivem em midiakit.go.
 		"wpp":   wppURL,
 		"donut": donutGradient,
+		// t traduz uma string curta de UI: {{ t $.Lang "nav.galeria" }}.
+		"t": t,
+		// cond e um ternario de string: {{ cond $en "yes" "sim" }}.
+		"cond": cond,
 		// dict monta um map inline para passar varios campos a um partial (o Go
 		// template so passa um valor). Usado por {{ template "picture" (dict ...) }}.
 		"dict": func(paresChaveValor ...any) (map[string]any, error) {
@@ -108,6 +112,15 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /midiakit/videos", s.midiakitVideos) // fragmento HTMX do portfolio
 	mux.HandleFunc("GET /galeria", s.galeria)               // pagina completa
 	mux.HandleFunc("GET /galeria/fotos", s.galeriaFragment) // fragmento HTMX
+
+	// Espelho em ingles (mesmos handlers; o idioma vem de idioma(r), pela URL).
+	mux.HandleFunc("GET /en", s.home) // /en exato (o {$} da raiz nao cobre)
+	mux.HandleFunc("GET /en/sobre", s.sobre)
+	mux.HandleFunc("GET /en/contato", s.contato)
+	mux.HandleFunc("GET /en/midiakit", s.midiakit)
+	mux.HandleFunc("GET /en/midiakit/videos", s.midiakitVideos)
+	mux.HandleFunc("GET /en/galeria", s.galeria)
+	mux.HandleFunc("GET /en/galeria/fotos", s.galeriaFragment)
 	mux.HandleFunc("GET /robots.txt", s.robots)
 	mux.HandleFunc("GET /sitemap.xml", s.sitemap)
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
@@ -138,6 +151,12 @@ type pageData struct {
 	Canonical string
 	BodyClass string
 	Ano       int
+	// i18n: idioma da pagina ("pt"/"en") e as URLs das duas versoes (para o
+	// hreflang, o og:locale e o seletor de idioma). Canonical = a URL do idioma
+	// atual; HrefPT/HrefEN alimentam os <link rel=alternate>.
+	Lang   string
+	HrefPT string
+	HrefEN string
 	// SEO: URLs ABSOLUTAS. O bot do WhatsApp/Instagram que gera o card de preview
 	// nao resolve caminho relativo -- e a razao de todo o porte.
 	BaseURL string
@@ -145,12 +164,22 @@ type pageData struct {
 	OGType  string
 }
 
-// novaPagina preenche o que vale para toda pagina.
-func (s *Server) novaPagina(titulo, descricao, path string) pageData {
+// novaPagina preenche o que vale para toda pagina. `pathPT` e sempre o caminho da
+// versao PT ("/", "/sobre", ...); a versao EN e derivada por enPath.
+func (s *Server) novaPagina(lang, titulo, descricao, pathPT string) pageData {
+	hrefPT := s.cfg.BaseURL + pathPT
+	hrefEN := s.cfg.BaseURL + enPath(pathPT)
+	canonical := hrefPT
+	if lang == "en" {
+		canonical = hrefEN
+	}
 	return pageData{
 		Titulo:    titulo,
 		Descricao: descricao,
-		Canonical: s.cfg.BaseURL + path,
+		Canonical: canonical,
+		Lang:      lang,
+		HrefPT:    hrefPT,
+		HrefEN:    hrefEN,
 		BaseURL:   s.cfg.BaseURL,
 		OGImage:   s.cfg.BaseURL + "/static/img/og-image.jpg",
 		OGType:    "website",
@@ -161,6 +190,17 @@ func (s *Server) novaPagina(titulo, descricao, path string) pageData {
 }
 
 func (s *Server) notFound(w http.ResponseWriter, r *http.Request) {
-	s.render.Page(w, r, "404", http.StatusNotFound,
-		s.novaPagina("Página não encontrada — Isabel Pontes", "", r.URL.Path))
+	lang := idioma(r)
+	pathPT := r.URL.Path
+	if lang == "en" {
+		pathPT = strings.TrimPrefix(pathPT, "/en")
+		if pathPT == "" {
+			pathPT = "/"
+		}
+	}
+	titulo := "Página não encontrada — Isabel Pontes"
+	if lang == "en" {
+		titulo = "Page not found — Isabel Pontes"
+	}
+	s.render.Page(w, r, "404", http.StatusNotFound, s.novaPagina(lang, titulo, "", pathPT))
 }

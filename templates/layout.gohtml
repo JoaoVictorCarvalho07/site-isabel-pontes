@@ -7,7 +7,7 @@
   pronto, com title/description/og por rota.
 */ -}}
 <!doctype html>
-<html lang="pt-br">
+<html lang="{{ if eq .Lang "en" }}en{{ else }}pt-br{{ end }}">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,6 +19,15 @@
     {{- with .Canonical }}
     <link rel="canonical" href="{{ . }}" />
     {{- end }}
+    {{- /* hreflang: as duas versoes + x-default (PT). O Google usa isto para
+           servir o idioma certo e nao tratar PT/EN como conteudo duplicado. */}}
+    {{- with .HrefPT }}
+    <link rel="alternate" hreflang="pt-BR" href="{{ . }}" />
+    <link rel="alternate" hreflang="x-default" href="{{ . }}" />
+    {{- end }}
+    {{- with .HrefEN }}
+    <link rel="alternate" hreflang="en" href="{{ . }}" />
+    {{- end }}
     <meta name="theme-color" content="#3a2a22" />
 
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset "/static/img/favicon-32.png" }}" />
@@ -28,7 +37,7 @@
            URLs absolutas -- scrapers nao resolvem relativo. */}}
     <meta property="og:type" content="{{ .OGType }}" />
     <meta property="og:site_name" content="Isabel Pontes Fotoarte" />
-    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:locale" content="{{ if eq .Lang "en" }}en_US{{ else }}pt_BR{{ end }}" />
     <meta property="og:url" content="{{ .Canonical }}" />
     <meta property="og:title" content="{{ .Titulo }}" />
     {{- with .Descricao }}
@@ -54,7 +63,7 @@
   </head>
 
   <body{{ with .BodyClass }} class="{{ . }}"{{ end }}>
-    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <a class="skip-link" href="#conteudo">{{ t .Lang "a11y.pular" }}</a>
 
     {{ template "navbar" . }}
 

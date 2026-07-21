@@ -10,7 +10,7 @@
   "@context": "https://schema.org",
   "@type": "ProfessionalService",
   "name": "Isabel Pontes Fotoarte",
-  "description": "Fotografia artística, ensaios conceituais e direção criativa.",
+  "description": "{{ if eq .Lang "en" }}Fine art photography, conceptual shoots and creative direction.{{ else }}Fotografia artística, ensaios conceituais e direção criativa.{{ end }}",
   "url": "{{ .BaseURL }}/",
   "image": "{{ .OGImage }}",
   "email": "isabelpontesfotografia@gmail.com",

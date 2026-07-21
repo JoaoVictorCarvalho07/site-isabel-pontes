@@ -27,39 +27,56 @@
       srcset="{{ srcset "/static/img/hero/hero" "webp" "640 960 1280 1920" }}" />
     <img
       src="{{ asset "/static/img/hero/hero-1280.webp" }}"
-      alt="Isabel Pontes, fotógrafa e diretora criativa, em ensaio artístico"
+      alt="{{ if eq .Lang "en" }}Isabel Pontes, photographer and creative director, in an artistic shoot{{ else }}Isabel Pontes, fotógrafa e diretora criativa, em ensaio artístico{{ end }}"
       width="4000" height="6000"
       fetchpriority="high" decoding="async"
       class="hero__img" />
   </picture>
   <div class="hero__overlay"></div>
   <div class="hero__texto">
+    {{- if eq .Lang "en" }}
+    <h1>Welcome to my universe</h1>
+    <p>Creative direction, fine art photography and storytelling.</p>
+    {{- else }}
     <h1>Bem-vindo(a) ao meu universo</h1>
     <p>Direção criativa, fotografia artística e storytelling.</p>
+    {{- end }}
   </div>
 </section>
 
+{{- $en := eq .Lang "en" }}{{ $p := "" }}{{ if $en }}{{ $p = "/en" }}{{ end }}
 <section class="cards-editoriais">
-  <a href="/galeria" class="card-ed">
+  <a href="{{ $p }}/galeria" class="card-ed">
     {{- if .FotoDoDia }}
-    <img class="card-ed__img" src="{{ .FotoDoDia }}" alt="Ensaio artístico — Isabel Pontes"
+    <img class="card-ed__img" src="{{ .FotoDoDia }}"
+         alt="{{ if $en }}Artistic shoot — Isabel Pontes{{ else }}Ensaio artístico — Isabel Pontes{{ end }}"
          loading="lazy" decoding="async" />
     {{- end }}
     <div class="card-ed__overlay"></div>
     <div class="card-ed__texto">
+      {{- if $en }}
+      <h2>Fine art photography</h2>
+      <p>Conceptual shoots and directing people.</p>
+      {{- else }}
       <h2>Fotografia artística</h2>
       <p>Ensaios conceituais e direção de pessoas.</p>
+      {{- end }}
     </div>
   </a>
 
-  <a href="https://xn--isabelpontesportflio-r8b.com.br/" class="card-ed"
-     target="_blank" rel="noopener noreferrer">
+  <a href="{{ $p }}/midiakit" class="card-ed">
     <img class="card-ed__img" src="{{ asset "/static/img/MidiaKit.jpg" }}"
-         alt="Mídia kit e conteúdo de creator" loading="lazy" decoding="async" />
+         alt="{{ if $en }}Media kit and creator content{{ else }}Mídia kit e conteúdo de creator{{ end }}"
+         loading="lazy" decoding="async" />
     <div class="card-ed__overlay"></div>
     <div class="card-ed__texto">
+      {{- if $en }}
+      <h2>Media kit &amp; creator</h2>
+      <p>Authentic content with elevated aesthetics.</p>
+      {{- else }}
       <h2>Mídia kit &amp; creator</h2>
       <p>Conteúdo autêntico com estética elevada.</p>
+      {{- end }}
     </div>
   </a>
 </section>

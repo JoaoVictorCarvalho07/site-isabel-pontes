@@ -1,32 +1,44 @@
 {{- /*
-  Mídia kit — one-page de pitch (docs/plano-juncao-midiakit.md §4b).
-
-  FASE 8: conteúdo real. Bio, dicionário UGC/IGC, métricas (IG/TikTok), processo
-  (repensado na identidade, com <details> nativo) e investimento (pacotes com CTA
-  de WhatsApp montado no servidor pela função `wpp`). O #portfolio segue
-  placeholder até a Fase 9 (vídeos). Dados vêm de midiakit_content.go.
+  Mídia kit — one-page de pitch (docs §4b). Bilíngue (Fase 10): conteúdo
+  estruturado resolve por {{ .Campo.T $.Lang }}; chrome por {{ t $.Lang "..." }};
+  prosa (bio, definições) por {{ if eq $.Lang "en" }}. Dados: midiakit_content.go.
 */ -}}
 {{ define "conteudo" }}
+{{- $en := eq .Lang "en" }}
 <div class="midiakit">
 
-  {{- /* Hero: escuro (BodyClass hero-escuro deixa a navbar branca por cima). */}}
+  {{- /* Hero */}}
   <section class="mk-hero">
     <div class="mk-hero__texto">
       <h1>Isa Pontes</h1>
       <p class="mk-hero__sub">UGC Creator &amp; Diretora Criativa</p>
       <p class="mk-hero__tag">
-        Publicidade orgânica com estética elevada — storytelling que conecta
-        marca e audiência.
+        {{- if $en }}Organic advertising with elevated aesthetics — storytelling that connects brand and audience.
+        {{- else }}Publicidade orgânica com estética elevada — storytelling que conecta marca e audiência.{{ end }}
       </p>
       <div class="mk-hero__ctas">
-        <a href="#portfolio" class="mk-btn mk-btn--claro">Ver trabalhos</a>
-        <a href="#investimento" class="mk-btn">Investimento</a>
+        <a href="#portfolio" class="mk-btn mk-btn--claro">{{ t .Lang "mk.verTrabalhos" }}</a>
+        <a href="#investimento" class="mk-btn">{{ t .Lang "mk.investimento" }}</a>
       </div>
     </div>
   </section>
 
   {{- /* Bio */}}
   <section id="bio" class="mk-secao mk-bio">
+    {{- if $en }}
+    <h2>Hi! I'm Isa <span aria-hidden="true">✨</span></h2>
+    <p>
+      I'm a Creative Director, Fine Art Photographer and Creator. I work as an
+      Influencer and also create content for brands.
+    </p>
+    <p>
+      My strength is <strong>authenticity and creativity</strong>. I bring my
+      background in cinema, art direction and visual arts to turn products into
+      stories with aesthetics and intention. You take one look and see there's
+      storytelling — it's not just showing the product, it's building a narrative
+      that connects.
+    </p>
+    {{- else }}
     <h2>Oi! Eu sou a Isa <span aria-hidden="true">✨</span></h2>
     <p>
       Sou Diretora Criativa, Fotógrafa Artística e Creator. Atuo como Influencer
@@ -39,9 +51,10 @@
       que tem storytelling — não é só mostrar o produto, é construir uma narrativa
       que conecta.
     </p>
+    {{- end }}
     <ul class="mk-tags">
       {{- range .Tags }}
-      <li>{{ . }}</li>
+      <li>{{ .T $.Lang }}</li>
       {{- end }}
     </ul>
   </section>
@@ -50,7 +63,16 @@
   <section id="ugc" class="mk-secao mk-dic">
     <article class="mk-verbete">
       <h3>UGC</h3>
-      <span class="mk-verbete__fon">/juː dʒiː siː/ • substantivo</span>
+      <span class="mk-verbete__fon">/juː dʒiː siː/ • {{ if $en }}noun{{ else }}substantivo{{ end }}</span>
+      {{- if $en }}
+      <p>
+        <em>User Generated Content</em>. Authentic material created to spark
+        immediate identification. In my method, UGC stops being a homemade clip
+        and becomes a piece of <strong>organic advertising with elevated
+        aesthetics</strong>.
+      </p>
+      <p class="mk-verbete__por"><strong>Why hire it?</strong> Humanization, objection-breaking and conversion.</p>
+      {{- else }}
       <p>
         <em>User Generated Content</em> (Conteúdo Gerado pelo Usuário). Material
         autêntico criado para gerar identificação imediata. No meu método, o UGC
@@ -58,11 +80,21 @@
         <strong>publicidade orgânica com estética elevada</strong>.
       </p>
       <p class="mk-verbete__por"><strong>Por que contratar?</strong> Humanização, quebra de objeção e conversão.</p>
+      {{- end }}
     </article>
 
     <article class="mk-verbete">
       <h3>IGC</h3>
-      <span class="mk-verbete__fon">/aɪ dʒiː siː/ • substantivo</span>
+      <span class="mk-verbete__fon">/aɪ dʒiː siː/ • {{ if $en }}noun{{ else }}substantivo{{ end }}</span>
+      {{- if $en }}
+      <p>
+        <em>Influencer Generated Content</em>. Content by someone who already has
+        presence and connection with an audience. In my method, IGC combines
+        <strong>authority, narrative and elevated aesthetics</strong> — designed
+        to build desire and trust, without feeling like an ad.
+      </p>
+      <p class="mk-verbete__por"><strong>Why hire it?</strong> Reach, credibility and conversion.</p>
+      {{- else }}
       <p>
         <em>Influencer Generated Content</em> (Conteúdo Gerado por Influenciadora).
         Conteúdo de quem já tem presença e conexão com uma audiência. No meu
@@ -70,23 +102,22 @@
         — pensado para gerar desejo e confiança, sem cara de anúncio.
       </p>
       <p class="mk-verbete__por"><strong>Por que contratar?</strong> Alcance, credibilidade e conversão.</p>
+      {{- end }}
     </article>
   </section>
 
-  {{- /* Portfólio de vídeos — poster AVIF; o .webm carrega no clique (app.js) */}}
+  {{- /* Portfólio de vídeos */}}
   <section id="portfolio" class="mk-secao mk-portfolio">
-    <h2>Trabalhos</h2>
-    <p>
-      Uma curadoria de vídeos pensados para diferentes marcas nesse mundo UGC / IGC.
-    </p>
+    <h2>{{ t .Lang "mk.trabalhos" }}</h2>
+    <p>{{ t .Lang "mk.curadoria" }}</p>
     {{ template "mk_portfolio" .Portfolio }}
     <a href="https://www.instagram.com/isabelpontesfotografia/" class="mk-btn"
-       target="_blank" rel="noopener">Ver trabalho no Instagram</a>
+       target="_blank" rel="noopener">{{ t .Lang "mk.verInstagram" }}</a>
   </section>
 
   {{- /* Métricas */}}
   <section id="metricas" class="mk-secao mk-metricas">
-    <h2>Métricas</h2>
+    <h2>{{ t .Lang "mk.metricas" }}</h2>
     <div class="mk-metricas__grid">
       {{- range .Metricas }}
       <article class="mk-rede mk-rede--{{ .Lado }}">
@@ -94,15 +125,15 @@
           <h3>{{ .Rede }}</h3>
 
           <div class="mk-kpis">
-            <div class="mk-kpi"><strong>{{ .Seguidores }}</strong><span>seguidores</span></div>
-            <div class="mk-kpi"><strong>{{ .Views }}</strong><span>visualizações</span></div>
+            <div class="mk-kpi"><strong>{{ .Seguidores }}</strong><span>{{ t $.Lang "mk.seguidores" }}</span></div>
+            <div class="mk-kpi"><strong>{{ .Views }}</strong><span>{{ t $.Lang "mk.visualizacoes" }}</span></div>
           </div>
 
-          <h4>Público</h4>
+          <h4>{{ t $.Lang "mk.publico" }}</h4>
           <div class="mk-barras">
             {{- range .Locais }}
             <div class="mk-barra">
-              <div class="mk-barra__topo"><span>{{ .Rotulo }}</span><strong>{{ .Pct }}%</strong></div>
+              <div class="mk-barra__topo"><span>{{ .Rotulo.T $.Lang }}</span><strong>{{ .Pct }}%</strong></div>
               <div class="mk-barra__trilha"><span class="mk-barra__preenche" style="width:{{ .Pct }}%"></span></div>
             </div>
             {{- end }}
@@ -113,7 +144,7 @@
               <span class="mk-donut" style="background:{{ donut .Genero }}"></span>
               <ul class="mk-legenda">
                 {{- range .Genero }}
-                <li><span class="mk-ponto" style="background:{{ .Cor }}"></span><strong>{{ .Pct }}%</strong> {{ .Rotulo }}</li>
+                <li><span class="mk-ponto" style="background:{{ .Cor }}"></span><strong>{{ .Pct }}%</strong> {{ .Rotulo.T $.Lang }}</li>
                 {{- end }}
               </ul>
             </div>
@@ -121,39 +152,38 @@
               <span class="mk-donut" style="background:{{ donut .Idades }}"></span>
               <ul class="mk-legenda">
                 {{- range .Idades }}
-                <li><span class="mk-ponto" style="background:{{ .Cor }}"></span><strong>{{ .Pct }}%</strong> {{ .Rotulo }}</li>
+                <li><span class="mk-ponto" style="background:{{ .Cor }}"></span><strong>{{ .Pct }}%</strong> {{ .Rotulo.T $.Lang }}</li>
                 {{- end }}
               </ul>
             </div>
           </div>
         </div>
 
-        {{- /* mockup de celular flutuante (WebP com alpha) */}}
         <img class="mk-rede__phone" src="{{ asset .Foto }}"
-             alt="Prints das métricas de {{ .Rede }} da Isabel Pontes"
+             alt="{{ if $en }}{{ .Rede }} profile metrics — Isabel Pontes{{ else }}Prints das métricas de {{ .Rede }} da Isabel Pontes{{ end }}"
              width="398" height="799" loading="lazy" decoding="async" />
       </article>
       {{- end }}
     </div>
   </section>
 
-  {{- /* Processo — repensado na identidade, com <details> nativo (sem JS) */}}
+  {{- /* Processo — <details> nativo (sem JS) */}}
   <section id="processo" class="mk-secao mk-processo">
-    <h2>Como funciona a contratação (UGC)</h2>
-    <p class="mk-processo__pill">{{ .TempoMedio }}</p>
+    <h2>{{ t .Lang "mk.comoFunciona" }}</h2>
+    <p class="mk-processo__pill">{{ .TempoMedio.T .Lang }}</p>
 
     <ol class="mk-passos">
       {{- range .Processo }}
       <li class="mk-passo">
         <span class="mk-passo__num" aria-hidden="true">{{ .Num }}</span>
         <div class="mk-passo__corpo">
-          <h3>{{ .Titulo }}</h3>
-          <p>{{ .Resumo }}</p>
+          <h3>{{ .Titulo.T $.Lang }}</h3>
+          <p>{{ .Resumo.T $.Lang }}</p>
           <details class="mk-passo__mais">
-            <summary>Entenda <span class="mk-passo__prazo">{{ .Prazo }}</span></summary>
+            <summary>{{ t $.Lang "mk.entenda" }} <span class="mk-passo__prazo">{{ .Prazo.T $.Lang }}</span></summary>
             <ul>
               {{- range .Detalhes }}
-              <li>{{ . }}</li>
+              <li>{{ .T $.Lang }}</li>
               {{- end }}
             </ul>
           </details>
@@ -163,28 +193,28 @@
     </ol>
   </section>
 
-  {{- /* Investimento — pacotes com CTA de WhatsApp montado no servidor */}}
+  {{- /* Investimento */}}
   {{- range .Investimentos }}
   {{- $tag := .Tag }}
   <section
     {{- if eq .Tag "UGC" }} id="investimento"{{ end }} class="mk-secao mk-invest">
-    <h2>{{ .Titulo }}</h2>
-    {{- with .Subtitulo }}<p class="mk-invest__sub">{{ . }}</p>{{ end }}
+    <h2>{{ .Titulo.T $.Lang }}</h2>
+    {{- $sub := .Subtitulo.T $.Lang }}{{ with $sub }}<p class="mk-invest__sub">{{ . }}</p>{{ end }}
 
     <div class="mk-pacotes">
       {{- range .Pacotes }}
       <article class="mk-pacote{{ if .Destaque }} mk-pacote--destaque{{ end }}">
-        {{- if .Destaque }}<span class="mk-pacote__selo">Mais popular</span>{{ end }}
-        <h3>{{ .Nome }}</h3>
-        <p class="mk-pacote__resumo">{{ .Resumo }}</p>
+        {{- if .Destaque }}<span class="mk-pacote__selo">{{ t $.Lang "mk.maisPopular" }}</span>{{ end }}
+        <h3>{{ .Nome.T $.Lang }}</h3>
+        <p class="mk-pacote__resumo">{{ .Resumo.T $.Lang }}</p>
         <ul class="mk-pacote__itens">
           {{- range .Itens }}
-          <li>{{ . }}</li>
+          <li>{{ .T $.Lang }}</li>
           {{- end }}
         </ul>
         <p class="mk-pacote__preco">{{ .Preco }}</p>
-        {{- $msg := printf "Oii Isa! Tenho interesse no %s (%s) — %s. Pode me enviar detalhes, valores e como funciona o briefing? ^-^" .Nome $tag .Resumo }}
-        <a class="mk-btn mk-pacote__cta" href="{{ wpp $msg }}" target="_blank" rel="noopener">Solicitar</a>
+        {{- $msg := printf (t $.Lang "mk.wppPacote") (.Nome.T $.Lang) $tag (.Resumo.T $.Lang) }}
+        <a class="mk-btn mk-pacote__cta" href="{{ wpp $msg }}" target="_blank" rel="noopener">{{ t $.Lang "mk.solicitar" }}</a>
       </article>
       {{- end }}
     </div>

@@ -9,14 +9,14 @@
 */ -}}
 {{ define "galeria_body" }}
 <div id="galeria-body">
-  <nav class="filtros" aria-label="Filtrar por tema">
+  <nav class="filtros" aria-label="{{ t .Lang "galeria.filtrar" }}">
     {{- range .Temas }}
     <button
       type="button"
-      hx-get="/galeria/fotos{{ if .Slug }}?tema={{ .Slug }}{{ end }}"
+      hx-get="{{ $.PathFragmento }}{{ if .Slug }}?tema={{ .Slug }}{{ end }}"
       hx-target="#galeria-body"
       hx-swap="outerHTML"
-      hx-push-url="/galeria{{ if .Slug }}?tema={{ .Slug }}{{ end }}"
+      hx-push-url="{{ $.PathPagina }}{{ if .Slug }}?tema={{ .Slug }}{{ end }}"
       hx-indicator="#galeria-load"
       class="filtro{{ if .Active }} filtro--ativo{{ end }}"
       {{ if .Active }}aria-current="true"{{ end }}>{{ .Label }}</button>
@@ -50,7 +50,7 @@
     {{- end }}
   </div>
   {{ else }}
-  <p class="galeria-vazia">Nenhuma foto encontrada.</p>
+  <p class="galeria-vazia">{{ t .Lang "galeria.vazia" }}</p>
   {{ end }}
 </div>
 {{ end }}

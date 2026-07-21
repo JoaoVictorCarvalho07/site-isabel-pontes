@@ -7,9 +7,10 @@
   desorienta quem usa leitor de tela. O link e explicito.
 */ -}}
 {{ define "conteudo" }}
+{{- $en := eq .Lang "en" }}
 <section class="erro">
-  <h1>Página não encontrada</h1>
-  <p>O endereço que você acessou não existe ou foi movido.</p>
-  <p><a href="/">Voltar para a página inicial</a></p>
+  <h1>{{ if $en }}Page not found{{ else }}Página não encontrada{{ end }}</h1>
+  <p>{{ if $en }}The page you tried to reach doesn't exist or was moved.{{ else }}O endereço que você acessou não existe ou foi movido.{{ end }}</p>
+  <p><a href="{{ if $en }}/en{{ else }}/{{ end }}">{{ if $en }}Back to home{{ else }}Voltar para a página inicial{{ end }}</a></p>
 </section>
 {{ end }}

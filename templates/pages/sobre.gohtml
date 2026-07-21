@@ -1,11 +1,23 @@
-{{- /* Sobre. Porta o SobreMim.tsx: bio com float da imagem + carrossel. */ -}}
+{{- /* Sobre: bio com float da imagem + carrossel. Bilingue (Fase 10) por inline
+       if/else -- prosa de pagina, uma estrutura so. Copy EN e rascunho. */ -}}
 {{ define "conteudo" }}
+{{- $en := eq .Lang "en" }}
 <div class="sobre">
   <div class="sobre__bloco">
     {{ template "picture" (dict
       "Base" "/static/img/sobre/SobreMim4" "W" 800 "H" 1200
-      "Alt" "Isabel Pontes, fotógrafa" "Class" "sobre__float sobre__float--esq") }}
+      "Alt" (printf "Isabel Pontes, %s" (cond $en "photographer" "fotógrafa")) "Class" "sobre__float sobre__float--esq") }}
     <p>
+      {{- if $en }}
+      My name is Isabel Pontes, I'm a fine art photographer and visual creator
+      based in Curitiba. My relationship with art began long before photography
+      officially entered my life. Since childhood I've been driven by imagination,
+      movement and creation. I was part of a dance company and always had a
+      natural curiosity about artistic expression. I loved building sets,
+      inventing stories and turning ideas into little scenes — often without
+      realizing this creative impulse would become a fundamental part of my
+      profession in the future.
+      {{- else }}
       Meu nome é Isabel Pontes, sou fotógrafa artística e criadora visual atuando
       em Curitiba. Minha relação com a arte começou muito antes da fotografia
       entrar oficialmente na minha vida. Desde criança sempre fui movida por
@@ -14,22 +26,40 @@
       cenários, inventar histórias e transformar ideias em pequenas encenações —
       muitas vezes sem perceber que esse impulso criativo acabaria se tornando
       parte fundamental da minha profissão no futuro.
+      {{- end }}
     </p>
   </div>
 
   <div class="sobre__bloco">
     {{ template "picture" (dict
       "Base" "/static/img/sobre/SobreMim6" "W" 433 "H" 728
-      "Alt" "Ensaio de Isabel Pontes" "Class" "sobre__float sobre__float--dir") }}
+      "Alt" (printf "%s Isabel Pontes" (cond $en "Photo shoot by" "Ensaio de")) "Class" "sobre__float sobre__float--dir") }}
     <p>
+      {{- if $en }}
+      Early on I also developed the habit of seeking inspiration in books, films,
+      paintings and different art forms. I like observing how human imagination
+      expresses itself through images, stories and the symbolism that runs across
+      different cultures. This constant curiosity about the imaginary and about
+      forms of artistic expression deeply shaped my creative eye.
+      {{- else }}
       Desde cedo também desenvolvi o hábito de buscar inspiração em livros,
       filmes, pinturas e diferentes formas de arte. Gosto de observar como a
       imaginação humana se manifesta através das imagens, das histórias e das
       simbologias que atravessam diferentes culturas. Essa curiosidade constante
       sobre o imaginário e sobre as formas de expressão artística acabou moldando
       profundamente o meu olhar criativo.
+      {{- end }}
     </p>
     <p class="sobre__so-desktop">
+      {{- if $en }}
+      I was born in Manaus, surrounded by nature, and that environment always had
+      a strong influence on how I see the world. The presence of the forest, the
+      rivers and natural life awakened in me a special sensitivity for observing
+      details, atmospheres and symbols in nature. At the same time, I've always
+      been drawn to themes that explore the imaginary, the symbolic and the
+      spiritual. The world of mythologies, the mystical and archetypal narratives
+      has always sparked my curiosity.
+      {{- else }}
       Nasci em Manaus, cercada por natureza, e esse ambiente sempre teve uma
       influência muito forte na forma como eu enxergo o mundo. A presença da
       floresta, dos rios e da vida natural despertou em mim uma sensibilidade
@@ -37,24 +67,36 @@
       natureza. Ao mesmo tempo, sempre me senti atraída por temas que exploram o
       imaginário, o simbólico e o espiritual. O universo das mitologias, do
       místico e das narrativas arquetípicas sempre despertou minha curiosidade.
+      {{- end }}
     </p>
   </div>
 
   <div class="carrossel-wrap">
-    <button class="carrossel-seta carrossel-seta--prev" data-carrossel-prev aria-label="Anterior">‹</button>
+    <button class="carrossel-seta carrossel-seta--prev" data-carrossel-prev aria-label="{{ if $en }}Previous{{ else }}Anterior{{ end }}">‹</button>
     <div class="carrossel" data-carrossel>
       {{- range .Carrossel }}
       <div class="carrossel__item">
         {{ template "picture" (dict
           "Base" .Base "W" .W "H" .H
-          "Alt" "Fotografia de Isabel Pontes" "Class" "carrossel__img") }}
+          "Alt" (cond $en "Photography by Isabel Pontes" "Fotografia de Isabel Pontes") "Class" "carrossel__img") }}
       </div>
       {{- end }}
     </div>
-    <button class="carrossel-seta carrossel-seta--next" data-carrossel-next aria-label="Próxima">›</button>
+    <button class="carrossel-seta carrossel-seta--next" data-carrossel-next aria-label="{{ if $en }}Next{{ else }}Próxima{{ end }}">›</button>
   </div>
 
   <p class="sobre__fecho">
+    {{- if $en }}
+    Off screen I consider myself a fairly reserved person, but one who deeply
+    values profound and meaningful connections. I like filling my time with
+    activities that keep me active in both mind and body. I'm passionate about
+    dance, but lately I've been dedicating myself to CrossFit, which helps me keep
+    physical and mental balance. I enjoy watching anime in my free time, and
+    lately, together with my partner, I've been slowly getting into the world of
+    games, which has been a fun and challenging experience. I believe these
+    activities complement my artistic practice, as they let me explore different
+    forms of expression and connection with the world around me.
+    {{- else }}
     Fora das telas me considero uma pessoa bastante reservada, mas que valoriza
     muito as conexões profundas e significativas. Gosto de ocupar meu tempo com
     atividades que me mantenham ativa tanto na mente quanto no corpo. Sou
@@ -65,6 +107,7 @@
     Acredito que essas atividades complementam minha prática artística, pois me
     permitem explorar diferentes formas de expressão e conexão com o mundo ao meu
     redor.
+    {{- end }}
   </p>
 </div>
 {{ end }}

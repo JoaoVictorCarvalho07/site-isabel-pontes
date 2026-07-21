@@ -22,8 +22,8 @@ import (
 // template so acessa campos que existem aqui, e um typo vira erro de teste.
 type midiaKitView struct {
 	pageData
-	Tags          []string
-	TempoMedio    string
+	Tags          []ml
+	TempoMedio    ml
 	Processo      []passoProcesso
 	Metricas      []metricaRede
 	Investimentos []blocoPacotes
@@ -31,21 +31,24 @@ type midiaKitView struct {
 }
 
 func (s *Server) midiakit(w http.ResponseWriter, r *http.Request) {
-	dados := s.novaPagina(
-		"Mídia Kit — Isabel Pontes | UGC & Creator",
-		"Conteúdo autêntico com estética elevada: UGC e IGC para marcas, por Isabel Pontes, criadora e diretora criativa em Curitiba.",
-		"/midiakit",
-	)
+	lang := idioma(r)
+	titulo := "Mídia Kit — Isabel Pontes | UGC & Creator"
+	descr := "Conteúdo autêntico com estética elevada: UGC e IGC para marcas, por Isabel Pontes, criadora e diretora criativa em Curitiba."
+	if lang == "en" {
+		titulo = "Media Kit — Isabel Pontes | UGC & Creator"
+		descr = "Authentic content with elevated aesthetics: UGC and IGC for brands, by Isabel Pontes, creator and creative director in Curitiba."
+	}
+	dados := s.novaPagina(lang, titulo, descr, "/midiakit")
 	// Hero de topo escuro -> navbar e logo brancos, como na home.
 	dados.BodyClass = "hero-escuro"
 	s.render.Page(w, r, "midiakit", http.StatusOK, midiaKitView{
 		pageData:      dados,
-		Tags:          []string{"Storytelling", "Direção de Arte", "Cinema", "Edição Caprichada"},
+		Tags:          midiakitTags,
 		TempoMedio:    processoTempoMedio,
 		Processo:      processo,
 		Metricas:      metricas,
 		Investimentos: investimentos,
-		Portfolio:     buildPortfolio(""), // "" = todas as categorias
+		Portfolio:     buildPortfolio(lang, ""), // "" = todas as categorias
 	})
 }
 
@@ -60,26 +63,49 @@ func (s *Server) midiakit(w http.ResponseWriter, r *http.Request) {
 
 type portfolioFiltro struct {
 	Slug   string
-	Nome   string
+	Nome   string // já traduzido
 	Active bool
 }
 
-type portfolioView struct {
-	Filtros []portfolioFiltro // "Todos" + uma por categoria
-	Grupos  []categoriaVideos // o que renderizar: todas, ou só a filtrada
+// grupoVideosView é uma categoria pronta pro template, com o nome já no idioma.
+type grupoVideosView struct {
+	Nome   string
+	Videos []videoUGC
 }
 
-// buildPortfolio monta a view para uma categoria (slug vazio = todas).
-func buildPortfolio(catSlug string) portfolioView {
-	filtros := []portfolioFiltro{{Slug: "", Nome: "Todos", Active: catSlug == ""}}
-	grupos := make([]categoriaVideos, 0, len(portfolioVideos))
-	for _, c := range portfolioVideos {
-		filtros = append(filtros, portfolioFiltro{Slug: c.Slug, Nome: c.Nome, Active: c.Slug == catSlug})
-		if catSlug == "" || c.Slug == catSlug {
-			grupos = append(grupos, c)
+type portfolioView struct {
+	Lang    string
+	Base    string // "/midiakit/videos" ou "/en/midiakit/videos" (hx-get)
+	Filtros []portfolioFiltro // "Todos" + uma por categoria
+	Grupos  []grupoVideosView // o que renderizar: todas, ou só a filtrada
+}
+
+// nomeCategoria traduz o nome exibido da categoria (o slug é estável).
+func nomeCategoria(lang, slug, nomePT string) string {
+	if lang == "en" {
+		if en, ok := nomeCategoriaEN[slug]; ok {
+			return en
 		}
 	}
-	return portfolioView{Filtros: filtros, Grupos: grupos}
+	return nomePT
+}
+
+// buildPortfolio monta a view para uma categoria (slug vazio = todas), no idioma.
+func buildPortfolio(lang, catSlug string) portfolioView {
+	base := "/midiakit/videos"
+	if lang == "en" {
+		base = "/en/midiakit/videos"
+	}
+	filtros := []portfolioFiltro{{Slug: "", Nome: t(lang, "comum.todos"), Active: catSlug == ""}}
+	grupos := make([]grupoVideosView, 0, len(portfolioVideos))
+	for _, c := range portfolioVideos {
+		nome := nomeCategoria(lang, c.Slug, c.Nome)
+		filtros = append(filtros, portfolioFiltro{Slug: c.Slug, Nome: nome, Active: c.Slug == catSlug})
+		if catSlug == "" || c.Slug == catSlug {
+			grupos = append(grupos, grupoVideosView{Nome: nome, Videos: c.Videos})
+		}
+	}
+	return portfolioView{Lang: lang, Base: base, Filtros: filtros, Grupos: grupos}
 }
 
 func categoriaValida(slug string) bool {
@@ -99,7 +125,7 @@ func (s *Server) midiakitVideos(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "categoria desconhecida", http.StatusNotFound)
 		return
 	}
-	s.render.Fragment(w, "midiakit", "mk_portfolio", buildPortfolio(cat))
+	s.render.Fragment(w, "midiakit", "mk_portfolio", buildPortfolio(idioma(r), cat))
 }
 
 // wppURL monta o link do WhatsApp com a mensagem ja pronta, direto no servidor --

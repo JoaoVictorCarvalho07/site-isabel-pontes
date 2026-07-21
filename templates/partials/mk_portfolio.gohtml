@@ -1,19 +1,20 @@
 {{- /*
   #mk-portfolio: filtro de categoria + grid de vídeos, num wrapper só (igual ao
   #galeria-body). O HTMX troca este bloco inteiro (hx-swap=outerHTML) ao clicar
-  num filtro, então o botão ativo atualiza junto com os vídeos.
+  num filtro. MESMO partial na página completa e no fragmento.
 
-  MESMO partial na página completa (/midiakit) e no fragmento (/midiakit/videos).
+  i18n: recebe portfolioView com .Lang e .Base ("/midiakit/videos" ou
+  "/en/midiakit/videos"). Nomes de categoria já vêm traduzidos na view.
 
-  Performance: mostra só o POSTER (AVIF, ~13KB) de cada vídeo. O .webm (no R2, até
-  22MB) só carrega quando o visitante clica no play -- ver o handler em app.js.
+  Performance: mostra só o POSTER (AVIF+WebP, ~13KB). O .webm (no R2, até 22MB) só
+  carrega no clique -- ver app.js.
 */ -}}
 {{ define "mk_portfolio" }}
 <div id="mk-portfolio">
-  <nav class="mk-filtros" aria-label="Filtrar por categoria">
+  <nav class="mk-filtros" aria-label="{{ t .Lang "mk.filtrarCat" }}">
     {{- range .Filtros }}
     <button type="button"
-      hx-get="/midiakit/videos{{ if .Slug }}?cat={{ .Slug }}{{ end }}"
+      hx-get="{{ $.Base }}{{ if .Slug }}?cat={{ .Slug }}{{ end }}"
       hx-target="#mk-portfolio"
       hx-swap="outerHTML"
       class="mk-filtro{{ if .Active }} mk-filtro--ativo{{ end }}"
@@ -29,10 +30,10 @@
       <figure class="mk-video">
         <div class="mk-video__frame">
           <button type="button" class="mk-video__mock" data-video-src="{{ .Src }}"
-                  aria-label="Assistir vídeo: {{ .Titulo }}">
+                  aria-label="{{ t $.Lang "mk.assistir" }}: {{ .Titulo }}">
             {{ template "picture" (dict
               "Base" .Poster "W" 400 "H" 711
-              "Alt" (printf "Prévia do vídeo %s" .Titulo) "Class" "mk-video__poster") }}
+              "Alt" (printf "%s %s" (t $.Lang "mk.previa") .Titulo) "Class" "mk-video__poster") }}
             <span class="mk-video__play" aria-hidden="true"></span>
           </button>
         </div>

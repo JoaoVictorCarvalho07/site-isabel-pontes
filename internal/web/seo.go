@@ -21,8 +21,10 @@ func (s *Server) sitemap(w http.ResponseWriter, _ *http.Request) {
 	xml.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n")
 	xml.WriteString(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n")
 
-	adicionar := func(caminho string) {
-		xml.WriteString("  <url><loc>" + xmlEscape(s.cfg.BaseURL+caminho) + "</loc></url>\n")
+	// cada pagina entra nas duas versoes (PT e EN, via enPath).
+	adicionar := func(caminhoPT string) {
+		xml.WriteString("  <url><loc>" + xmlEscape(s.cfg.BaseURL+caminhoPT) + "</loc></url>\n")
+		xml.WriteString("  <url><loc>" + xmlEscape(s.cfg.BaseURL+enPath(caminhoPT)) + "</loc></url>\n")
 	}
 	adicionar("/")
 	adicionar("/galeria")
@@ -30,6 +32,7 @@ func (s *Server) sitemap(w http.ResponseWriter, _ *http.Request) {
 		adicionar("/galeria?tema=" + tema.Slug)
 	}
 	adicionar("/sobre")
+	adicionar("/midiakit")
 	adicionar("/contato")
 
 	xml.WriteString("</urlset>\n")

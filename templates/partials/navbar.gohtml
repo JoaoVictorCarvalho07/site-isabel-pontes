@@ -1,39 +1,43 @@
 {{- /*
-  Navbar. O logo e o SVG inline (funcao `svg`) para herdar currentColor -- a cor
-  vem do texto do header, que muda por pagina via a classe no <body> (BodyClass).
-  Substitui o NavBar.tsx: sem estado de logoSrc, sem matchMedia, sem os useEffect,
-  sem o flash de logo errada.
+  Navbar. O logo e o SVG inline (funcao `svg`) para herdar currentColor.
 
-  No mobile os links viram um menu <dialog> (mesmo padrao do lightbox: um padrao,
-  dois usos -- Esc, focus trap e ::backdrop de graca), substituindo o Radix Sheet
-  + HamburgerMenu do React.
+  i18n: os links ganham o prefixo /en quando .Lang == "en", os rotulos vem de
+  `t`, e um seletor de idioma (EN/PT) leva a versao equivalente da pagina atual
+  (.HrefPT / .HrefEN). No mobile os links viram um menu <dialog>.
 */ -}}
 {{ define "navbar" }}
+{{- $en := eq .Lang "en" }}
+{{- $p := "" }}{{ if $en }}{{ $p = "/en" }}{{ end }}
 <header class="navbar" data-navbar>
-  <a href="/" class="navbar__logo logo-anim-focus" aria-label="Isabel Pontes">
+  <a href="{{ if $en }}/en{{ else }}/{{ end }}" class="navbar__logo logo-anim-focus" aria-label="Isabel Pontes">
     {{ svg "img/logo.svg" }}
   </a>
 
-  <nav class="navbar__links" aria-label="Principal">
-    <a href="/galeria">Galeria</a>
-    <a href="/sobre">Sobre</a>
-    <a href="/midiakit">Mídia kit</a>
-    <a href="/contato">Contato</a>
+  <nav class="navbar__links" aria-label="{{ t .Lang "a11y.principal" }}">
+    <a href="{{ $p }}/galeria">{{ t .Lang "nav.galeria" }}</a>
+    <a href="{{ $p }}/sobre">{{ t .Lang "nav.sobre" }}</a>
+    <a href="{{ $p }}/midiakit">{{ t .Lang "nav.midiakit" }}</a>
+    <a href="{{ $p }}/contato">{{ t .Lang "nav.contato" }}</a>
+    <a class="navbar__lang" href="{{ if $en }}{{ .HrefPT }}{{ else }}{{ .HrefEN }}{{ end }}"
+       hreflang="{{ if $en }}pt-BR{{ else }}en{{ end }}"
+       aria-label="{{ if $en }}Ver em português{{ else }}View in English{{ end }}">{{ if $en }}PT{{ else }}EN{{ end }}</a>
   </nav>
 
-  <button class="navbar__hamburguer" data-menu-abrir aria-label="Abrir menu"
+  <button class="navbar__hamburguer" data-menu-abrir aria-label="{{ t .Lang "a11y.abrir" }}"
           aria-haspopup="dialog">
     <span></span><span></span><span></span>
   </button>
 </header>
 
-<dialog id="menu" class="menu" aria-label="Menu">
-  <button class="menu__fechar" data-menu-fechar aria-label="Fechar">✕</button>
-  <nav class="menu__links" aria-label="Principal">
-    <a href="/galeria">Galeria</a>
-    <a href="/sobre">Sobre</a>
-    <a href="/midiakit">Mídia kit</a>
-    <a href="/contato">Contato</a>
+<dialog id="menu" class="menu" aria-label="{{ t .Lang "a11y.menu" }}">
+  <button class="menu__fechar" data-menu-fechar aria-label="{{ t .Lang "a11y.fechar" }}">✕</button>
+  <nav class="menu__links" aria-label="{{ t .Lang "a11y.principal" }}">
+    <a href="{{ $p }}/galeria">{{ t .Lang "nav.galeria" }}</a>
+    <a href="{{ $p }}/sobre">{{ t .Lang "nav.sobre" }}</a>
+    <a href="{{ $p }}/midiakit">{{ t .Lang "nav.midiakit" }}</a>
+    <a href="{{ $p }}/contato">{{ t .Lang "nav.contato" }}</a>
+    <a class="menu__lang" href="{{ if $en }}{{ .HrefPT }}{{ else }}{{ .HrefEN }}{{ end }}"
+       hreflang="{{ if $en }}pt-BR{{ else }}en{{ end }}">{{ if $en }}Português{{ else }}English{{ end }}</a>
   </nav>
 </dialog>
 {{ end }}

@@ -41,6 +41,7 @@ body.hero-escuro .navbar {
 
 .navbar__links {
   display: flex;
+  align-items: center;
   gap: 1.5rem;
   font-size: 0.9rem;
 
@@ -55,6 +56,20 @@ body.hero-escuro .navbar {
   // no mobile os links viram o menu <dialog>
   @media (max-width: 767px) {
     display: none;
+  }
+}
+
+// seletor de idioma (EN/PT): pílula discreta que herda a cor da navbar
+.navbar__lang {
+  padding: 0.15rem 0.55rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+
+  &:hover {
+    opacity: 1;
   }
 }
 
@@ -137,6 +152,15 @@ body.hero-escuro .navbar {
     &:hover {
       opacity: 0.65;
     }
+  }
+
+  // seletor de idioma no menu mobile: menor e sans, destaca dos links serif
+  .menu__lang {
+    margin-top: 0.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
+    opacity: 0.75;
   }
 }
 
