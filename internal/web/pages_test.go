@@ -28,6 +28,7 @@ func TestPaginasRenderizam(t *testing.T) {
 			"wa.me/554191977011", // CTA WhatsApp montado no servidor
 			"conic-gradient",     // donut de métrica
 			"Briefing &amp; objetivos", // processo
+			"mk-filtro", "beleza-loreal.avif", "data-video-src", // portfolio de videos
 		}},
 	}
 
@@ -56,6 +57,38 @@ func TestHomeUsaFotoDoDia(t *testing.T) {
 	s.Handler().ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/", nil))
 	if !strings.Contains(w.Body.String(), "https://cdn.test/") {
 		t.Error("a home devia embutir a foto do dia (URL do bucket)")
+	}
+}
+
+// TestPortfolioVideosFragmento: o filtro de categoria do portfolio (HTMX) devolve
+// so a categoria pedida, com o poster, e 404 para categoria inventada -- o mesmo
+// contrato da galeria de fotos.
+func TestPortfolioVideosFragmento(t *testing.T) {
+	s := servidorComFotos(t)
+	h := s.Handler()
+
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/midiakit/videos?cat=beleza", nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("status %d, quero 200. Corpo: %.300s", w.Code, w.Body.String())
+	}
+	corpo := w.Body.String()
+	for _, m := range []string{"mk-portfolio", "Beleza", "beleza-loreal.avif", "data-video-src"} {
+		if !strings.Contains(corpo, m) {
+			t.Errorf("fragmento nao contem %q", m)
+		}
+	}
+	// "Eventos" aparece nos botões de filtro (correto); o que NÃO pode aparecer é
+	// um vídeo de outra categoria no grid.
+	if strings.Contains(corpo, "eventos-natura-yoga.avif") {
+		t.Error("filtro 'beleza' nao devia renderizar videos de 'Eventos'")
+	}
+
+	// categoria inexistente -> 404 (nao lista vazia)
+	w = httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/midiakit/videos?cat=naoexiste", nil))
+	if w.Code != http.StatusNotFound {
+		t.Errorf("status %d, quero 404 para categoria invalida", w.Code)
 	}
 }
 

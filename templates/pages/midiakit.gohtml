@@ -73,13 +73,13 @@
     </article>
   </section>
 
-  {{- /* Portfólio de vídeos — placeholder até a Fase 9 */}}
+  {{- /* Portfólio de vídeos — poster AVIF; o .webm carrega no clique (app.js) */}}
   <section id="portfolio" class="mk-secao mk-portfolio">
     <h2>Trabalhos</h2>
     <p>
       Uma curadoria de vídeos pensados para diferentes marcas nesse mundo UGC / IGC.
     </p>
-    <p class="mk-em-breve">Portfólio de vídeos por categoria — chega na Fase 9.</p>
+    {{ template "mk_portfolio" .Portfolio }}
     <a href="https://www.instagram.com/isabelpontesfotografia/" class="mk-btn"
        target="_blank" rel="noopener">Ver trabalho no Instagram</a>
   </section>

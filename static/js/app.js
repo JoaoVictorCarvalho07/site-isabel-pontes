@@ -174,4 +174,30 @@
 		},
 		{ passive: true },
 	);
+
+	// ── Portfólio de vídeos (mídia kit) ──────────────────────────────────────────
+	// Cada card mostra só o poster (AVIF leve). No clique, troca o poster pelo
+	// <video> e carrega o .webm do R2 -- os 26 vídeos somam 322MB, então nada de
+	// autoplay em massa. Delegação no document para sobreviver aos swaps do HTMX
+	// (filtro de categoria). Um vídeo tocando por vez.
+	document.addEventListener("click", (e) => {
+		const mock = e.target.closest(".mk-video__mock");
+		if (!mock) return;
+		const frame = mock.closest(".mk-video__frame");
+		const src = mock.dataset.videoSrc;
+		if (!frame || !src) return;
+
+		// pausa qualquer outro vídeo já aberto
+		document.querySelectorAll(".mk-video__frame video").forEach((v) => v.pause());
+
+		const video = document.createElement("video");
+		video.src = src;
+		video.controls = true;
+		video.autoplay = true;
+		video.playsInline = true;
+		video.preload = "metadata";
+		video.className = "mk-video__player";
+		frame.replaceChildren(video);
+		video.play().catch(() => {});
+	});
 })();

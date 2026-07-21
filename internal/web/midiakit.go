@@ -27,6 +27,7 @@ type midiaKitView struct {
 	Processo      []passoProcesso
 	Metricas      []metricaRede
 	Investimentos []blocoPacotes
+	Portfolio     portfolioView
 }
 
 func (s *Server) midiakit(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +45,61 @@ func (s *Server) midiakit(w http.ResponseWriter, r *http.Request) {
 		Processo:      processo,
 		Metricas:      metricas,
 		Investimentos: investimentos,
+		Portfolio:     buildPortfolio(""), // "" = todas as categorias
 	})
+}
+
+// ── Portfólio de vídeos (#portfolio, filtro via HTMX) ─────────────────────────
+//
+// Mesmo padrão da galeria de fotos: um partial (mk_portfolio) com o filtro E o
+// grid num wrapper só, trocado por hx-swap=outerHTML para o botão ativo atualizar
+// junto. O mesmo partial serve a página inteira e o fragmento -- se divergirem, o
+// que o clique mostra difere do estado inicial. Dados: portfolioVideos (gerado em
+// midiakit_videos.go). Diferente da galeria, o filtro NÃO muda a URL: é um widget
+// interno da one-page, não uma rota com deep-link próprio.
+
+type portfolioFiltro struct {
+	Slug   string
+	Nome   string
+	Active bool
+}
+
+type portfolioView struct {
+	Filtros []portfolioFiltro // "Todos" + uma por categoria
+	Grupos  []categoriaVideos // o que renderizar: todas, ou só a filtrada
+}
+
+// buildPortfolio monta a view para uma categoria (slug vazio = todas).
+func buildPortfolio(catSlug string) portfolioView {
+	filtros := []portfolioFiltro{{Slug: "", Nome: "Todos", Active: catSlug == ""}}
+	grupos := make([]categoriaVideos, 0, len(portfolioVideos))
+	for _, c := range portfolioVideos {
+		filtros = append(filtros, portfolioFiltro{Slug: c.Slug, Nome: c.Nome, Active: c.Slug == catSlug})
+		if catSlug == "" || c.Slug == catSlug {
+			grupos = append(grupos, c)
+		}
+	}
+	return portfolioView{Filtros: filtros, Grupos: grupos}
+}
+
+func categoriaValida(slug string) bool {
+	for _, c := range portfolioVideos {
+		if c.Slug == slug {
+			return true
+		}
+	}
+	return false
+}
+
+// midiakitVideos serve SÓ o wrapper #mk-portfolio (filtro + grid) -- a resposta
+// do HTMX ao clicar num filtro de categoria.
+func (s *Server) midiakitVideos(w http.ResponseWriter, r *http.Request) {
+	cat := r.URL.Query().Get("cat")
+	if cat != "" && !categoriaValida(cat) {
+		http.Error(w, "categoria desconhecida", http.StatusNotFound)
+		return
+	}
+	s.render.Fragment(w, "midiakit", "mk_portfolio", buildPortfolio(cat))
 }
 
 // wppURL monta o link do WhatsApp com a mensagem ja pronta, direto no servidor --

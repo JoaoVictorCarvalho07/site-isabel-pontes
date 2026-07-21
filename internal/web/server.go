@@ -105,6 +105,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /sobre", s.sobre)
 	mux.HandleFunc("GET /contato", s.contato)
 	mux.HandleFunc("GET /midiakit", s.midiakit)             // one-page de pitch UGC/IGC
+	mux.HandleFunc("GET /midiakit/videos", s.midiakitVideos) // fragmento HTMX do portfolio
 	mux.HandleFunc("GET /galeria", s.galeria)               // pagina completa
 	mux.HandleFunc("GET /galeria/fotos", s.galeriaFragment) // fragmento HTMX
 	mux.HandleFunc("GET /robots.txt", s.robots)

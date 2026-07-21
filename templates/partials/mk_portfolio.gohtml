@@ -1,0 +1,46 @@
+{{- /*
+  #mk-portfolio: filtro de categoria + grid de vídeos, num wrapper só (igual ao
+  #galeria-body). O HTMX troca este bloco inteiro (hx-swap=outerHTML) ao clicar
+  num filtro, então o botão ativo atualiza junto com os vídeos.
+
+  MESMO partial na página completa (/midiakit) e no fragmento (/midiakit/videos).
+
+  Performance: mostra só o POSTER (AVIF, ~13KB) de cada vídeo. O .webm (no R2, até
+  22MB) só carrega quando o visitante clica no play -- ver o handler em app.js.
+*/ -}}
+{{ define "mk_portfolio" }}
+<div id="mk-portfolio">
+  <nav class="mk-filtros" aria-label="Filtrar por categoria">
+    {{- range .Filtros }}
+    <button type="button"
+      hx-get="/midiakit/videos{{ if .Slug }}?cat={{ .Slug }}{{ end }}"
+      hx-target="#mk-portfolio"
+      hx-swap="outerHTML"
+      class="mk-filtro{{ if .Active }} mk-filtro--ativo{{ end }}"
+      {{ if .Active }}aria-current="true"{{ end }}>{{ .Nome }}</button>
+    {{- end }}
+  </nav>
+
+  {{- range .Grupos }}
+  <section class="mk-vgrupo">
+    <h3 class="mk-vgrupo__nome">{{ .Nome }}</h3>
+    <div class="mk-vgrid">
+      {{- range .Videos }}
+      <figure class="mk-video">
+        <div class="mk-video__frame">
+          <button type="button" class="mk-video__mock" data-video-src="{{ .Src }}"
+                  aria-label="Assistir vídeo: {{ .Titulo }}">
+            {{ template "picture" (dict
+              "Base" .Poster "W" 400 "H" 711
+              "Alt" (printf "Prévia do vídeo %s" .Titulo) "Class" "mk-video__poster") }}
+            <span class="mk-video__play" aria-hidden="true"></span>
+          </button>
+        </div>
+        <figcaption class="mk-video__titulo">{{ .Titulo }}</figcaption>
+      </figure>
+      {{- end }}
+    </div>
+  </section>
+  {{- end }}
+</div>
+{{ end }}
