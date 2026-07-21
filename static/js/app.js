@@ -188,6 +188,45 @@
 		} catch (err) {}
 	});
 
+	// ── Imprimir / salvar em PDF (mídia kit) ─────────────────────────────────────
+	// Antes de imprimir, abre todos os <details> -- senão o "Entenda" do processo
+	// sai vazio no papel. Depois restaura como estava.
+	window.addEventListener("beforeprint", () => {
+		document.querySelectorAll("details").forEach((d) => {
+			d.dataset.abertoAntes = d.open ? "1" : "0";
+			d.open = true;
+		});
+	});
+	window.addEventListener("afterprint", () => {
+		document.querySelectorAll("details").forEach((d) => {
+			d.open = d.dataset.abertoAntes === "1";
+		});
+	});
+
+	// O botão só chama window.print() depois de garantir que as imagens lazy
+	// entraram: o que não carregou sairia em branco no PDF. Timeout de segurança
+	// pra nunca deixar o clique sem resposta.
+	document.addEventListener("click", (e) => {
+		if (!e.target.closest("[data-imprimir]")) return;
+
+		const lazy = [...document.querySelectorAll('img[loading="lazy"]')];
+		lazy.forEach((img) => {
+			img.loading = "eager";
+		});
+		const prontas = lazy.map((img) =>
+			img.complete
+				? Promise.resolve()
+				: new Promise((r) => {
+						img.addEventListener("load", r, { once: true });
+						img.addEventListener("error", r, { once: true });
+					}),
+		);
+		Promise.race([
+			Promise.all(prontas),
+			new Promise((r) => setTimeout(r, 3000)),
+		]).then(() => window.print());
+	});
+
 	// ── Portfólio de vídeos (mídia kit) ──────────────────────────────────────────
 	// Cada card mostra só o poster (AVIF leve). No clique, troca o poster pelo
 	// <video> e carrega o .webm do R2 -- os 26 vídeos somam 322MB, então nada de

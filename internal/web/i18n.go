@@ -79,6 +79,7 @@ var traducoes = map[string]ml{
 	"mk.assistir":     {"Assistir vídeo", "Watch video"},
 	"mk.previa":       {"Prévia do vídeo", "Video preview"},
 	"mk.filtrarCat":   {"Filtrar por categoria", "Filter by category"},
+	"mk.baixarPdf":     {"Baixar em PDF", "Download as PDF"},
 	"mk.contatoTitulo": {"Vamos criar algo extraordinário?", "Shall we create something extraordinary?"},
 	"mk.contatoSub":   {"Estou pronta para elevar a narrativa da sua marca.", "I'm ready to elevate your brand's narrative."},
 	"mk.wppGeral":     {"Oii Isa! Vim pelo mídia kit e quero conversar sobre um trabalho ✨", "Hi Isa! I came from the media kit and I'd like to talk about a project ✨"},

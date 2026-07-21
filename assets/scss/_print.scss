@@ -1,0 +1,79 @@
+@use 'tokens';
+
+// Impressão / "Salvar como PDF" (docs §4b: a página É o produto; o PDF é o mesmo
+// conteúdo em papel). Some o chrome de navegação e o que não existe impresso;
+// mantém as cores da marca. Serve os dois idiomas -- imprime o que está na tela.
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  // Paleta clara fixa: imprimir o tema escuro gasta tinta e fica ilegível.
+  // Sobrescreve os tokens independentemente do data-theme escolhido.
+  :root {
+    --background: #fff;
+    --foreground: #1a1a1a;
+    --card: #fff;
+    --card-foreground: #1a1a1a;
+    --muted: #f2efe9;
+    --muted-foreground: #444;
+    --border: #cfc8bd;
+    --primary: #3a2b22;
+    --primary-foreground: #fff;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  // sem isto o navegador descarta fundos: o hero, os painéis de métrica e o
+  // rodapé vinho sairiam brancos, e o mídia kit perde a identidade.
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  // navegação e ações não existem no papel
+  .navbar,
+  .menu,
+  .skip-link,
+  .mk-filtros,
+  .mk-video__play,
+  .mk-btn,
+  [data-imprimir] {
+    display: none !important;
+  }
+
+  // vh não faz sentido numa página impressa
+  .mk-hero {
+    min-height: auto;
+    padding: 2.5rem 1.5rem;
+  }
+
+  .mk-secao {
+    padding: 1.5rem 0;
+  }
+
+  // não partir blocos no meio de uma página
+  .mk-rede,
+  .mk-pacote,
+  .mk-passo,
+  .mk-video,
+  .mk-verbete,
+  .mk-vgrupo {
+    break-inside: avoid;
+  }
+
+  // o triângulo do <details> some (o app.js abre todos antes de imprimir)
+  .mk-passo__mais summary {
+    list-style: none;
+  }
+
+  // contatos como texto: no papel, ícone sem rótulo não serve
+  .mk-contato__print {
+    display: block;
+  }
+}

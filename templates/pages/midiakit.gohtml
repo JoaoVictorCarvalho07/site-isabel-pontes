@@ -19,6 +19,8 @@
       <div class="mk-hero__ctas">
         <a href="#portfolio" class="mk-btn mk-btn--claro">{{ t .Lang "mk.verTrabalhos" }}</a>
         <a href="#investimento" class="mk-btn">{{ t .Lang "mk.investimento" }}</a>
+        {{- /* imprime a própria página (o CSS de impressão cuida do resto) */}}
+        <button type="button" class="mk-btn mk-btn--claro" data-imprimir>{{ t .Lang "mk.baixarPdf" }}</button>
       </div>
     </div>
   </section>
@@ -231,6 +233,10 @@
       <a href="https://instagram.com/isapontesfoto" target="_blank" rel="noopener" aria-label="Instagram">{{ svg "img/social/instagram.svg" }}</a>
       <a href="https://www.tiktok.com/@isabelpontesfoto" target="_blank" rel="noopener" aria-label="TikTok">{{ svg "img/social/tiktok.svg" }}</a>
     </div>
+    {{- /* no papel o ícone não diz nada: os contatos viram texto (só no print) */}}
+    <p class="mk-contato__print">
+      isabelpontesfotografia@gmail.com · instagram.com/isapontesfoto · wa.me/554191977011
+    </p>
     <p class="mk-contato__copy">© {{ .Ano }} Isa Pontes</p>
   </footer>
 

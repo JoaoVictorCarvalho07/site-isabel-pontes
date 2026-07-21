@@ -1,4 +1,4 @@
-@use 'tokens';
+@use "tokens";
 
 // Mídia kit — one-page de pitch. FASE 8: estilo real de todas as seções, na
 // identidade da marca (creme/café/dourado/vinho/verde). Sem tema roxo/rosa: o
@@ -6,332 +6,339 @@
 
 // ── Botão de marca ────────────────────────────────────────────────────────────
 .mk-btn {
-  display: inline-block;
-  padding: 0.9rem 2rem;
-  border: 1px solid var(--gold);
-  color: var(--foreground);
-  font-family: var(--font-sans);
-  font-size: 0.78rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  transition: background 0.25s, color 0.25s;
+	display: inline-block;
+	padding: 0.9rem 2rem;
+	border: 1px solid var(--gold);
+	color: var(--foreground);
+	font-family: var(--font-sans);
+	font-size: 0.78rem;
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	transition:
+		background 0.25s,
+		color 0.25s;
 
-  &:hover {
-    background: var(--gold);
-    color: var(--primary-fixed);
-  }
+	&:hover {
+		background: var(--gold);
+		color: var(--primary-fixed);
+	}
 
-  // variante clara: sobre fundo escuro (hero)
-  &--claro {
-    border-color: var(--primary-foreground-fixed);
-    color: var(--primary-foreground-fixed);
+	// variante clara: sobre fundo escuro (hero)
+	&--claro {
+		border-color: var(--primary-foreground-fixed);
+		color: var(--primary-foreground-fixed);
 
-    &:hover {
-      background: var(--primary-foreground-fixed);
-      color: var(--primary-fixed);
-    }
-  }
+		&:hover {
+			background: var(--primary-foreground-fixed);
+			color: var(--primary-fixed);
+		}
+	}
 }
 
 // ── Hero ──────────────────────────────────────────────────────────────────────
 // Escuro nos dois temas (tokens *-fixed não invertem): o fundo é sempre escuro.
 .mk-hero {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 78vh;
-  padding: 7rem 1.5rem 4rem;
-  text-align: center;
-  background: var(--primary-fixed);
-  color: var(--primary-foreground-fixed);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 78vh;
+	padding: 7rem 1.5rem 4rem;
+	text-align: center;
+	background: var(--primary-fixed);
+	color: var(--primary-foreground-fixed);
 }
 
 .mk-hero__texto {
-  max-width: 46rem;
+	max-width: 46rem;
 
-  h1 {
-    font-family: var(--font-serif);
-    font-size: clamp(2.75rem, 9vw, 5.5rem);
-    line-height: 1.02;
-    letter-spacing: 0.04em;
-  }
+	h1 {
+		font-family: var(--font-serif);
+		font-size: clamp(2.75rem, 9vw, 5.5rem);
+		line-height: 1.02;
+		letter-spacing: 0.04em;
+	}
 }
 
 .mk-hero__sub {
-  margin-top: 0.5rem;
-  font-family: var(--font-sans);
-  font-size: 0.95rem;
-  text-transform: uppercase;
-  letter-spacing: 0.22em;
-  color: var(--gold);
+	margin-top: 0.5rem;
+	font-family: var(--font-sans);
+	font-size: 0.95rem;
+	text-transform: uppercase;
+	letter-spacing: 0.22em;
+	color: var(--gold);
 }
 
 .mk-hero__tag {
-  margin: 1.5rem auto 0;
-  max-width: 34rem;
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 1.25rem;
-  opacity: 0.92;
+	margin: 1.5rem auto 0;
+	max-width: 34rem;
+	font-family: var(--font-serif);
+	font-style: italic;
+	font-size: 1.25rem;
+	opacity: 0.92;
 }
 
 .mk-hero__ctas {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 2.25rem;
+	display: flex;
+	gap: 1rem;
+	justify-content: center;
+	flex-wrap: wrap;
+	margin-top: 2.25rem;
 }
 
 // ── Seção base ────────────────────────────────────────────────────────────────
 .mk-secao {
-  max-width: 68rem;
-  margin: 0 auto;
-  padding: 4.5rem 1.5rem;
-  scroll-margin-top: 5rem; // navbar fixa não cobre a âncora
+	max-width: 68rem;
+	margin: 0 auto;
+	padding: 4.5rem 1.5rem;
+	scroll-margin-top: 5rem; // navbar fixa não cobre a âncora
 
-  > h2 {
-    font-family: var(--font-serif);
-    font-size: clamp(1.9rem, 4vw, 2.75rem);
-    color: var(--primary);
-    margin-bottom: 1.25rem;
-  }
+	> h2 {
+		font-family: var(--font-serif);
+		font-size: clamp(1.9rem, 4vw, 2.75rem);
+		color: var(--primary);
+		margin-bottom: 1.25rem;
+	}
 }
 
 .mk-em-breve {
-  color: var(--muted-foreground);
-  font-family: var(--font-sans);
-  font-style: italic;
+	color: var(--muted-foreground);
+	font-family: var(--font-sans);
+	font-style: italic;
 }
 
 // ── Bio ───────────────────────────────────────────────────────────────────────
 .mk-bio {
-  p {
-    max-width: 44rem;
-    margin-bottom: 1rem;
-    color: var(--muted-foreground);
-  }
-  strong {
-    color: var(--foreground);
-  }
+	p {
+		max-width: 44rem;
+		margin-bottom: 1rem;
+		color: var(--muted-foreground);
+	}
+	strong {
+		color: var(--foreground);
+	}
 }
 
 .mk-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin-top: 1.5rem;
-  list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.6rem;
+	margin-top: 1.5rem;
+	list-style: none;
 
-  li {
-    padding: 0.35rem 1rem;
-    border-radius: 999px;
-    background: var(--destructive); // vinho
-    color: var(--destructive-foreground);
-    font-family: var(--font-sans);
-    font-size: 0.78rem;
-    letter-spacing: 0.02em;
-  }
+	li {
+		padding: 0.35rem 1rem;
+		border-radius: 999px;
+		background: var(--destructive); // vinho
+		color: var(--destructive-foreground);
+		font-family: var(--font-sans);
+		font-size: 0.78rem;
+		letter-spacing: 0.02em;
+	}
 }
 
 // ── Dicionário UGC / IGC ──────────────────────────────────────────────────────
 .mk-dic {
-  display: grid;
-  gap: 1.5rem;
+	display: grid;
+	gap: 1.5rem;
 
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
-  }
+	@media (min-width: 768px) {
+		grid-template-columns: 1fr 1fr;
+	}
 }
 
 .mk-verbete {
-  position: relative;
-  padding: 2.5rem 2rem;
-  border: 1px solid var(--border);
-  background: var(--card);
+	position: relative;
+	padding: 2.5rem 2rem;
+	border: 1px solid var(--border);
+	background: var(--card);
 
-  // ornamento ✦ no topo, como no mídia kit original
-  &::before {
-    content: '✦';
-    position: absolute;
-    top: -0.85rem;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 0 0.6rem;
-    background: var(--card);
-    color: var(--gold);
-    font-size: 1.4rem;
-  }
+	// ornamento ✦ no topo, como no mídia kit original
+	&::before {
+		content: "✦";
+		position: absolute;
+		top: -0.85rem;
+		left: 50%;
+		transform: translateX(-50%);
+		padding: 0 0.6rem;
+		background: var(--card);
+		color: var(--gold);
+		font-size: 1.4rem;
+	}
 
-  h3 {
-    font-family: var(--font-serif);
-    font-size: 1.9rem;
-    color: var(--primary);
-  }
+	h3 {
+		font-family: var(--font-serif);
+		font-size: 1.9rem;
+		color: var(--primary);
+	}
 
-  p {
-    margin-top: 0.75rem;
-    color: var(--muted-foreground);
-  }
-  strong {
-    color: var(--foreground);
-  }
+	p {
+		margin-top: 0.75rem;
+		color: var(--muted-foreground);
+	}
+	strong {
+		color: var(--foreground);
+	}
 }
 
 .mk-verbete__fon {
-  display: block;
-  margin-top: 0.25rem;
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
-  color: var(--muted-foreground);
+	display: block;
+	margin-top: 0.25rem;
+	font-family: var(--font-sans);
+	font-size: 0.85rem;
+	color: var(--muted-foreground);
 }
 
 // ── Portfólio de vídeos ───────────────────────────────────────────────────────
 .mk-portfolio {
-  > p {
-    max-width: 40rem;
-    color: var(--muted-foreground);
-  }
-  > .mk-btn {
-    margin-top: 2rem;
-  }
+	> p {
+		max-width: 40rem;
+		color: var(--muted-foreground);
+	}
+	> .mk-btn {
+		margin-top: 2rem;
+	}
 }
 
 // filtro de categoria (pills)
 .mk-filtros {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin: 1.5rem 0 2.5rem;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.6rem;
+	margin: 1.5rem 0 2.5rem;
 }
 
 .mk-filtro {
-  padding: 0.45rem 1.1rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--muted-foreground);
-  font-family: var(--font-sans);
-  font-size: 0.8rem;
-  letter-spacing: 0.03em;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
+	padding: 0.45rem 1.1rem;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	background: transparent;
+	color: var(--muted-foreground);
+	font-family: var(--font-sans);
+	font-size: 0.8rem;
+	letter-spacing: 0.03em;
+	cursor: pointer;
+	transition:
+		background 0.2s,
+		color 0.2s,
+		border-color 0.2s;
 
-  &:hover {
-    border-color: var(--gold);
-    color: var(--foreground);
-  }
-  &--ativo {
-    background: var(--gold);
-    border-color: var(--gold);
-    color: var(--primary-fixed);
-  }
+	&:hover {
+		border-color: var(--gold);
+		color: var(--foreground);
+	}
+	&--ativo {
+		background: var(--gold);
+		border-color: var(--gold);
+		color: var(--primary-fixed);
+	}
 }
 
 // grupos por categoria
 .mk-vgrupo {
-  margin-bottom: 2.75rem;
+	margin-bottom: 2.75rem;
 
-  &__nome {
-    font-family: var(--font-serif);
-    font-size: 1.4rem;
-    color: var(--primary);
-    margin-bottom: 1.1rem;
-  }
+	&__nome {
+		font-family: var(--font-serif);
+		font-size: 1.4rem;
+		color: var(--primary);
+		margin-bottom: 1.1rem;
+	}
 }
 
 .mk-vgrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 1rem;
 
-  @media (min-width: 560px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  @media (min-width: 900px) {
-    grid-template-columns: repeat(4, 1fr);
-  }
+	@media (min-width: 560px) {
+		grid-template-columns: repeat(3, 1fr);
+	}
+	@media (min-width: 900px) {
+		grid-template-columns: repeat(4, 1fr);
+	}
 }
 
 .mk-video {
-  margin: 0;
+	margin: 0;
 }
 
 // mockup vertical 9:16; mostra o poster, troca por <video> no clique (app.js)
 .mk-video__frame {
-  position: relative;
-  aspect-ratio: 9 / 16;
-  border-radius: 0.9rem;
-  overflow: hidden;
-  background: #000;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+	position: relative;
+	aspect-ratio: 9 / 16;
+	border-radius: 0.9rem;
+	overflow: hidden;
+	background: #000;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
 
 .mk-video__mock {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: pointer;
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
 }
 
 .mk-video__poster,
 .mk-video__player {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
 }
 
 .mk-video__play {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 3rem;
-  height: 3rem;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.42);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  display: grid;
-  place-items: center;
-  transition: transform 0.2s, background 0.2s;
+	position: absolute;
+	inset: 0;
+	margin: auto;
+	width: 3rem;
+	height: 3rem;
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.42);
+	border: 1px solid rgba(255, 255, 255, 0.6);
+	display: grid;
+	place-items: center;
+	transition:
+		transform 0.2s,
+		background 0.2s;
 
-  &::before {
-    content: "";
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 0.5rem 0 0.5rem 0.85rem;
-    border-color: transparent transparent transparent #fff;
-    margin-left: 0.2rem;
-  }
+	&::before {
+		content: "";
+		width: 0;
+		height: 0;
+		border-style: solid;
+		border-width: 0.5rem 0 0.5rem 0.85rem;
+		border-color: transparent transparent transparent #fff;
+		margin-left: 0.2rem;
+	}
 }
 
 .mk-video__mock:hover .mk-video__play {
-  transform: scale(1.09);
-  background: rgba(0, 0, 0, 0.6);
+	transform: scale(1.09);
+	background: rgba(0, 0, 0, 0.6);
 }
 
 .mk-video__titulo {
-  margin-top: 0.6rem;
-  text-align: center;
-  font-family: var(--font-sans);
-  font-size: 0.82rem;
-  color: var(--muted-foreground);
+	margin-top: 0.6rem;
+	text-align: center;
+	font-family: var(--font-sans);
+	font-size: 0.82rem;
+	color: var(--muted-foreground);
 }
 
 // ── Métricas ──────────────────────────────────────────────────────────────────
 // cards empilhados em largura cheia, cada um com o celular flutuante ao lado
 .mk-metricas__grid {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
 }
 
 // painel escuro FIXO nos dois temas (as cores dos donuts contam com isso).
@@ -339,402 +346,419 @@
 // e adaptável: onde o conteúdo é mais alto que o celular, ele contorna por baixo.
 // flow-root contém o float dentro do card.
 .mk-rede {
-  display: flow-root;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  background: var(--primary-fixed);
-  color: var(--primary-foreground-fixed);
+	display: flow-root;
+	padding: 1.5rem;
+	border-radius: 1rem;
+	background: var(--primary-fixed);
+	color: var(--primary-foreground-fixed);
 
-  @media (min-width: 768px) {
-    padding: 2.5rem;
-  }
+	@media (min-width: 768px) {
+		padding: 2.5rem;
+	}
 
-  h3 {
-    font-family: var(--font-serif);
-    font-size: 1.6rem;
-  }
-  h4 {
-    margin-top: 1.5rem;
-    font-family: var(--font-sans);
-    font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    opacity: 0.85;
-  }
+	h3 {
+		font-family: var(--font-serif);
+		font-size: 1.6rem;
+	}
+	h4 {
+		margin-top: 1.5rem;
+		font-family: var(--font-sans);
+		font-size: 0.95rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		opacity: 0.85;
+	}
 }
 
 // o wrapper some do layout: seus filhos (h3, kpis, barras, donuts) fluem direto
 // no card, contornando o celular flutuante.
 .mk-rede__conteudo {
-  display: contents;
+	display: contents;
 }
 
 // celular flutuante. shape-outside faz o texto abraçar a silhueta real do celular
 // (o WebP tem alpha), não só a caixa retangular -- é o que dá o ar fluido.
 // Instagram (dir) flutua à direita; TikTok (esq), à esquerda.
 .mk-rede__phone {
-  float: right;
-  width: clamp(120px, 32vw, 250px);
-  height: auto;
-  margin: 0 0 0.75rem 1.25rem;
-  filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.45));
-  shape-outside: url("/static/img/midiakit/phone-instagram.webp");
-  shape-margin: 0.75rem;
+	float: right;
+	width: clamp(120px, 32vw, 250px);
+	height: auto;
+	margin: 0 0 0.75rem 1.25rem;
+	filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.45));
+	shape-outside: url("/static/img/midiakit/phone-instagram.webp");
+	shape-margin: 0.75rem;
 }
 
 .mk-rede--esq .mk-rede__phone {
-  float: left;
-  margin: 0 1.25rem 0.75rem 0;
-  shape-outside: url("/static/img/midiakit/phone-tiktok.webp");
+	float: left;
+	margin: 0 1.25rem 0.75rem 0;
+	shape-outside: url("/static/img/midiakit/phone-tiktok.webp");
 }
 
 .mk-kpis {
-  display: flex;
-  flex-wrap: wrap; // se não couber ao lado do celular, quebra em vez de vazar do card
-  gap: 1.25rem; // menor entre "seguidores" e "visualizações"
-  margin-top: 1rem;
+	display: flex;
+	flex-wrap: wrap; // se não couber ao lado do celular, quebra em vez de vazar do card
+	gap: 1.25rem; // menor entre "seguidores" e "visualizações"
+	margin-top: 1rem;
 }
 
 .mk-kpi {
-  strong {
-    display: block;
-    font-size: 1.6rem;
-    line-height: 1.1;
-    color: var(--gold);
-  }
-  span {
-    font-size: 0.8rem;
-    opacity: 0.85;
-  }
+	strong {
+		display: block;
+		font-size: 1.6rem;
+		line-height: 1.1;
+		color: var(--gold);
+	}
+	span {
+		font-size: 0.8rem;
+		opacity: 0.85;
+	}
 }
 
 .mk-barras {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	margin-top: 0.75rem;
 }
 
 .mk-barra__topo {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.85rem;
-  margin-bottom: 0.3rem;
+	display: flex;
+	justify-content: space-between;
+	font-size: 0.85rem;
+	margin-bottom: 0.3rem;
 }
 
 .mk-barra__trilha {
-  height: 0.6rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
-  overflow: hidden;
+	height: 0.6rem;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.18);
+	overflow: hidden;
 }
 
 .mk-barra__preenche {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: #efe3d0;
+	display: block;
+	height: 100%;
+	border-radius: 999px;
+	background: #efe3d0;
 }
 
 .mk-donuts {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  margin-top: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+	margin-top: 1.5rem;
 }
 
 .mk-donut-linha {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+	display: flex;
+	align-items: center;
+	gap: 1rem;
 }
 
 .mk-donut {
-  position: relative;
-  flex: 0 0 auto;
-  width: 4.4rem;
-  height: 4.4rem;
-  border-radius: 50%;
+	position: relative;
+	flex: 0 0 auto;
+	width: 4.4rem;
+	height: 4.4rem;
+	border-radius: 50%;
 
-  // buraco do donut = cor do painel
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0.9rem;
-    border-radius: 50%;
-    background: var(--primary-fixed);
-  }
+	// buraco do donut = cor do painel
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 0.9rem;
+		border-radius: 50%;
+		background: var(--primary-fixed);
+	}
 }
 
 .mk-legenda {
-  list-style: none;
-  font-size: 0.85rem;
+	list-style: none;
+	font-size: 0.85rem;
 
-  li {
-    margin: 0.15rem 0;
-  }
-  strong {
-    color: var(--gold);
-  }
+	li {
+		margin: 0.15rem 0;
+	}
+	strong {
+		color: var(--gold);
+	}
 }
 
 .mk-ponto {
-  display: inline-block;
-  width: 0.55rem;
-  height: 0.55rem;
-  border-radius: 50%;
-  margin-right: 0.4rem;
-  vertical-align: middle;
+	display: inline-block;
+	width: 0.55rem;
+	height: 0.55rem;
+	border-radius: 50%;
+	margin-right: 0.4rem;
+	vertical-align: middle;
 }
 
 // Mobile: KPIs e "Público" fluem ao lado do celular; os DOIS donuts descem
 // (clear) e ficam LADO A LADO em largura cheia, pra não espremer no cantinho.
 @media (max-width: 767px) {
-  .mk-kpi strong {
-    font-size: 1.3rem;
-  }
-  .mk-donuts {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-    clear: both; // garante que descem PRA BAIXO do celular, não ao lado
-  }
-  .mk-donut-linha {
-    gap: 0.55rem;
-  }
-  .mk-donut {
-    width: 3.4rem;
-    height: 3.4rem;
+	.mk-kpi strong {
+		font-size: 1.3rem;
+	}
+	.mk-donuts {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.75rem;
+		clear: both; // garante que descem PRA BAIXO do celular, não ao lado
+	}
+	.mk-donut-linha {
+		gap: 0.55rem;
+	}
+	.mk-donut {
+		width: 3.4rem;
+		height: 3.4rem;
 
-    &::after {
-      inset: 0.7rem;
-    }
-  }
-  .mk-legenda {
-    font-size: 0.72rem;
-  }
+		&::after {
+			inset: 0.7rem;
+		}
+	}
+	.mk-legenda {
+		font-size: 0.72rem;
+		padding-left: 0 !important;
+		.strong {
+			padding-right: 10px;
+		}
+	}
 }
 
 // ── Processo (repensado, sem JS: <details> nativo) ────────────────────────────
 .mk-processo__pill {
-  display: inline-block;
-  padding: 0.4rem 1rem;
-  margin-bottom: 2rem;
-  border: 1px solid var(--gold);
-  border-radius: 999px;
-  font-family: var(--font-sans);
-  font-size: 0.82rem;
-  color: var(--muted-foreground);
+	display: inline-block;
+	padding: 0.4rem 1rem;
+	margin-bottom: 2rem;
+	border: 1px solid var(--gold);
+	border-radius: 999px;
+	font-family: var(--font-sans);
+	font-size: 0.82rem;
+	color: var(--muted-foreground);
 }
 
 .mk-passos {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
 }
 
 .mk-passo {
-  display: flex;
-  gap: 1.25rem;
-  padding: 1.5rem;
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--gold);
-  background: var(--card);
+	display: flex;
+	gap: 1.25rem;
+	padding: 1.5rem;
+	border: 1px solid var(--border);
+	border-left: 3px solid var(--gold);
+	background: var(--card);
 }
 
 .mk-passo__num {
-  font-family: var(--font-serif);
-  font-size: 2rem;
-  line-height: 1;
-  color: var(--gold);
+	font-family: var(--font-serif);
+	font-size: 2rem;
+	line-height: 1;
+	color: var(--gold);
 }
 
 .mk-passo__corpo {
-  flex: 1;
+	flex: 1;
 
-  h3 {
-    font-family: var(--font-serif);
-    font-size: 1.3rem;
-    color: var(--primary);
-  }
-  > p {
-    margin-top: 0.35rem;
-    color: var(--muted-foreground);
-  }
+	h3 {
+		font-family: var(--font-serif);
+		font-size: 1.3rem;
+		color: var(--primary);
+	}
+	> p {
+		margin-top: 0.35rem;
+		color: var(--muted-foreground);
+	}
 }
 
 .mk-passo__mais {
-  margin-top: 0.75rem;
+	margin-top: 0.75rem;
 
-  summary {
-    cursor: pointer;
-    font-family: var(--font-sans);
-    font-size: 0.85rem;
-    color: var(--accent);
-    letter-spacing: 0.03em;
-  }
+	summary {
+		cursor: pointer;
+		font-family: var(--font-sans);
+		font-size: 0.85rem;
+		color: var(--accent);
+		letter-spacing: 0.03em;
+	}
 
-  ul {
-    margin: 0.75rem 0 0 1.1rem;
-    color: var(--muted-foreground);
-    font-size: 0.92rem;
+	ul {
+		margin: 0.75rem 0 0 1.1rem;
+		color: var(--muted-foreground);
+		font-size: 0.92rem;
 
-    li {
-      margin: 0.35rem 0;
-    }
-  }
+		li {
+			margin: 0.35rem 0;
+		}
+	}
 }
 
 .mk-passo__prazo {
-  margin-left: 0.5rem;
-  color: var(--muted-foreground);
-  font-style: italic;
+	margin-left: 0.5rem;
+	color: var(--muted-foreground);
+	font-style: italic;
 }
 
 // ── Investimento (pacotes) ────────────────────────────────────────────────────
 .mk-invest__sub {
-  margin-bottom: 2rem;
-  color: var(--muted-foreground);
+	margin-bottom: 2rem;
+	color: var(--muted-foreground);
 }
 
 .mk-pacotes {
-  display: grid;
-  gap: 1.5rem;
-  align-items: start;
+	display: grid;
+	gap: 1.5rem;
+	align-items: start;
 
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
+	@media (min-width: 768px) {
+		grid-template-columns: repeat(3, 1fr);
+	}
 }
 
 .mk-pacote {
-  position: relative;
-  padding: 2rem 1.75rem;
-  border: 1px solid var(--border);
-  background: var(--card);
-  text-align: center;
-  transition: border-color 0.25s, box-shadow 0.25s;
+	position: relative;
+	padding: 2rem 1.75rem;
+	border: 1px solid var(--border);
+	background: var(--card);
+	text-align: center;
+	transition:
+		border-color 0.25s,
+		box-shadow 0.25s;
 
-  &:hover {
-    border-color: var(--gold);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-  }
+	&:hover {
+		border-color: var(--gold);
+		box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+	}
 
-  h3 {
-    font-family: var(--font-serif);
-    font-size: 1.5rem;
-    color: var(--primary);
-  }
+	h3 {
+		font-family: var(--font-serif);
+		font-size: 1.5rem;
+		color: var(--primary);
+	}
 
-  &--destaque {
-    border-color: var(--gold);
+	&--destaque {
+		border-color: var(--gold);
 
-    @media (min-width: 768px) {
-      transform: scale(1.04);
-    }
-  }
+		@media (min-width: 768px) {
+			transform: scale(1.04);
+		}
+	}
 }
 
 .mk-pacote__selo {
-  display: inline-block;
-  margin-bottom: 0.75rem;
-  padding: 0.25rem 0.9rem;
-  background: var(--gold);
-  color: var(--primary-fixed);
-  font-family: var(--font-sans);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+	display: inline-block;
+	margin-bottom: 0.75rem;
+	padding: 0.25rem 0.9rem;
+	background: var(--gold);
+	color: var(--primary-fixed);
+	font-family: var(--font-sans);
+	font-size: 0.72rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
 }
 
 .mk-pacote__resumo {
-  margin-top: 0.35rem;
-  font-family: var(--font-sans);
-  color: var(--muted-foreground);
+	margin-top: 0.35rem;
+	font-family: var(--font-sans);
+	color: var(--muted-foreground);
 }
 
 .mk-pacote__itens {
-  margin: 1.25rem 0;
-  padding: 0;
-  list-style: none;
-  text-align: left;
+	margin: 1.25rem 0;
+	padding: 0;
+	list-style: none;
+	text-align: left;
 
-  li {
-    position: relative;
-    padding-left: 1.1rem;
-    margin: 0.5rem 0;
-    font-size: 0.92rem;
-    color: var(--muted-foreground);
+	li {
+		position: relative;
+		padding-left: 1.1rem;
+		margin: 0.5rem 0;
+		font-size: 0.92rem;
+		color: var(--muted-foreground);
 
-    &::before {
-      content: '•';
-      position: absolute;
-      left: 0;
-      color: var(--gold);
-    }
-  }
+		&::before {
+			content: "•";
+			position: absolute;
+			left: 0;
+			color: var(--gold);
+		}
+	}
 }
 
 .mk-pacote__preco {
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
-  color: var(--primary);
-  margin-bottom: 1rem;
+	font-family: var(--font-serif);
+	font-size: 1.5rem;
+	color: var(--primary);
+	margin-bottom: 1rem;
 }
 
 // ── Rodapé próprio do mídia kit (contato + redes) ─────────────────────────────
 // Fundo vinho, centralizado, como no mídia kit original. Substitui o rodapé
 // padrão (escondido via OcultarRodape).
 .mk-contato {
-  margin-top: 4rem;
-  padding: clamp(3rem, 8vw, 6rem) 1.5rem;
-  background: var(--destructive);
-  color: var(--destructive-foreground);
-  text-align: center;
+	margin-top: 4rem;
+	padding: clamp(3rem, 8vw, 6rem) 1.5rem;
+	background: var(--destructive);
+	color: var(--destructive-foreground);
+	text-align: center;
 
-  h2 {
-    font-family: var(--font-serif);
-    font-size: clamp(1.9rem, 4vw, 3rem);
-    max-width: 20ch;
-    margin: 0 auto;
-  }
-  > p {
-    margin-top: 0.75rem;
-    opacity: 0.9;
-  }
+	h2 {
+		font-family: var(--font-serif);
+		font-size: clamp(1.9rem, 4vw, 3rem);
+		max-width: 20ch;
+		margin: 0 auto;
+	}
+	> p {
+		margin-top: 0.75rem;
+		opacity: 0.9;
+	}
 }
 
 .mk-contato__redes {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 2rem;
+	display: flex;
+	justify-content: center;
+	gap: 1rem;
+	margin-top: 2rem;
 
-  a {
-    display: grid;
-    place-items: center;
-    width: 3rem;
-    height: 3rem;
-    border: 1px solid currentColor;
-    border-radius: 50%;
-    color: inherit;
-    transition: background 0.2s, color 0.2s;
+	a {
+		display: grid;
+		place-items: center;
+		width: 3rem;
+		height: 3rem;
+		border: 1px solid currentColor;
+		border-radius: 50%;
+		color: inherit;
+		transition:
+			background 0.2s,
+			color 0.2s;
 
-    &:hover {
-      background: var(--destructive-foreground);
-      color: var(--destructive);
-    }
+		&:hover {
+			background: var(--destructive-foreground);
+			color: var(--destructive);
+		}
 
-    svg {
-      width: 1.15rem;
-      height: 1.15rem;
-    }
-  }
+		svg {
+			width: 1.15rem;
+			height: 1.15rem;
+		}
+	}
+}
+
+// contatos em texto: escondidos na tela (lá os ícones bastam), visíveis só no
+// PDF/impressão -- ver _print.scss
+.mk-contato__print {
+	display: none;
+	margin-top: 1.5rem;
+	font-size: 0.8rem;
+	opacity: 0.85;
 }
 
 .mk-contato__copy {
-  margin-top: 2.5rem;
-  font-size: 0.8rem;
-  opacity: 0.6;
+	margin-top: 2.5rem;
+	font-size: 0.8rem;
+	opacity: 0.6;
 }
