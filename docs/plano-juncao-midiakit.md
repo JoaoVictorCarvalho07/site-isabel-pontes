@@ -166,6 +166,14 @@ como **token liga/desliga** (ex.: classe no `<body>` ou custom property), pra:
 (a) poder ajustar intensidade num lugar só, e (b) **desativar sobre a galeria de
 fotos** se o ruído sujar as imagens — testar no redesign.
 
+**Formato de imagem — padrão AVIF, exceção WebP p/ transparência.** O padrão do
+projeto é **AVIF** (gerado por `D:\projetos\scripts\to_avif.py`, ffmpeg
+libaom-av1). Exceção: imagens que **precisam de canal alpha** (ex.: os mockups de
+celular das métricas, que flutuam sobre o card com cantos e sombra) usam **WebP**,
+porque o `to_avif.py` força `yuv420p` e não preserva transparência. WebP já é
+cidadão de primeira no projeto (o `<picture>` serve AVIF + WebP). Se um dia
+precisar de AVIF com alpha como padrão, trocar o encoder por `avifenc`/libavif.
+
 ---
 
 ## 6. Vídeos do portfólio UGC — modelo de dados

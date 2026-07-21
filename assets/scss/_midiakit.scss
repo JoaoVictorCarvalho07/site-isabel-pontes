@@ -199,21 +199,28 @@
 }
 
 // ── Métricas ──────────────────────────────────────────────────────────────────
+// cards empilhados em largura cheia, cada um com o celular flutuante ao lado
 .mk-metricas__grid {
-  display: grid;
-  gap: 1.5rem;
-
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 // painel escuro FIXO nos dois temas (as cores dos donuts contam com isso)
 .mk-rede {
+  display: grid;
+  gap: 1.5rem;
   padding: 2rem;
   border-radius: 1rem;
   background: var(--primary-fixed);
   color: var(--primary-foreground-fixed);
+
+  // desktop: conteúdo + celular lado a lado; o celular alterna de lado por rede
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 2.5rem;
+  }
 
   h3 {
     font-family: var(--font-serif);
@@ -227,6 +234,27 @@
     letter-spacing: 0.1em;
     opacity: 0.85;
   }
+}
+
+// TikTok (Lado "esq"): celular à esquerda, conteúdo à direita
+.mk-rede--esq {
+  @media (min-width: 768px) {
+    grid-template-columns: auto 1fr;
+
+    .mk-rede__conteudo {
+      order: 2;
+    }
+    .mk-rede__phone {
+      order: 1;
+    }
+  }
+}
+
+.mk-rede__phone {
+  justify-self: center;
+  width: clamp(150px, 22vw, 230px);
+  height: auto;
+  filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.45));
 }
 
 .mk-kpis {

@@ -89,42 +89,49 @@
     <h2>Métricas</h2>
     <div class="mk-metricas__grid">
       {{- range .Metricas }}
-      <article class="mk-rede">
-        <h3>{{ .Rede }}</h3>
+      <article class="mk-rede mk-rede--{{ .Lado }}">
+        <div class="mk-rede__conteudo">
+          <h3>{{ .Rede }}</h3>
 
-        <div class="mk-kpis">
-          <div class="mk-kpi"><strong>{{ .Seguidores }}</strong><span>seguidores</span></div>
-          <div class="mk-kpi"><strong>{{ .Views }}</strong><span>visualizações</span></div>
+          <div class="mk-kpis">
+            <div class="mk-kpi"><strong>{{ .Seguidores }}</strong><span>seguidores</span></div>
+            <div class="mk-kpi"><strong>{{ .Views }}</strong><span>visualizações</span></div>
+          </div>
+
+          <h4>Público</h4>
+          <div class="mk-barras">
+            {{- range .Locais }}
+            <div class="mk-barra">
+              <div class="mk-barra__topo"><span>{{ .Rotulo }}</span><strong>{{ .Pct }}%</strong></div>
+              <div class="mk-barra__trilha"><span class="mk-barra__preenche" style="width:{{ .Pct }}%"></span></div>
+            </div>
+            {{- end }}
+          </div>
+
+          <div class="mk-donuts">
+            <div class="mk-donut-linha">
+              <span class="mk-donut" style="background:{{ donut .Genero }}"></span>
+              <ul class="mk-legenda">
+                {{- range .Genero }}
+                <li><span class="mk-ponto" style="background:{{ .Cor }}"></span><strong>{{ .Pct }}%</strong> {{ .Rotulo }}</li>
+                {{- end }}
+              </ul>
+            </div>
+            <div class="mk-donut-linha">
+              <span class="mk-donut" style="background:{{ donut .Idades }}"></span>
+              <ul class="mk-legenda">
+                {{- range .Idades }}
+                <li><span class="mk-ponto" style="background:{{ .Cor }}"></span><strong>{{ .Pct }}%</strong> {{ .Rotulo }}</li>
+                {{- end }}
+              </ul>
+            </div>
+          </div>
         </div>
 
-        <h4>Público</h4>
-        <div class="mk-barras">
-          {{- range .Locais }}
-          <div class="mk-barra">
-            <div class="mk-barra__topo"><span>{{ .Rotulo }}</span><strong>{{ .Pct }}%</strong></div>
-            <div class="mk-barra__trilha"><span class="mk-barra__preenche" style="width:{{ .Pct }}%"></span></div>
-          </div>
-          {{- end }}
-        </div>
-
-        <div class="mk-donuts">
-          <div class="mk-donut-linha">
-            <span class="mk-donut" style="background:{{ donut .Genero }}"></span>
-            <ul class="mk-legenda">
-              {{- range .Genero }}
-              <li><span class="mk-ponto" style="background:{{ .Cor }}"></span><strong>{{ .Pct }}%</strong> {{ .Rotulo }}</li>
-              {{- end }}
-            </ul>
-          </div>
-          <div class="mk-donut-linha">
-            <span class="mk-donut" style="background:{{ donut .Idades }}"></span>
-            <ul class="mk-legenda">
-              {{- range .Idades }}
-              <li><span class="mk-ponto" style="background:{{ .Cor }}"></span><strong>{{ .Pct }}%</strong> {{ .Rotulo }}</li>
-              {{- end }}
-            </ul>
-          </div>
-        </div>
+        {{- /* mockup de celular flutuante (WebP com alpha) */}}
+        <img class="mk-rede__phone" src="{{ asset .Foto }}"
+             alt="Prints das métricas de {{ .Rede }} da Isabel Pontes"
+             width="398" height="799" loading="lazy" decoding="async" />
       </article>
       {{- end }}
     </div>

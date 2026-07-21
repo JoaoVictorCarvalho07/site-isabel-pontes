@@ -165,6 +165,11 @@ type metricaRede struct {
 	Locais     []barra
 	Genero     []fatia
 	Idades     []fatia
+	// Foto é o mockup de celular que flutua no card (WebP com alpha -- AVIF do
+	// projeto não guarda transparência, e o celular precisa dos cantos e da sombra).
+	// Lado: "dir" ou "esq" (alterna entre as redes, como no mídia kit original).
+	Foto string
+	Lado string
 }
 
 // cores dos donuts (mesma ordem das fatias). Hex FIXO, não token: o card de
@@ -183,11 +188,13 @@ var metricas = []metricaRede{
 		Locais: []barra{{"Brasil", 96.7}, {"Curitiba", 29.5}},
 		Genero: []fatia{{"Feminino", 83.9, corA}, {"Masculino", 16.1, corB}},
 		Idades: []fatia{{"18–24", 36.9, corA}, {"25–34", 47.5, corB}, {"+35", 15.6, corC}},
+		Foto:   "/static/img/midiakit/phone-instagram.webp", Lado: "dir",
 	},
 	{
 		Rede: "TikTok", Seguidores: "+7K", Views: "+17K",
 		Locais: []barra{{"Brasil", 99.4}},
 		Genero: []fatia{{"Feminino", 78.0, corA}, {"Masculino", 21.0, corB}},
 		Idades: []fatia{{"18–24", 54.2, corA}, {"25–34", 35.9, corB}, {"+35", 9.9, corC}},
+		Foto:   "/static/img/midiakit/phone-tiktok.webp", Lado: "esq",
 	},
 }
