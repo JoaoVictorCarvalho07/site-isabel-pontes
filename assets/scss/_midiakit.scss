@@ -390,7 +390,8 @@
 
 .mk-kpis {
   display: flex;
-  gap: 2rem;
+  flex-wrap: wrap; // se não couber ao lado do celular, quebra em vez de vazar do card
+  gap: 1.25rem; // menor entre "seguidores" e "visualizações"
   margin-top: 1rem;
 }
 
@@ -484,6 +485,34 @@
   border-radius: 50%;
   margin-right: 0.4rem;
   vertical-align: middle;
+}
+
+// Mobile: KPIs e "Público" fluem ao lado do celular; os DOIS donuts descem
+// (clear) e ficam LADO A LADO em largura cheia, pra não espremer no cantinho.
+@media (max-width: 767px) {
+  .mk-kpi strong {
+    font-size: 1.3rem;
+  }
+  .mk-donuts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    clear: both; // garante que descem PRA BAIXO do celular, não ao lado
+  }
+  .mk-donut-linha {
+    gap: 0.55rem;
+  }
+  .mk-donut {
+    width: 3.4rem;
+    height: 3.4rem;
+
+    &::after {
+      inset: 0.7rem;
+    }
+  }
+  .mk-legenda {
+    font-size: 0.72rem;
+  }
 }
 
 // ── Processo (repensado, sem JS: <details> nativo) ────────────────────────────
