@@ -334,19 +334,21 @@
   gap: 2rem;
 }
 
-// painel escuro FIXO nos dois temas (as cores dos donuts contam com isso)
+// painel escuro FIXO nos dois temas (as cores dos donuts contam com isso).
+// Conteúdo + celular SEMPRE lado a lado -- inclusive no mobile (a pedido): o
+// celular fica na lateral, nunca empilha embaixo. Ele encolhe pra caber.
 .mk-rede {
   display: grid;
-  gap: 1.5rem;
-  padding: 2rem;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
   border-radius: 1rem;
   background: var(--primary-fixed);
   color: var(--primary-foreground-fixed);
 
-  // desktop: conteúdo + celular lado a lado; o celular alterna de lado por rede
   @media (min-width: 768px) {
-    grid-template-columns: 1fr auto;
-    align-items: center;
+    gap: 1.5rem;
     padding: 2.5rem;
   }
 
@@ -366,23 +368,31 @@
 
 // TikTok (Lado "esq"): celular à esquerda, conteúdo à direita
 .mk-rede--esq {
-  @media (min-width: 768px) {
-    grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr;
 
-    .mk-rede__conteudo {
-      order: 2;
-    }
-    .mk-rede__phone {
-      order: 1;
-    }
+  .mk-rede__conteudo {
+    order: 2;
+  }
+  .mk-rede__phone {
+    order: 1;
   }
 }
 
 .mk-rede__phone {
   justify-self: center;
-  width: clamp(150px, 22vw, 230px);
+  width: clamp(84px, 24vw, 230px); // pequeno no mobile p/ caber ao lado do texto
   height: auto;
   filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.45));
+}
+
+// no mobile o conteúdo é estreito (celular ao lado) -- aperta os KPIs pra não vazar
+@media (max-width: 520px) {
+  .mk-kpis {
+    gap: 1rem;
+  }
+  .mk-kpi strong {
+    font-size: 1.3rem;
+  }
 }
 
 .mk-kpis {
@@ -649,4 +659,60 @@
   font-size: 1.5rem;
   color: var(--primary);
   margin-bottom: 1rem;
+}
+
+// ── Rodapé próprio do mídia kit (contato + redes) ─────────────────────────────
+// Fundo vinho, centralizado, como no mídia kit original. Substitui o rodapé
+// padrão (escondido via OcultarRodape).
+.mk-contato {
+  margin-top: 4rem;
+  padding: clamp(3rem, 8vw, 6rem) 1.5rem;
+  background: var(--destructive);
+  color: var(--destructive-foreground);
+  text-align: center;
+
+  h2 {
+    font-family: var(--font-serif);
+    font-size: clamp(1.9rem, 4vw, 3rem);
+    max-width: 20ch;
+    margin: 0 auto;
+  }
+  > p {
+    margin-top: 0.75rem;
+    opacity: 0.9;
+  }
+}
+
+.mk-contato__redes {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+
+  a {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    color: inherit;
+    transition: background 0.2s, color 0.2s;
+
+    &:hover {
+      background: var(--destructive-foreground);
+      color: var(--destructive);
+    }
+
+    svg {
+      width: 1.15rem;
+      height: 1.15rem;
+    }
+  }
+}
+
+.mk-contato__copy {
+  margin-top: 2.5rem;
+  font-size: 0.8rem;
+  opacity: 0.6;
 }

@@ -175,6 +175,19 @@
 		{ passive: true },
 	);
 
+	// ── Tema claro/escuro ────────────────────────────────────────────────────────
+	// O data-theme ja foi setado no <head> (script inline, sem flash). Aqui so
+	// alterna no clique e persiste a escolha. Delegacao: cobre o botao do desktop
+	// e o do menu mobile de uma vez.
+	document.addEventListener("click", (e) => {
+		if (!e.target.closest("[data-tema-toggle]")) return;
+		const novo = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+		document.documentElement.dataset.theme = novo;
+		try {
+			localStorage.setItem("tema", novo);
+		} catch (err) {}
+	});
+
 	// ── Portfólio de vídeos (mídia kit) ──────────────────────────────────────────
 	// Cada card mostra só o poster (AVIF leve). No clique, troca o poster pelo
 	// <video> e carrega o .webm do R2 -- os 26 vídeos somam 322MB, então nada de

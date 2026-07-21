@@ -1,10 +1,18 @@
 {{- /*
-  Navbar. O logo e o SVG inline (funcao `svg`) para herdar currentColor.
-
-  i18n: os links ganham o prefixo /en quando .Lang == "en", os rotulos vem de
-  `t`, e um seletor de idioma (EN/PT) leva a versao equivalente da pagina atual
-  (.HrefPT / .HrefEN). No mobile os links viram um menu <dialog>.
+  Navbar. Logo SVG inline (herda currentColor). i18n: links com prefixo /en,
+  rotulos via `t`, seletor de idioma. Seletor de tema claro/escuro (botao-tema)
+  no desktop e no menu mobile -- alterna via app.js, persiste no localStorage.
 */ -}}
+
+{{- /* botao de tema reutilizavel (recebe pageData para o aria-label bilingue).
+       Os dois icones vivem juntos; o CSS mostra o do estado atual. */}}
+{{ define "botao-tema" }}
+<button class="botao-tema" data-tema-toggle type="button" aria-label="{{ t .Lang "a11y.tema" }}">
+  <svg class="botao-tema__lua" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278"/></svg>
+  <svg class="botao-tema__sol" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"/></svg>
+</button>
+{{ end }}
+
 {{ define "navbar" }}
 {{- $en := eq .Lang "en" }}
 {{- $p := "" }}{{ if $en }}{{ $p = "/en" }}{{ end }}
@@ -21,6 +29,7 @@
     <a class="navbar__lang" href="{{ if $en }}{{ .HrefPT }}{{ else }}{{ .HrefEN }}{{ end }}"
        hreflang="{{ if $en }}pt-BR{{ else }}en{{ end }}"
        aria-label="{{ if $en }}Ver em português{{ else }}View in English{{ end }}">{{ if $en }}PT{{ else }}EN{{ end }}</a>
+    {{ template "botao-tema" . }}
   </nav>
 
   <button class="navbar__hamburguer" data-menu-abrir aria-label="{{ t .Lang "a11y.abrir" }}"
@@ -36,8 +45,11 @@
     <a href="{{ $p }}/sobre">{{ t .Lang "nav.sobre" }}</a>
     <a href="{{ $p }}/midiakit">{{ t .Lang "nav.midiakit" }}</a>
     <a href="{{ $p }}/contato">{{ t .Lang "nav.contato" }}</a>
-    <a class="menu__lang" href="{{ if $en }}{{ .HrefPT }}{{ else }}{{ .HrefEN }}{{ end }}"
-       hreflang="{{ if $en }}pt-BR{{ else }}en{{ end }}">{{ if $en }}Português{{ else }}English{{ end }}</a>
+    <div class="menu__acoes">
+      <a class="menu__lang" href="{{ if $en }}{{ .HrefPT }}{{ else }}{{ .HrefEN }}{{ end }}"
+         hreflang="{{ if $en }}pt-BR{{ else }}en{{ end }}">{{ if $en }}Português{{ else }}English{{ end }}</a>
+      {{ template "botao-tema" . }}
+    </div>
   </nav>
 </dialog>
 {{ end }}

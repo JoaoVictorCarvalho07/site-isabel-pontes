@@ -12,6 +12,22 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
+    {{- /* Tema claro/escuro: define data-theme ANTES de pintar, senao a pagina
+           pisca no tema errado ao carregar. Le a escolha salva; sem escolha, segue
+           o sistema. O toggle em app.js so alterna depois. Inline de proposito --
+           qualquer script externo chegaria tarde demais e o flash aconteceria. */}}
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("tema");
+          if (t !== "dark" && t !== "light") {
+            t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          }
+          document.documentElement.dataset.theme = t;
+        } catch (e) {}
+      })();
+    </script>
+
     <title>{{ .Titulo }}</title>
     {{- with .Descricao }}
     <meta name="description" content="{{ . }}" />
@@ -69,7 +85,11 @@
 
     <main id="conteudo">{{ template "conteudo" . }}</main>
 
+    {{- /* O midia kit tem rodape proprio (contato + redes); as demais paginas
+           usam o rodape padrao. */}}
+    {{- if not .OcultarRodape }}
     {{ template "footer" . }}
+    {{- end }}
 
     {{- /* htmx self-hospedado (sem CDN), defer preserva a ordem. app.js le
            htmx:afterSwap, entao o htmx carrega antes. app.js e inofensivo fora

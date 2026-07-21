@@ -71,41 +71,51 @@
   --font-sans: 'Jost', ui-sans-serif, system-ui, sans-serif;
 }
 
+// Dark mode. Os valores vivem num mixin (nao duplicar) e sao aplicados em dois
+// casos: (1) o sistema pede dark E o usuario NAO escolheu "claro"; (2) o usuario
+// escolheu "escuro" no seletor de tema (data-theme no <html>, setado por app.js).
+@mixin tema-escuro {
+  --background: hsl(22 26% 18%);
+  --foreground: hsl(23.5 40.4% 88.8%);
+
+  --card: hsl(22 22% 12%);
+  --card-foreground: hsl(30 33% 97%);
+
+  --popover: hsl(22 22% 12%);
+  --popover-foreground: hsl(30 33% 97%);
+
+  // primary inverte no dark; os *-fixed acima nao.
+  --primary: hsl(30 33% 97%);
+  --primary-foreground: hsl(22 26% 18%);
+
+  --secondary: hsl(22 18% 16%);
+  --secondary-foreground: hsl(30 33% 97%);
+
+  --muted: hsl(22 18% 16%);
+  --muted-foreground: hsl(30 10% 75%);
+
+  // verde mais claro no dark, senao some no fundo
+  --accent: hsl(166 26% 28%);
+  --accent-foreground: hsl(30 33% 97%);
+
+  --destructive: hsl(350 42% 32%);
+  --destructive-foreground: hsl(30 33% 97%);
+
+  --border: hsl(30 12% 28%);
+  --input: hsl(30 12% 28%);
+  --ring: hsl(166 26% 28%);
+
+  --gold: hsl(43 48% 76%);
+  --gold-soft: hsl(43 60% 88%);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: hsl(22 26% 18%);
-    --foreground: hsl(23.5 40.4% 88.8%);
-
-    --card: hsl(22 22% 12%);
-    --card-foreground: hsl(30 33% 97%);
-
-    --popover: hsl(22 22% 12%);
-    --popover-foreground: hsl(30 33% 97%);
-
-    // primary inverte no dark; os *-fixed acima nao.
-    --primary: hsl(30 33% 97%);
-    --primary-foreground: hsl(22 26% 18%);
-
-    --secondary: hsl(22 18% 16%);
-    --secondary-foreground: hsl(30 33% 97%);
-
-    --muted: hsl(22 18% 16%);
-    --muted-foreground: hsl(30 10% 75%);
-
-    // verde mais claro no dark, senao some no fundo
-    --accent: hsl(166 26% 28%);
-    --accent-foreground: hsl(30 33% 97%);
-
-    --destructive: hsl(350 42% 32%);
-    --destructive-foreground: hsl(30 33% 97%);
-
-    --border: hsl(30 12% 28%);
-    --input: hsl(30 12% 28%);
-    --ring: hsl(166 26% 28%);
-
-    --gold: hsl(43 48% 76%);
-    --gold-soft: hsl(43 60% 88%);
+  :root:not([data-theme="light"]) {
+    @include tema-escuro;
   }
+}
+:root[data-theme="dark"] {
+  @include tema-escuro;
 }
 
 // Breakpoints. Estes sim sao variaveis SCSS: nao mudam em runtime.

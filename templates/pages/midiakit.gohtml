@@ -221,5 +221,18 @@
   </section>
   {{- end }}
 
+  {{- /* Rodapé próprio do mídia kit: contato + redes (o layout esconde o padrão). */}}
+  <footer class="mk-contato">
+    <h2>{{ t .Lang "mk.contatoTitulo" }}</h2>
+    <p>{{ t .Lang "mk.contatoSub" }}</p>
+    <div class="mk-contato__redes">
+      <a href="{{ wpp (t .Lang "mk.wppGeral") }}" target="_blank" rel="noopener" aria-label="WhatsApp">{{ svg "img/social/whatsapp.svg" }}</a>
+      <a href="mailto:isabelpontesfotografia@gmail.com" aria-label="E-mail">{{ svg "img/social/email.svg" }}</a>
+      <a href="https://instagram.com/isapontesfoto" target="_blank" rel="noopener" aria-label="Instagram">{{ svg "img/social/instagram.svg" }}</a>
+      <a href="https://www.tiktok.com/@isabelpontesfoto" target="_blank" rel="noopener" aria-label="TikTok">{{ svg "img/social/tiktok.svg" }}</a>
+    </div>
+    <p class="mk-contato__copy">© {{ .Ano }} Isa Pontes</p>
+  </footer>
+
 </div>
 {{ end }}

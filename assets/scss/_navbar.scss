@@ -73,6 +73,30 @@ body.hero-escuro .navbar {
   }
 }
 
+// seletor de tema: botão só de ícone, herda a cor da navbar. Mostra a lua no
+// tema claro (clique -> escuro) e o sol no escuro (clique -> claro).
+.botao-tema {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  color: inherit;
+  opacity: 0.8;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &__sol {
+    display: none;
+  }
+}
+:root[data-theme="dark"] .botao-tema__lua {
+  display: none;
+}
+:root[data-theme="dark"] .botao-tema__sol {
+  display: block;
+}
+
 // ── Hamburguer (so no mobile) ─────────────────────────────────────────────────
 .navbar__hamburguer {
   display: none;
@@ -156,12 +180,21 @@ body.hero-escuro .navbar {
 
   // seletor de idioma no menu mobile: menor e sans, destaca dos links serif
   .menu__lang {
-    margin-top: 0.75rem;
     font-family: var(--font-sans);
     font-size: 0.9rem;
     letter-spacing: 0.08em;
     opacity: 0.75;
   }
+}
+
+// idioma + tema lado a lado no rodapé do menu mobile
+.menu__acoes {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: 1rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
 }
 
 // Animacao de entrada do logo: desfoque -> nitidez, a metafora da fotografia

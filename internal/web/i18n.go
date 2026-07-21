@@ -56,6 +56,7 @@ var traducoes = map[string]ml{
 	"a11y.fechar":   {"Fechar", "Close"},
 	"a11y.menu":     {"Menu", "Menu"},
 	"a11y.principal": {"Principal", "Main"},
+	"a11y.tema":     {"Alternar tema claro/escuro", "Toggle light/dark theme"},
 	"rodape":        {"Todos os direitos reservados", "All rights reserved"},
 	"comum.todos":   {"Todos", "All"},
 
@@ -78,6 +79,9 @@ var traducoes = map[string]ml{
 	"mk.assistir":     {"Assistir vídeo", "Watch video"},
 	"mk.previa":       {"Prévia do vídeo", "Video preview"},
 	"mk.filtrarCat":   {"Filtrar por categoria", "Filter by category"},
+	"mk.contatoTitulo": {"Vamos criar algo extraordinário?", "Shall we create something extraordinary?"},
+	"mk.contatoSub":   {"Estou pronta para elevar a narrativa da sua marca.", "I'm ready to elevate your brand's narrative."},
+	"mk.wppGeral":     {"Oii Isa! Vim pelo mídia kit e quero conversar sobre um trabalho ✨", "Hi Isa! I came from the media kit and I'd like to talk about a project ✨"},
 	// mensagem pré-preenchida do WhatsApp nos pacotes; %s = nome, tag, resumo.
 	"mk.wppPacote": {
 		"Oii Isa! Tenho interesse no %s (%s) — %s. Pode me enviar detalhes, valores e como funciona o briefing? ^-^",

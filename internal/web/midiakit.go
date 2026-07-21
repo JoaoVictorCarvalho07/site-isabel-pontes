@@ -41,6 +41,8 @@ func (s *Server) midiakit(w http.ResponseWriter, r *http.Request) {
 	dados := s.novaPagina(lang, titulo, descr, "/midiakit")
 	// Hero de topo escuro -> navbar e logo brancos, como na home.
 	dados.BodyClass = "hero-escuro"
+	// O midia kit fecha com rodape proprio (contato + redes); esconde o padrao.
+	dados.OcultarRodape = true
 	s.render.Page(w, r, "midiakit", http.StatusOK, midiaKitView{
 		pageData:      dados,
 		Tags:          midiakitTags,
