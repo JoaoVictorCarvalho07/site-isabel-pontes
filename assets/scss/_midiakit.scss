@@ -1,0 +1,55 @@
+@use 'tokens';
+
+// Mídia kit — one-page de pitch. ESQUELETO (Fase 7): só o espaçamento das seções
+// e o offset de âncora, para a navbar fixa não cobrir o topo da seção quando o
+// visitante chega por um #id. O visual de cada seção entra nas Fases 8-9.
+
+// Hero de topo, escuro. Usa os tokens *-fixed (não invertem no dark mode): o
+// fundo é sempre escuro aqui, então o texto tem que ficar claro nos dois temas.
+.mk-hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  padding: 6rem 1.5rem 3rem;
+  text-align: center;
+  background: var(--primary-fixed);
+  color: var(--primary-foreground-fixed);
+
+  h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    line-height: 1.05;
+    letter-spacing: 0.04em;
+  }
+
+  p {
+    margin-top: 0.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    opacity: 0.9;
+  }
+}
+
+.mk-secao {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+  // navbar é fixa (~4rem de altura); sem isto a âncora encostaria embaixo dela.
+  scroll-margin-top: 5rem;
+
+  h2 {
+    font-family: var(--font-serif);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    margin-bottom: 1rem;
+  }
+}
+
+// Placeholder do esqueleto -- sai nas próximas fases.
+.mk-em-breve {
+  color: var(--muted-foreground);
+  font-family: var(--font-sans);
+  font-style: italic;
+}

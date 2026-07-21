@@ -22,6 +22,7 @@ func TestPaginasRenderizam(t *testing.T) {
 		{"/", []string{"</html>", "hero", "Bem-vindo", "cards-editoriais"}},
 		{"/sobre", []string{"</html>", "Meu nome é Isabel Pontes", "carrossel"}},
 		{"/contato", []string{"</html>", "wa.me", "instagram.com", "mailto:"}},
+		{"/midiakit", []string{"</html>", "mk-hero", "Investimento", "Mídia kit"}},
 	}
 
 	for _, c := range casos {

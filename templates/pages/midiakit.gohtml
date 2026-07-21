@@ -1,0 +1,49 @@
+{{- /*
+  Mídia kit — one-page de pitch (docs/plano-juncao-midiakit.md §4b).
+
+  Esqueleto da FASE 7: a estrutura de seções por âncora, com layout/navbar/footer
+  compartilhados. Cada seção já traz seu id (deep-link + menu interno futuro). Os
+  placeholders ".mk-em-breve" saem na Fase 8 (conteúdo) e Fase 9 (vídeos) -- eles
+  existem só para o esqueleto renderizar navegável, não vão para produção.
+*/ -}}
+{{ define "conteudo" }}
+<div class="midiakit">
+  {{- /* Hero: escuro (BodyClass hero-escuro deixa a navbar branca por cima). */}}
+  <section class="mk-hero">
+    <div class="mk-hero__texto">
+      <h1>Isa Pontes</h1>
+      <p>UGC Creator &amp; Diretora Criativa</p>
+    </div>
+  </section>
+
+  <section id="bio" class="mk-secao">
+    <h2>Sobre</h2>
+    <p class="mk-em-breve">Bio e apresentação — Fase 8.</p>
+  </section>
+
+  <section id="ugc" class="mk-secao">
+    <h2>UGC &amp; IGC</h2>
+    <p class="mk-em-breve">Definições e proposta de valor — Fase 8.</p>
+  </section>
+
+  <section id="portfolio" class="mk-secao">
+    <h2>Trabalhos</h2>
+    <p class="mk-em-breve">Portfólio de vídeos por categoria — Fase 9.</p>
+  </section>
+
+  <section id="metricas" class="mk-secao">
+    <h2>Métricas</h2>
+    <p class="mk-em-breve">Instagram e TikTok — Fase 8.</p>
+  </section>
+
+  <section id="processo" class="mk-secao">
+    <h2>Como funciona</h2>
+    <p class="mk-em-breve">Processo de contratação — Fase 8.</p>
+  </section>
+
+  <section id="investimento" class="mk-secao">
+    <h2>Investimento</h2>
+    <p class="mk-em-breve">Pacotes UGC e Influencer — Fase 8.</p>
+  </section>
+</div>
+{{ end }}
