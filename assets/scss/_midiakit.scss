@@ -20,7 +20,7 @@
 
 	&:hover {
 		background: var(--gold);
-		color: var(--primary-fixed);
+		color: var(--primary);
 	}
 
 	// variante clara: sobre fundo escuro (hero)
@@ -38,17 +38,61 @@
 // ── Hero ──────────────────────────────────────────────────────────────────────
 // Escuro nos dois temas (tokens *-fixed não invertem): o fundo é sempre escuro.
 .mk-hero {
+	position: relative; // ancora o vídeo e o overlay
+	overflow: hidden;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	min-height: 78vh;
 	padding: 7rem 1.5rem 4rem;
 	text-align: center;
-	background: var(--primary-fixed);
 	color: var(--primary-foreground-fixed);
+
+	// o poster também é o fundo da seção: cobre o caso de o vídeo estar
+	// escondido (movimento reduzido / impressão) ou ainda não ter carregado.
+	background-color: var(--primary-fixed);
+	background-position: center;
+	background-size: cover;
+	background-repeat: no-repeat;
+	// a 1ª declaração é o fallback; quem entende image-set pega o AVIF (menor)
+	background-image: url("/static/img/midiakit/hero-poster.webp");
+	background-image: image-set(
+		url("/static/img/midiakit/hero-poster.avif") type("image/avif"),
+		url("/static/img/midiakit/hero-poster.webp") type("image/webp")
+	);
+}
+
+.mk-hero__video {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+// escurece o vídeo pro texto ter contraste (tom da marca, não preto puro)
+.mk-hero__overlay {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	background: linear-gradient(
+		to bottom,
+		rgba(58, 43, 34, 0.55),
+		rgba(58, 43, 34, 0.78)
+	);
+}
+
+// quem pede menos animação vê só o poster (o fundo da seção)
+@media (prefers-reduced-motion: reduce) {
+	.mk-hero__video {
+		display: none;
+	}
 }
 
 .mk-hero__texto {
+	position: relative; // acima do vídeo e do overlay
+	z-index: 2;
 	max-width: 46rem;
 
 	h1 {
@@ -128,8 +172,8 @@
 	li {
 		padding: 0.35rem 1rem;
 		border-radius: 999px;
-		background: var(--destructive); // vinho
-		color: var(--destructive-foreground);
+		background: var(--accent); // vinho
+		color: var(--accent-foreground);
 		font-family: var(--font-sans);
 		font-size: 0.78rem;
 		letter-spacing: 0.02em;
@@ -702,8 +746,8 @@
 .mk-contato {
 	margin-top: 4rem;
 	padding: clamp(3rem, 8vw, 6rem) 1.5rem;
-	background: var(--destructive);
-	color: var(--destructive-foreground);
+	background: var(--accent);
+	color: var(--accent-foreground);
 	text-align: center;
 
 	h2 {

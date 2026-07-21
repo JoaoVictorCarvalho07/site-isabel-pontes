@@ -7,8 +7,18 @@
 {{- $en := eq .Lang "en" }}
 <div class="midiakit">
 
-  {{- /* Hero */}}
+  {{- /* Hero com vídeo de fundo. Mudo + loop (autoplay só é permitido mudo) e
+         playsinline pra não abrir em tela cheia no iOS. O poster aparece antes de
+         o vídeo carregar; quem prefere menos animação vê só ele (CSS). É
+         decoração: aria-hidden + tabindex=-1 pra sair do fluxo de leitura/foco. */}}
   <section class="mk-hero">
+    <video class="mk-hero__video" autoplay muted loop playsinline preload="metadata"
+           poster="{{ asset "/static/img/midiakit/hero-poster.webp" }}"
+           aria-hidden="true" tabindex="-1">
+      <source src="{{ asset "/static/video/midiakit-hero.webm" }}" type="video/webm" />
+      <source src="{{ asset "/static/video/midiakit-hero.mp4" }}" type="video/mp4" />
+    </video>
+    <div class="mk-hero__overlay"></div>
     <div class="mk-hero__texto">
       <h1>Isa Pontes</h1>
       <p class="mk-hero__sub">UGC Creator &amp; Diretora Criativa</p>
@@ -18,7 +28,7 @@
       </p>
       <div class="mk-hero__ctas">
         <a href="#portfolio" class="mk-btn mk-btn--claro">{{ t .Lang "mk.verTrabalhos" }}</a>
-        <a href="#investimento" class="mk-btn">{{ t .Lang "mk.investimento" }}</a>
+        <a href="#investimento" class="mk-btn ">{{ t .Lang "mk.investimento" }}</a>
       </div>
     </div>
   </section>

@@ -47,10 +47,14 @@
     display: none !important;
   }
 
-  // vh não faz sentido numa página impressa
+  // vh não faz sentido numa página impressa; o vídeo sai e fica o poster
+  // (que é o próprio background da seção)
   .mk-hero {
     min-height: auto;
     padding: 2.5rem 1.5rem;
+  }
+  .mk-hero__video {
+    display: none !important;
   }
 
   .mk-secao {
