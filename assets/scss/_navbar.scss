@@ -73,6 +73,29 @@ body.hero-escuro .navbar {
   }
 }
 
+// "Baixar em PDF" — só aparece no mídia kit (MostrarPdf). Pílula compacta, no
+// mesmo idioma visual do seletor de idioma; herda a cor da navbar.
+.navbar__pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.7rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  color: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  svg {
+    display: block;
+  }
+}
+
 // seletor de tema: botão só de ícone, herda a cor da navbar. Mostra a lua no
 // tema claro (clique -> escuro) e o sol no escuro (clique -> claro).
 .botao-tema {
@@ -185,6 +208,19 @@ body.hero-escuro .navbar {
     letter-spacing: 0.08em;
     opacity: 0.75;
   }
+}
+
+// "Baixar em PDF" no menu mobile: rótulo por extenso, destacado em dourado
+.menu__pdf {
+  align-self: flex-start;
+  margin-top: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  color: inherit;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
 }
 
 // idioma + tema lado a lado no rodapé do menu mobile

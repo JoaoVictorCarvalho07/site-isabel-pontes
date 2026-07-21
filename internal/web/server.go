@@ -154,6 +154,9 @@ type pageData struct {
 	// OcultarRodape suprime o rodape padrao no layout: o midia kit tem o proprio
 	// rodape (contato + redes), como no mídia kit original.
 	OcultarRodape bool
+	// MostrarPdf liga o botao "Baixar em PDF" na navbar. So o midia kit tem --
+	// e a peca que a marca leva embora; as outras paginas nao sao um documento.
+	MostrarPdf bool
 	// i18n: idioma da pagina ("pt"/"en") e as URLs das duas versoes (para o
 	// hreflang, o og:locale e o seletor de idioma). Canonical = a URL do idioma
 	// atual; HrefPT/HrefEN alimentam os <link rel=alternate>.

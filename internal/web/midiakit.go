@@ -43,6 +43,8 @@ func (s *Server) midiakit(w http.ResponseWriter, r *http.Request) {
 	dados.BodyClass = "hero-escuro"
 	// O midia kit fecha com rodape proprio (contato + redes); esconde o padrao.
 	dados.OcultarRodape = true
+	// ... e e a unica pagina com o botao de baixar em PDF na navbar.
+	dados.MostrarPdf = true
 	s.render.Page(w, r, "midiakit", http.StatusOK, midiaKitView{
 		pageData:      dados,
 		Tags:          midiakitTags,
