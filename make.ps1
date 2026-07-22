@@ -45,6 +45,9 @@ $PROD_ADDR = ':8080'
 # Arquitetura da VM: Ampere A1 = arm64; VM.Standard.E2.1.Micro (AMD) = amd64.
 # Confira na VM com:  uname -m     (aarch64 -> arm64, x86_64 -> amd64)
 $PROD_ARCH = 'arm64'
+# Onde o binario vive na VM. Precisa bater com o WorkingDirectory/ExecStart do
+# systemd unit instalado (ver deploy/site-simples.service).
+$PROD_DIR = '/home/joao/apps/site-test'
 
 function Need-Sass {
   if (-not (Test-Path $SASS)) {
@@ -90,7 +93,7 @@ switch ($Task) {
     # so e possivel porque o driver SQLite e modernc (Go puro) -- com
     # mattn/go-sqlite3 isto exigiria um cross-toolchain C para ARM.
     #
-    #   $env:SITE_HOST='opc@1.2.3.4'; .\make.ps1 deploy
+    #   $env:SITE_HOST='joao@147.15.96.215'; .\make.ps1 deploy
     #
     # Sem SITE_HOST, so compila (voce faz o scp na mao). Primeira instalacao:
     # siga deploy/README.md.
@@ -110,8 +113,11 @@ switch ($Task) {
     if ($env:SITE_HOST) {
       Write-Host "enviando para $env:SITE_HOST ..."
       scp site "$($env:SITE_HOST):/tmp/site"
-      # move para o lugar e reinicia (systemd). Requer o setup do README feito.
-      ssh $env:SITE_HOST 'sudo mv /tmp/site /opt/site/site && sudo chown site:site /opt/site/site && sudo chmod +x /opt/site/site && sudo systemctl restart site && echo reiniciado'
+      # `mv` (nao `cp`): substituir um binario EM EXECUCAO com cp da "Text file
+      # busy". O mv so troca a entrada do diretorio -- o processo velho segue no
+      # inode antigo ate o restart. Requer o systemd unit instalado.
+      $remoto = "mv /tmp/site $PROD_DIR/site && chmod +x $PROD_DIR/site && sudo systemctl restart site && echo reiniciado"
+      ssh $env:SITE_HOST $remoto
     }
     else {
       Write-Host "SITE_HOST nao setado -- so compilei. Veja deploy/README.md."

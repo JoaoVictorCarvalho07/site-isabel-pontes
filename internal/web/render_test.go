@@ -123,6 +123,36 @@ func TestI18nEN(t *testing.T) {
 	}
 }
 
+// TestSeletorIdiomaERelativo protege contra a regressao que quebrou o site em
+// producao: o seletor PT/EN usava HrefPT/HrefEN, que carregam o BASE_URL. Com o
+// BASE_URL apontando para outro host que nao o de acesso (o caso classico: o
+// binario compilado com localhost e servido por IP), clicar em "EN" mandava o
+// visitante para um endereco morto.
+//
+// Regra: link de NAVEGACAO e relativo; so canonical/hreflang/og_url -- lidos por
+// bots que nao resolvem caminho relativo -- sao absolutos.
+func TestSeletorIdiomaERelativo(t *testing.T) {
+	h := novoServidor(t).Handler() // BASE_URL = https://exemplo.test
+
+	casos := map[string]string{"/midiakit": `href="/en/midiakit"`, "/en/midiakit": `href="/midiakit"`}
+	for caminho, esperado := range casos {
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, httptest.NewRequest(http.MethodGet, caminho, nil))
+		corpo := w.Body.String()
+
+		if !strings.Contains(corpo, `class="navbar__lang" `+esperado) {
+			t.Errorf("%s: seletor de idioma deveria apontar para %s (relativo)", caminho, esperado)
+		}
+		if strings.Contains(corpo, `class="navbar__lang" href="https://exemplo.test`) {
+			t.Errorf("%s: seletor de idioma voltou a usar URL absoluta (BASE_URL)", caminho)
+		}
+		// contraprova: o canonical PRECISA continuar absoluto.
+		if !strings.Contains(corpo, `<link rel="canonical" href="https://exemplo.test`) {
+			t.Errorf("%s: canonical deveria ser absoluto", caminho)
+		}
+	}
+}
+
 // TestPaginaTemSEO protege a razao de ser do projeto. A SPA servia
 // <div id="root"></div> e o titulo "siteisabelpontes", entao o card de preview
 // no WhatsApp e no Instagram (de onde vem o cliente da Isabel) saia vazio --

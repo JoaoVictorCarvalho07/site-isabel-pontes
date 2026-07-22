@@ -38,7 +38,7 @@ type Config struct {
 // `strings site` mostra). Só URL/porta, que sao publicos por natureza.
 var (
 	addrPadrao    = ":8080"
-	baseURLPadrao = "http://localhost:8080"
+	baseURLPadrao = "http://147.15.96.215:8080"
 )
 
 func env(k, def string) string {

@@ -163,6 +163,14 @@ type pageData struct {
 	Lang   string
 	HrefPT string
 	HrefEN string
+	// PathPT/PathEN sao os mesmos destinos, porem RELATIVOS ("/sobre",
+	// "/en/sobre"). E o que o seletor de idioma usa. Nao pode usar os Href*
+	// absolutos ali: eles carregam o BASE_URL, entao um BASE_URL errado (ou
+	// simplesmente diferente do host de acesso -- IP vs dominio) jogaria o
+	// visitante para fora do site ao trocar de idioma. Link de navegacao e
+	// relativo; so canonical/hreflang/og precisam ser absolutos.
+	PathPT string
+	PathEN string
 	// SEO: URLs ABSOLUTAS. O bot do WhatsApp/Instagram que gera o card de preview
 	// nao resolve caminho relativo -- e a razao de todo o porte.
 	BaseURL string
@@ -173,8 +181,9 @@ type pageData struct {
 // novaPagina preenche o que vale para toda pagina. `pathPT` e sempre o caminho da
 // versao PT ("/", "/sobre", ...); a versao EN e derivada por enPath.
 func (s *Server) novaPagina(lang, titulo, descricao, pathPT string) pageData {
+	pathEN := enPath(pathPT)
 	hrefPT := s.cfg.BaseURL + pathPT
-	hrefEN := s.cfg.BaseURL + enPath(pathPT)
+	hrefEN := s.cfg.BaseURL + pathEN
 	canonical := hrefPT
 	if lang == "en" {
 		canonical = hrefEN
@@ -186,6 +195,8 @@ func (s *Server) novaPagina(lang, titulo, descricao, pathPT string) pageData {
 		Lang:      lang,
 		HrefPT:    hrefPT,
 		HrefEN:    hrefEN,
+		PathPT:    pathPT,
+		PathEN:    pathEN,
 		BaseURL:   s.cfg.BaseURL,
 		OGImage:   s.cfg.BaseURL + "/static/img/og-image.jpg",
 		OGType:    "website",

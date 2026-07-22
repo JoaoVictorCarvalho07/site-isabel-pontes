@@ -17,11 +17,11 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=site
-Group=site
+User=joao
+Group=joao
 # Importante: o DB_PATH padrao e "data/site.db", RELATIVO a este diretorio.
-WorkingDirectory=/opt/site
-ExecStart=/opt/site/site serve
+WorkingDirectory=/home/joao/apps/site-test
+ExecStart=/home/joao/apps/site-test/site serve
 
 # Sobrescreve o que foi embutido no binario, se precisar:
 # Environment=BASE_URL=https://isabelpontes.com.br
@@ -33,9 +33,11 @@ RestartSec=3
 # Endurecimento: o servico so precisa escrever no proprio data/.
 NoNewPrivileges=true
 ProtectSystem=strict
-ProtectHome=true
+# ProtectHome fica FALSE porque o binario mora em /home/joao. Se um dia mover
+# tudo para /opt/site (com usuario dedicado), volte para true -- e mais seguro.
+ProtectHome=false
 PrivateTmp=true
-ReadWritePaths=/opt/site/data
+ReadWritePaths=/home/joao/apps/site-test/data
 
 [Install]
 WantedBy=multi-user.target

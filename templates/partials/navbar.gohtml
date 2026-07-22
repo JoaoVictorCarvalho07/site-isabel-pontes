@@ -33,7 +33,8 @@
       PDF
     </button>
     {{- end }}
-    <a class="navbar__lang" href="{{ if $en }}{{ .HrefPT }}{{ else }}{{ .HrefEN }}{{ end }}"
+    {{- /* Path*, nao Href*: link relativo funciona em qualquer host. Ver pageData. */}}
+    <a class="navbar__lang" href="{{ if $en }}{{ .PathPT }}{{ else }}{{ .PathEN }}{{ end }}"
        hreflang="{{ if $en }}pt-BR{{ else }}en{{ end }}"
        aria-label="{{ if $en }}Ver em português{{ else }}View in English{{ end }}">{{ if $en }}PT{{ else }}EN{{ end }}</a>
     {{ template "botao-tema" . }}
@@ -56,7 +57,7 @@
     <button class="menu__pdf" data-imprimir type="button">{{ t .Lang "mk.baixarPdf" }}</button>
     {{- end }}
     <div class="menu__acoes">
-      <a class="menu__lang" href="{{ if $en }}{{ .HrefPT }}{{ else }}{{ .HrefEN }}{{ end }}"
+      <a class="menu__lang" href="{{ if $en }}{{ .PathPT }}{{ else }}{{ .PathEN }}{{ end }}"
          hreflang="{{ if $en }}pt-BR{{ else }}en{{ end }}">{{ if $en }}Português{{ else }}English{{ end }}</a>
       {{ template "botao-tema" . }}
     </div>
