@@ -12,9 +12,22 @@
 
 # credenciais. O .env do projeto React ja vazou uma vez para o historico
 # (chaves R2 recuperaveis ate hoje) -- nao repetir aqui.
+#
+# ATENCAO ao editar: `*.env` casa com arquivos TERMINADOS em .env (`prod.env`),
+# e NAO com `.env.backup` ou `.env.local`. Por isso o `.env*` explicito abaixo.
+# Regra pratica: ao criar um arquivo de credencial novo, confirme com
+#   git check-ignore -v <arquivo>
+# ANTES do primeiro commit. Depois que a chave entra no historico, remover do
+# tracking nao adianta -- ela continua recuperavel (foi o que houve no React).
 .env
+.env*
 *.env
 !.env.example
+
+# rclone: a config guarda as chaves do R2 em texto puro. Ela mora na VM
+# (~/.config/rclone/), nunca no repositorio.
+rclone.conf
+rclone.config
 
 # dart-sass standalone. E ferramenta de build local, baixada pelo `make tools`,
 # nao codigo do projeto -- ~5 MB de binario nao entram no repo.

@@ -26,8 +26,6 @@ DIR_DADOS="$DIR_APP/data"
 # Cloudflare). Ver README.
 REMOTE="${REMOTE:-r2backup}"
 BUCKET="${BUCKET:-isabel-site-backup}"
-# Quantos snapshots diarios do banco manter no destino.
-MANTER_DIAS="${MANTER_DIAS:-30}"
 
 log() { echo "[backup] $*"; }
 
@@ -64,9 +62,17 @@ else
   log "sem uploads ainda, pulando"
 fi
 
-# --- 4. Retencao dos snapshots do banco --------------------------------------
-# Só os snapshots diarios do banco tem validade; anexo nunca e apagado.
-log "limpando snapshots com mais de $MANTER_DIAS dias..."
-rclone delete "$REMOTE:$BUCKET/db" --min-age "${MANTER_DIAS}d" --s3-no-check-bucket
+# --- 4. Retencao --------------------------------------------------------------
+# NAO fazemos `rclone delete` aqui, de proposito. A retencao dos snapshots do
+# banco e uma LIFECYCLE RULE no proprio R2 (painel da Cloudflare, prefixo `db/`,
+# 30 dias) -- ver deploy/README.md.
+#
+# O motivo e o alcance de um vazamento: se este script apagasse, a credencial
+# guardada na VM precisaria de permissao de exclusao, e quem comprometesse a
+# maquina apagaria o site E o historico de backup junto -- exatamente o cenario
+# em que o backup deveria salvar. Do lado do servidor, a regra roda sem
+# credencial nenhuma.
+#
+# Anexo nao expira: e a referencia que o cliente mandou uma unica vez.
 
 log "concluido."

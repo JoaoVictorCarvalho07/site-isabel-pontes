@@ -168,7 +168,50 @@ acesso público nele. Ele guarda dados pessoais de terceiros — nome, contato,
 motivação e fotos de clientes. Nunca reaproveite o bucket da galeria, que é
 público por definição.
 
-Gere um API token do R2 com escopo **só nesse bucket**, permissão de escrita.
+**Lifecycle rule** (é ela que faz a retenção, não o script): no bucket →
+*Settings* → *Object lifecycle rules* → prefixo `db/`, expirar em **30 dias**.
+Deixe `uploads/` de fora — anexo não expira.
+
+### 1b. A chave: escopo, onde mora, o que nunca fazer
+
+O token é gerado em **R2 → Manage API Tokens → Create API Token**:
+
+| Campo | Valor | Por quê |
+|---|---|---|
+| Permissão | **Object Read & Write** | Admin daria poder sobre a conta R2 inteira |
+| Bucket | **apenas** `isabel-site-backup` | Um vazamento não pode alcançar o bucket da galeria |
+| TTL | sem expiração (ou anote a data) | Token expirado = backup falha em silêncio |
+
+> **Sobre exclusão:** os presets do R2 juntam escrita e exclusão — não dá para
+> emitir um token append-only pelo painel. Por isso a retenção é lifecycle rule:
+> o script nunca chama delete, então um bug nele não apaga histórico. Se quiser
+> proteção contra a *chave* ser usada para apagar, ligue **object versioning**
+> no bucket — aí um delete só cria um marcador e a versão anterior sobrevive.
+
+**Onde a chave mora — e onde não pode morar:**
+
+| Lugar | Vale? |
+|---|---|
+| `~/.config/rclone/rclone.conf`, na VM, modo `600` | ✅ é o certo |
+| `-ldflags` do `make.ps1 deploy` | ❌ **nunca** — vira texto legível dentro do binário (`strings site` mostra) |
+| `.env.example` | ❌ é versionado; é template vazio, por definição |
+| Qualquer arquivo do repositório | ❌ ver o aviso no topo do `.env.example` |
+
+O `rclone config` já grava com permissão restrita, mas confirme:
+
+```sh
+chmod 600 ~/.config/rclone/rclone.conf
+ls -l ~/.config/rclone/rclone.conf   # deve ser -rw------- e do usuário joao
+```
+
+**Se uma chave vazar:** revogue no painel do R2 *antes* de qualquer outra coisa
+— rotacionar depois não ajuda, porque a chave antiga continua válida até ser
+revogada. Depois gere outra e rode `rclone config` de novo. O bucket em si não
+precisa ser recriado (ele nunca foi público).
+
+⚠️ Este repositório já tem histórico disso: as chaves R2 do projeto React estão
+no histórico do git e continuam recuperáveis. **Antes do primeiro commit** de
+qualquer arquivo de credencial novo, rode `git check-ignore -v <arquivo>`.
 
 ### 2. rclone na VM
 

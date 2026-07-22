@@ -13,9 +13,19 @@ Group=joao
 WorkingDirectory=/home/joao/apps/site-test
 ExecStart=/home/joao/apps/site-test/backup.sh
 
-# As credenciais do R2 ficam FORA do repositorio, num arquivo so-leitura-do-dono.
-# O rclone tambem as le do proprio rclone.conf; este EnvironmentFile existe para
-# quem preferir passar por variavel (RCLONE_CONFIG_R2BACKUP_*).
+# Caminho EXPLICITO da config do rclone. Sob systemd o $HOME nem sempre e o que
+# o rclone espera, e sem isto ele procura a config no lugar errado e falha com
+# "didn't find section in config file" -- de madrugada, sem ninguem vendo.
+Environment=RCLONE_CONFIG=/home/joao/.config/rclone/rclone.conf
+
+# Alternativa a config: as credenciais por variavel, num arquivo chmod 600 fora
+# do repositorio. O `-` inicial torna o arquivo opcional.
+#   RCLONE_CONFIG_R2BACKUP_TYPE=s3
+#   RCLONE_CONFIG_R2BACKUP_PROVIDER=Cloudflare
+#   RCLONE_CONFIG_R2BACKUP_ACCESS_KEY_ID=...
+#   RCLONE_CONFIG_R2BACKUP_SECRET_ACCESS_KEY=...
+#   RCLONE_CONFIG_R2BACKUP_ENDPOINT=https://<conta>.r2.cloudflarestorage.com
+# NUNCA versione esse arquivo -- confira com `git check-ignore -v` antes.
 EnvironmentFile=-/home/joao/apps/site-test/.env.backup
 
 # Backup nao pode competir com o site por CPU/disco: o site atende visitante,
