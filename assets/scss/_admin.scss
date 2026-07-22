@@ -177,6 +177,56 @@
       // Respostas longas (motivação) vêm com quebras de linha do textarea.
       white-space: pre-wrap;
       overflow-wrap: anywhere;
+
+      // Links de referência: quebram em qualquer ponto para uma URL enorme do
+      // Pinterest não empurrar o layout.
+      a {
+        color: var(--accent);
+        overflow-wrap: anywhere;
+      }
+    }
+  }
+
+  &__anexos {
+    padding-top: 1rem;
+    margin-top: 1rem;
+    border-top: 1px dashed var(--border);
+
+    &-titulo {
+      margin-bottom: 0.6rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--muted-foreground);
+    }
+
+    ul {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+      gap: 0.75rem;
+      list-style: none;
+      padding: 0;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      // Altura fixa + object-fit: a grade fica alinhada mesmo com imagens de
+      // proporções diferentes (que é a regra, não a exceção, em print de
+      // celular misturado com foto de câmera).
+      height: 7rem;
+      object-fit: cover;
+      background: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+
+    span {
+      display: block;
+      margin-top: 0.3rem;
+      font-size: 0.75rem;
+      line-height: 1.35;
+      color: var(--muted-foreground);
+      overflow-wrap: anywhere;
     }
   }
 }

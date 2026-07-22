@@ -15,8 +15,13 @@
     <p>{{ .Form.Sucesso.T .Lang }}</p>
   </div>
   {{- else }}
+  {{- /* enctype + hx-encoding: os dois precisam existir. O primeiro serve o
+         envio sem JS; o segundo diz ao HTMX para usar FormData em vez de
+         urlencode, que é o que carrega o arquivo. */}}
   <form class="form-briefing__form" method="post" action="{{ .Action }}"
+        enctype="multipart/form-data"
         hx-post="{{ .Action }}" hx-target="#form-briefing" hx-swap="outerHTML"
+        hx-encoding="multipart/form-data"
         hx-disabled-elt="find button[type=submit]">
 
     {{- with index .Erros "_geral" }}
@@ -61,9 +66,24 @@
         {{- end }}
       </select>
 
+      {{- else if eq .Tipo "file" }}
+      {{- /* accept= é só um filtro do seletor de arquivos, conveniência para
+             quem escolhe — a validação real é o farejamento de bytes no
+             servidor (upload.go). Nunca confie nele. */}}
+      <input id="{{ $id }}" name="{{ .Chave }}" type="file"
+             accept="image/*" multiple
+             {{ with $descr }}aria-describedby="{{ . }}"{{ end }}>
+      {{- /* Nenhuma página pode repreencher um input de arquivo (é proteção do
+             navegador), então num reenvio os anexos somem em silêncio. Avisar é
+             a única correção possível. */}}
+      {{- if $.Erros }}
+      <small class="campo__realerta">{{ t $.Lang "form.reanexar" }}</small>
+      {{- end }}
+
       {{- else }}
       <input id="{{ $id }}" name="{{ .Chave }}" type="{{ .Tipo }}" value="{{ $valor }}"
              maxlength="4000"
+             {{ if eq .Tipo "url" }}placeholder="https://"{{ end }}
              {{ if .Obrigatoria }}required{{ end }}
              {{ if $erro }}aria-invalid="true"{{ end }}
              {{ with $descr }}aria-describedby="{{ . }}"{{ end }}>

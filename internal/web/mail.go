@@ -19,7 +19,7 @@ import (
 // notificar dispara o e-mail de aviso. Roda em goroutine (ver enviarBriefing) e
 // por isso NAO recebe o contexto do request: o cancelamento do request -- que
 // acontece assim que o visitante ve "obrigada" -- mataria o envio no meio.
-func (s *Server) notificar(f *formBriefing, lang string, respostas map[string]string, id int64) {
+func (s *Server) notificar(f *formBriefing, lang string, respostas map[string]string, id int64, anexos int) {
 	if s.cfg.ResendAPIKey == "" || s.cfg.MailPara == "" {
 		logger.Info("briefing: e-mail desligado (sem RESEND_API_KEY/MAIL_PARA)", "id", id)
 		return
@@ -28,7 +28,7 @@ func (s *Server) notificar(f *formBriefing, lang string, respostas map[string]st
 	defer cancelar()
 
 	assunto := fmt.Sprintf("Novo briefing (%s) — %s", f.Slug, resumo(f, respostas))
-	if err := s.enviarEmail(ctx, assunto, corpoEmail(f, lang, respostas, id, s.cfg.BaseURL)); err != nil {
+	if err := s.enviarEmail(ctx, assunto, corpoEmail(f, lang, respostas, id, s.cfg.BaseURL, anexos)); err != nil {
 		// Erro de e-mail nao pode assustar: a resposta ESTA salva. Log e segue.
 		logger.Error("briefing: e-mail falhou (resposta salva mesmo assim)", "id", id, "erro", err)
 		return
@@ -50,7 +50,7 @@ func resumo(f *formBriefing, respostas map[string]string) string {
 }
 
 // corpoEmail monta o HTML do aviso: pergunta e resposta, na ordem do formulario.
-func corpoEmail(f *formBriefing, lang string, respostas map[string]string, id int64, baseURL string) string {
+func corpoEmail(f *formBriefing, lang string, respostas map[string]string, id int64, baseURL string, anexos int) string {
 	var sb strings.Builder
 	sb.WriteString(`<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.6;color:#2b2b2b">`)
 	fmt.Fprintf(&sb, `<h2 style="font-weight:600">%s</h2>`, html.EscapeString(f.Titulo.T("pt")))
@@ -58,6 +58,12 @@ func corpoEmail(f *formBriefing, lang string, respostas map[string]string, id in
 		id, html.EscapeString(f.Slug), html.EscapeString(lang))
 
 	for _, p := range f.Perguntas {
+		// Anexos nao vao no e-mail: seriam imagens de terceiros trafegando por
+		// um servico externo, e o link para ve-las exige autenticacao mesmo. O
+		// e-mail so avisa que existem; ver a imagem e no painel.
+		if p.Tipo == campoArquivo {
+			continue
+		}
 		valor := respostas[p.Chave]
 		if valor == "" {
 			continue // campo opcional em branco so poluiria o e-mail
@@ -67,6 +73,12 @@ func corpoEmail(f *formBriefing, lang string, respostas map[string]string, id in
 			html.EscapeString(p.Label.T("pt")),
 			// nl2br: a motivacao e as referencias costumam vir em varias linhas.
 			strings.ReplaceAll(html.EscapeString(valor), "\n", "<br>"))
+	}
+
+	if anexos > 0 {
+		fmt.Fprintf(&sb,
+			`<p style="margin:14px 0;padding:10px 12px;background:#f4efe6;border-radius:6px">`+
+				`📎 <strong>%d imagem(ns) de referência</strong> anexada(s) — veja no painel.</p>`, anexos)
 	}
 
 	painel := html.EscapeString(baseURL + "/admin")

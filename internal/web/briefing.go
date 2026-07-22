@@ -1,8 +1,10 @@
 package web
 
 import (
+	"errors"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -110,6 +112,11 @@ func validar(f *formBriefing, r *http.Request, lang string) (map[string]string, 
 	erros := map[string]string{}
 
 	for _, p := range f.Perguntas {
+		// Anexo nao tem valor de texto: ele viaja pelo multipart e vira linha
+		// em submission_files (ver upload.go).
+		if p.Tipo == campoArquivo {
+			continue
+		}
 		valor := strings.TrimSpace(r.PostFormValue(p.Chave))
 		if len(valor) > tamanhoMaxCampo {
 			valor = valor[:tamanhoMaxCampo]
@@ -133,8 +140,29 @@ func validar(f *formBriefing, r *http.Request, lang string) (map[string]string, 
 		if p.Tipo == campoSelect && !opcaoValida(p, valor) {
 			erros[p.Chave] = t(lang, "form.opcaoInvalida")
 		}
+		if p.Tipo == campoURL && !urlPlausivel(valor) {
+			erros[p.Chave] = t(lang, "form.urlInvalida")
+		}
 	}
 	return valores, erros
+}
+
+// urlPlausivel aceita so http/https absolutos.
+//
+// O esquema importa mais do que parece: a URL vira um <a href> no painel da
+// Isa, e "javascript:..." ali seria XSS com um clique dela. O html/template
+// bloqueia esse esquema na renderizacao, mas depender disso e depender de uma
+// camada so -- guardar lixo no banco ja e o erro.
+func urlPlausivel(valor string) bool {
+	u, err := url.Parse(valor)
+	if err != nil {
+		return false
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return false
+	}
+	// Exige host: "https://" sozinho passa no Parse.
+	return u.Host != ""
 }
 
 // opcaoValida confere o valor de um select contra as opcoes. Compara nos DOIS
@@ -169,6 +197,32 @@ func (s *Server) briefing(w http.ResponseWriter, r *http.Request) {
 		Valores:  map[string]string{},
 		Erros:    map[string]string{},
 	})
+}
+
+// anexarImagens grava os anexos de todos os campos de arquivo do formulario e
+// devolve quantos foram salvos (o e-mail so precisa saber que existem).
+func (s *Server) anexarImagens(r *http.Request, f *formBriefing, submissionID int64) int {
+	total := 0
+	if r.MultipartForm == nil {
+		return total // formulario sem anexo (urlencoded) -- caminho normal
+	}
+	for _, p := range f.Perguntas {
+		if p.Tipo != campoArquivo {
+			continue
+		}
+		enviados := r.MultipartForm.File[p.Chave]
+		if len(enviados) == 0 {
+			continue
+		}
+		for _, arquivo := range s.salvarAnexos(submissionID, p.Chave, enviados) {
+			if err := s.store.SalvarArquivo(r.Context(), arquivo); err != nil {
+				logger.Error("briefing: registrar anexo falhou", "id", submissionID, "erro", err)
+				continue
+			}
+			total++
+		}
+	}
+	return total
 }
 
 // caminhoEnvio monta o destino do POST no idioma corrente, para o envio sem JS
@@ -211,8 +265,21 @@ func (s *Server) enviarBriefing(w http.ResponseWriter, r *http.Request) {
 		s.render.Page(w, r, "briefing", status, v)
 	}
 
-	if err := r.ParseForm(); err != nil {
-		responder(briefingView{Erros: map[string]string{"_geral": t(lang, "form.erroGeral")}}, http.StatusBadRequest)
+	// Teto no corpo ANTES de qualquer parsing: o ParseMultipartForm faz spool
+	// em disco, entao sem isto um POST gigante enche a VM antes de o codigo
+	// chegar a validar coisa alguma.
+	r.Body = http.MaxBytesReader(w, r.Body, maxCorpoUpload)
+
+	// ParseMultipartForm trata os dois content-types (multipart e urlencoded),
+	// entao serve tambem para os formularios sem anexo.
+	if err := r.ParseMultipartForm(2 << 20); err != nil && !errors.Is(err, http.ErrNotMultipart) {
+		var excedeu *http.MaxBytesError
+		chave := "form.erroGeral"
+		if errors.As(err, &excedeu) {
+			chave = "form.arquivoGrande"
+		}
+		logger.Warn("briefing: corpo recusado", "form", f.Slug, "erro", err)
+		responder(briefingView{Erros: map[string]string{"_geral": t(lang, chave)}}, http.StatusBadRequest)
 		return
 	}
 
@@ -250,11 +317,15 @@ func (s *Server) enviarBriefing(w http.ResponseWriter, r *http.Request) {
 		}, http.StatusInternalServerError)
 		return
 	}
+	// Anexos DEPOIS do insert: eles precisam do id, e um erro aqui nao pode
+	// custar a resposta em texto, que ja esta a salvo.
+	anexos := s.anexarImagens(r, f, id)
+
 	logger.Info("briefing recebido", "form", f.Slug, "id", id, "lang", lang)
 
 	// E-mail em goroutine: o Resend pode estar fora do ar ou lento, e o visitante
 	// nao pode esperar por isso -- a resposta JA esta salva, que e o que importa.
-	go s.notificar(f, lang, valores, id)
+	go s.notificar(f, lang, valores, id, anexos)
 
 	responder(briefingView{Enviado: true}, http.StatusOK)
 }

@@ -20,6 +20,11 @@ const (
 	campoData     tipoCampo = "date"
 	campoTextarea tipoCampo = "textarea"
 	campoSelect   tipoCampo = "select"
+	campoURL      tipoCampo = "url"
+	// campoArquivo aceita ate maxArquivos imagens. Ver upload.go -- o anexo tem
+	// um caminho de dados proprio (disco + tabela submission_files), nao entra
+	// no JSON de respostas.
+	campoArquivo tipoCampo = "file"
 )
 
 // pergunta e um campo do formulario. `Chave` e a identidade: vira o name= do
@@ -102,7 +107,20 @@ var briefingFotografia = formBriefing{
 		{
 			Chave: "referencias", Tipo: campoTextarea,
 			Label: ml{"Tem referências?", "Any references?"},
-			Ajuda: ml{"Link do Pinterest, perfis, ou só descreve o clima que você imagina.", "Pinterest link, profiles, or just describe the mood you picture."},
+			Ajuda: ml{"Descreve o clima que você imagina, ou cola links (Pinterest, perfis).", "Describe the mood you picture, or paste links (Pinterest, profiles)."},
+		},
+		{
+			Chave: "referencias_link", Tipo: campoURL,
+			Label: ml{"Link de um board ou álbum", "Link to a board or album"},
+			Ajuda: ml{"Pinterest, Google Drive, um perfil — o que for mais fácil pra você.", "Pinterest, Google Drive, a profile — whatever is easiest for you."},
+		},
+		{
+			Chave: "referencias_imagens", Tipo: campoArquivo,
+			Label: ml{"Ou anexe imagens", "Or attach images"},
+			Ajuda: ml{
+				"Até 4 imagens, 5 MB cada. Prints da galeria do celular servem perfeitamente.",
+				"Up to 4 images, 5 MB each. Screenshots from your phone gallery work perfectly.",
+			},
 		},
 		{
 			// A pergunta do lanche. Parece supérflua e e exatamente o oposto: e a
@@ -187,6 +205,16 @@ var briefingUGC = formBriefing{
 		{
 			Chave: "prazo", Tipo: campoData,
 			Label: ml{"Prazo de entrega desejado", "Desired delivery date"},
+		},
+		{
+			Chave: "referencias_link", Tipo: campoURL,
+			Label: ml{"Link de referências ou do briefing da campanha", "Link to references or the campaign brief"},
+			Ajuda: ml{"Drive, Notion, board — se já tiverem material, me manda.", "Drive, Notion, a board — if you already have material, send it over."},
+		},
+		{
+			Chave: "referencias_imagens", Tipo: campoArquivo,
+			Label: ml{"Ou anexe imagens de referência", "Or attach reference images"},
+			Ajuda: ml{"Até 4 imagens, 5 MB cada.", "Up to 4 images, 5 MB each."},
 		},
 		{
 			Chave: "observacoes", Tipo: campoTextarea,

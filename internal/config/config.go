@@ -23,6 +23,10 @@ type Config struct {
 	MailPara     string // caixa da Isa
 	AdminUser    string
 	AdminSenha   string
+	// UploadDir guarda as imagens de referencia dos briefings. Fica DENTRO de
+	// data/ de proposito: e o unico diretorio que o systemd deixa o servico
+	// escrever (ReadWritePaths, ver deploy/site-simples.service).
+	UploadDir string
 
 	// R2: usado somente pelo `site sync`, nunca ao servir request.
 	R2PublicBase string
@@ -72,6 +76,7 @@ func Load(needR2 bool) (*Config, error) {
 		MailPara:     os.Getenv("MAIL_PARA"),
 		AdminUser:    os.Getenv("ADMIN_USER"),
 		AdminSenha:   os.Getenv("ADMIN_SENHA"),
+		UploadDir:    env("UPLOAD_DIR", "data/uploads"),
 		R2PublicBase: strings.TrimSuffix(os.Getenv("R2_PUBLIC_BASE"), "/"),
 		R2AccountID:  os.Getenv("R2_ACCOUNT_ID"),
 		R2AccessKey:  os.Getenv("R2_ACCESS_KEY_ID"),

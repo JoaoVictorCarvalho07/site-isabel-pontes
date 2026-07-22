@@ -4,6 +4,10 @@
 
 # banco: gerado por `site sync`, nunca versionado.
 # Em prod vive num volume; o backup é o Litestream replicando para o R2.
+#
+# Isto cobre TAMBÉM data/uploads/ -- as imagens de referência que os clientes
+# anexam ao briefing. São fotos de terceiros: commitar uma seria publicá-la no
+# GitHub para sempre. Se um dia esta regra for afrouxada, exclua uploads/ antes.
 /data/
 
 # credenciais. O .env do projeto React ja vazou uma vez para o historico

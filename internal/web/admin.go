@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/JoaoVictorCarvalho07/site-da-bebel-htmx/internal/store"
 )
 
 // Painel da Isa: le os briefings recebidos direto do SQLite. Existe para as
@@ -53,11 +55,22 @@ type linhaAdmin struct {
 	Quando   string
 	Campos   []campoAdmin
 	Destaque string // primeiro campo identificador (nome/marca), para o cabecalho
+	Anexos   []anexoAdmin
+}
+
+type anexoAdmin struct {
+	URL  string
+	Nome string
+	KB   int64
 }
 
 type campoAdmin struct {
 	Label string
 	Valor string
+	// Link faz o template renderizar um <a>. O esquema ja foi validado na
+	// entrada (urlPlausivel), e o html/template recusa href perigoso na saida --
+	// duas camadas, de proposito.
+	Link bool
 }
 
 type adminView struct {
@@ -84,11 +97,25 @@ func (s *Server) admin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Uma query para TODOS os anexos, nao uma por card: com 200 briefings na
+	// tela, o padrao ingenuo viraria 200 idas ao banco.
+	ids := make([]int64, len(subs))
+	for i, sub := range subs {
+		ids[i] = sub.ID
+	}
+	anexos, err := s.store.ArquivosDe(r.Context(), ids)
+	if err != nil {
+		// Anexo e complemento: sem ele o painel ainda cumpre o essencial, que e
+		// mostrar o texto do briefing.
+		logger.Error("admin: carregar anexos falhou", "erro", err)
+		anexos = map[int64][]store.Arquivo{}
+	}
+
 	linhas := make([]linhaAdmin, 0, len(subs))
 	for _, sub := range subs {
 		f, conhecido := formsPorSlug[sub.Form]
 		linha := linhaAdmin{
-			ID: sub.ID, Form: sub.Form, Lida: sub.Lida,
+			ID: sub.ID, Form: sub.Form, Lida: sub.Lida, Anexos: paraAnexos(anexos[sub.ID]),
 			// Horario de Brasilia: o banco grava UTC, e a Isa nao deveria
 			// precisar fazer a conta de cabeca.
 			Quando: sub.CriadoEm.In(fusoBrasil).Format("02/01/2006 15:04"),
@@ -113,7 +140,9 @@ func (s *Server) admin(w http.ResponseWriter, r *http.Request) {
 			if linha.Destaque == "" && p.Obrigatoria && p.Tipo == campoTexto {
 				linha.Destaque = valor
 			}
-			linha.Campos = append(linha.Campos, campoAdmin{Label: p.Label.T("pt"), Valor: valor})
+			linha.Campos = append(linha.Campos, campoAdmin{
+				Label: p.Label.T("pt"), Valor: valor, Link: p.Tipo == campoURL,
+			})
 		}
 		linhas = append(linhas, linha)
 	}
@@ -128,6 +157,20 @@ func (s *Server) admin(w http.ResponseWriter, r *http.Request) {
 		FiltroURL:  filtro,
 		EmailAtivo: s.cfg.ResendAPIKey != "" && s.cfg.MailPara != "",
 	})
+}
+
+func paraAnexos(arquivos []store.Arquivo) []anexoAdmin {
+	lista := make([]anexoAdmin, 0, len(arquivos))
+	for _, a := range arquivos {
+		lista = append(lista, anexoAdmin{
+			// Pelo ID, nunca pelo caminho: a URL nao pode ser um ponteiro para
+			// o sistema de arquivos.
+			URL:  "/admin/arquivo/" + strconv.FormatInt(a.ID, 10),
+			Nome: a.NomeOriginal,
+			KB:   (a.Tamanho + 1023) / 1024,
+		})
+	}
+	return lista
 }
 
 // fusoBrasil resolvido uma vez. LoadLocation depende do tzdata do sistema, que

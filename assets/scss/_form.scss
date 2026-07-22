@@ -94,6 +94,39 @@
     color: var(--destructive);
   }
 
+  // Aviso de "reanexe as imagens" — o navegador limpa input[type=file] a cada
+  // render, então num reenvio os anexos somem sem a pessoa perceber.
+  &__realerta {
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--destructive);
+  }
+
+  // O botão nativo do input[type=file] é feio e varia entre navegadores.
+  // ::file-selector-button deixa ele parecido com o resto sem precisar da
+  // gambiarra de esconder o input e fingir com um <label>, que costuma quebrar
+  // o teclado e o leitor de tela.
+  input[type='file'] {
+    padding: 0.55rem 0.6rem;
+    font-size: 0.92rem;
+    cursor: pointer;
+
+    &::file-selector-button {
+      padding: 0.45rem 1rem;
+      margin-right: 0.85rem;
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      color: var(--secondary-foreground);
+      cursor: pointer;
+      background: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      transition: background 0.18s ease;
+
+      &:hover { background: var(--secondary); }
+    }
+  }
+
   &--erro {
     input,
     textarea,

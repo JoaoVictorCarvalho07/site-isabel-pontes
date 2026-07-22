@@ -49,9 +49,33 @@
     <dl class="briefing-card__campos">
       {{- range .Campos }}
       <dt>{{ .Label }}</dt>
+      {{- if .Link }}
+      {{- /* noopener/noreferrer: o link é de terceiro, não damos a ele
+             window.opener nem o referrer do painel. */}}
+      <dd><a href="{{ .Valor }}" target="_blank" rel="noopener noreferrer nofollow">{{ .Valor }}</a></dd>
+      {{- else }}
       <dd>{{ .Valor }}</dd>
       {{- end }}
+      {{- end }}
     </dl>
+
+    {{- with .Anexos }}
+    <div class="briefing-card__anexos">
+      <p class="briefing-card__anexos-titulo">Referências enviadas ({{ len . }})</p>
+      <ul>
+        {{- range . }}
+        {{- /* loading=lazy: um painel com 200 briefings não pode baixar
+               centenas de imagens de uma vez. */}}
+        <li>
+          <a href="{{ .URL }}" target="_blank" rel="noopener">
+            <img src="{{ .URL }}" alt="{{ .Nome }}" loading="lazy" decoding="async">
+            <span>{{ .Nome }} · {{ .KB }} KB</span>
+          </a>
+        </li>
+        {{- end }}
+      </ul>
+    </div>
+    {{- end }}
   </article>
   {{- end }}
 </section>

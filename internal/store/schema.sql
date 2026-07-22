@@ -72,3 +72,26 @@ CREATE TABLE IF NOT EXISTS submissions (
 
 -- O painel lista por data decrescente; e a unica query desta tabela.
 CREATE INDEX IF NOT EXISTS idx_submissions_recentes ON submissions (created_at DESC);
+
+-- Imagens de referencia anexadas a um briefing.
+--
+-- O BYTE fica em disco (data/uploads/...), nao aqui: BLOB de 5 MB por linha
+-- incharia o banco e, junto com ele, cada ciclo de replicacao do Litestream.
+-- Esta tabela guarda so o PONTEIRO e os metadados.
+--
+-- `caminho` e gerado por nos a partir de um hash -- o nome que o visitante
+-- mandou nunca vira caminho de arquivo (e assim que se entrega um path
+-- traversal). `nome_original` existe so para a Isa ver o nome de verdade na
+-- tela; e texto exibido, nunca caminho.
+CREATE TABLE IF NOT EXISTS submission_files (
+  id            INTEGER PRIMARY KEY,
+  submission_id INTEGER NOT NULL REFERENCES submissions(id) ON DELETE CASCADE,
+  campo         TEXT NOT NULL,          -- qual pergunta gerou o anexo
+  caminho       TEXT NOT NULL,          -- relativo ao dir de uploads
+  nome_original TEXT NOT NULL DEFAULT '',
+  mime          TEXT NOT NULL DEFAULT '',
+  tamanho       INTEGER NOT NULL DEFAULT 0,
+  created_at    TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_files_submission ON submission_files (submission_id);

@@ -20,7 +20,8 @@ import (
 var schemaSQL string
 
 // 2: tabela submissions (formularios de briefing).
-const schemaVersion = 2
+// 3: tabela submission_files (imagens de referencia anexadas).
+const schemaVersion = 3
 
 type Store struct {
 	db *sql.DB

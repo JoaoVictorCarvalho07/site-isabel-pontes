@@ -142,6 +142,8 @@ func (s *Server) Handler() http.Handler {
 	// fora do sitemap/robots -- ver admin.go.
 	mux.Handle("GET /admin", s.exigirAdmin(http.HandlerFunc(s.admin)))
 	mux.Handle("POST /admin/lida/{id}", s.exigirAdmin(http.HandlerFunc(s.adminMarcarLida)))
+	// Imagens de referencia: fotos de clientes, servidas SO sob autenticacao.
+	mux.Handle("GET /admin/arquivo/{id}", s.exigirAdmin(http.HandlerFunc(s.servirArquivo)))
 	mux.HandleFunc("GET /robots.txt", s.robots)
 	mux.HandleFunc("GET /sitemap.xml", s.sitemap)
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
