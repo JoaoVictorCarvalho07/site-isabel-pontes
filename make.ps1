@@ -28,6 +28,24 @@ Set-Location $PSScriptRoot
 $SASS = "tools\dart-sass\sass.bat"
 $SASS_VERSION = "1.101.0"
 
+# --- Configuracao de PRODUCAO (embutida no binario pelo `deploy`) -------------
+# Estes valores viram os PADROES do binario (ver internal/config/config.go), para
+# a VM nao precisar de arquivo .env. Uma variavel de ambiente na VM, se existir,
+# ainda tem prioridade sobre eles.
+#
+# Só URL/porta aqui. NUNCA segredo: o valor fica legivel dentro do binario.
+#
+# BASE_URL = o endereco PUBLICO (o que o visitante ve). Entra no canonical,
+# og:url, og:image, hreflang e sitemap -- e o que faz o card do WhatsApp
+# funcionar. Ao apontar o dominio, troque para 'https://isabelpontes.com.br'.
+$PROD_BASE_URL = 'http://147.15.96.215:8080'
+# ADDR = onde o Go ESCUTA. Com o Caddy na frente, mude para '127.0.0.1:8080'
+# (assim a porta 8080 deixa de ser exposta e ninguem pula o HTTPS).
+$PROD_ADDR = ':8080'
+# Arquitetura da VM: Ampere A1 = arm64; VM.Standard.E2.1.Micro (AMD) = amd64.
+# Confira na VM com:  uname -m     (aarch64 -> arm64, x86_64 -> amd64)
+$PROD_ARCH = 'arm64'
+
 function Need-Sass {
   if (-not (Test-Path $SASS)) {
     throw "dart-sass nao encontrado. Rode: .\make.ps1 tools"
@@ -76,11 +94,18 @@ switch ($Task) {
     #
     # Sem SITE_HOST, so compila (voce faz o scp na mao). Primeira instalacao:
     # siga deploy/README.md.
-    $env:GOOS = 'linux'; $env:GOARCH = 'arm64'; $env:CGO_ENABLED = '0'
-    go build -ldflags '-s -w' -o site ./cmd/site
+    # -X injeta a config de producao (topo deste arquivo) como padrao do binario,
+    # para a VM nao precisar de .env. Ver internal/config/config.go.
+    $cfgPkg = 'github.com/JoaoVictorCarvalho07/site-da-bebel-htmx/internal/config'
+    $ldflags = "-s -w -X $cfgPkg.baseURLPadrao=$PROD_BASE_URL -X $cfgPkg.addrPadrao=$PROD_ADDR"
+
+    $env:GOOS = 'linux'; $env:GOARCH = $PROD_ARCH; $env:CGO_ENABLED = '0'
+    go build -ldflags $ldflags -o site ./cmd/site
     Remove-Item Env:GOOS, Env:GOARCH, Env:CGO_ENABLED
     $mb = [math]::Round((Get-Item site).Length / 1MB, 1)
-    Write-Host "site (linux/arm64, $mb MB) compilado"
+    Write-Host "site (linux/$PROD_ARCH, $mb MB) compilado"
+    Write-Host "  BASE_URL embutido: $PROD_BASE_URL"
+    Write-Host "  ADDR     embutido: $PROD_ADDR"
 
     if ($env:SITE_HOST) {
       Write-Host "enviando para $env:SITE_HOST ..."

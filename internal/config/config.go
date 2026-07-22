@@ -23,6 +23,24 @@ type Config struct {
 	R2Bucket     string
 }
 
+// Padroes que podem ser INJETADOS NO BUILD, para o binario de deploy sair com a
+// producao embutida e nao depender de .env na VM:
+//
+//	go build -ldflags "-X <este/pacote>.baseURLPadrao=https://exemplo.com"
+//
+// Ver a tarefa `deploy` do make.ps1, que ja faz isso. Sao `var` (nao `const`)
+// justamente porque o -X do linker so escreve em variavel.
+//
+// A variavel de ambiente continua tendo PRIORIDADE sobre estes valores (ver
+// env()), entao da para sobrescrever na VM sem recompilar.
+//
+// NUNCA injete segredo aqui: o valor fica legivel dentro do binario (um
+// `strings site` mostra). Só URL/porta, que sao publicos por natureza.
+var (
+	addrPadrao    = ":8080"
+	baseURLPadrao = "http://localhost:8080"
+)
+
 func env(k, def string) string {
 	if v := os.Getenv(k); v != "" {
 		return v
@@ -35,10 +53,10 @@ func env(k, def string) string {
 // deploy carregar segredo que ele nao usa.
 func Load(needR2 bool) (*Config, error) {
 	cfg := &Config{
-		Addr:         env("ADDR", ":8080"),
+		Addr:         env("ADDR", addrPadrao),
 		DBPath:       env("DB_PATH", "data/site.db"),
 		ManifestPath: env("MANIFEST_PATH", "data/manifest.json"),
-		BaseURL:      strings.TrimSuffix(env("BASE_URL", "http://localhost:8080"), "/"),
+		BaseURL:      strings.TrimSuffix(env("BASE_URL", baseURLPadrao), "/"),
 		Dev:          env("DEV", "") != "",
 		R2PublicBase: strings.TrimSuffix(os.Getenv("R2_PUBLIC_BASE"), "/"),
 		R2AccountID:  os.Getenv("R2_ACCOUNT_ID"),
