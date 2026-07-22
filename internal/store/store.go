@@ -19,7 +19,8 @@ import (
 //go:embed schema.sql
 var schemaSQL string
 
-const schemaVersion = 1
+// 2: tabela submissions (formularios de briefing).
+const schemaVersion = 2
 
 type Store struct {
 	db *sql.DB

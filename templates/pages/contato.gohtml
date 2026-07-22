@@ -77,6 +77,15 @@
     </div>
   </div>
 
+  {{- /* Ponte para o briefing longo. Fica DEPOIS dos cards: quem só quer o
+         WhatsApp resolve em um clique; quem quer contar a história tem espaço
+         próprio para isso, sem um formulário de 9 campos assustando a página. */}}
+  <div class="contato__briefing">
+    <h2>{{ if $en }}Prefer to tell me everything at once?{{ else }}Prefere já me contar tudo?{{ end }}</h2>
+    <p>{{ if $en }}Fill out the briefing and I'll come back with a proposal ready — including the snack I'll prepare for you 🤍{{ else }}Preenche o briefing e eu já volto com uma proposta pronta — inclusive com o lanchinho que vou preparar pra você 🤍{{ end }}</p>
+    <a class="contato__briefing-cta" href="{{ if $en }}/en/briefing{{ else }}/briefing{{ end }}">{{ t .Lang "form.abrirBriefing" }}</a>
+  </div>
+
   <p class="contato__dica">
     {{- if $en }}Tip: if you prefer, just say “I came from the website” and I'll guide you with the questions ✨
     {{- else }}Dica: se preferir, pode mandar só “vim pelo site” que eu te guio com as perguntas ✨{{ end }}

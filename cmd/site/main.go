@@ -100,7 +100,7 @@ func serve() error {
 	}
 	slog.Info("snapshot carregado", "fotos", len(snapshot.Fotos("")), "temas", len(snapshot.Temas()))
 
-	servidor, err := web.New(cfg, site.Assets, snapshot)
+	servidor, err := web.New(cfg, site.Assets, snapshot, banco)
 	if err != nil {
 		return err
 	}

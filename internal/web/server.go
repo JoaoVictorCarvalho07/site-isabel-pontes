@@ -23,6 +23,11 @@ type Server struct {
 	render *Renderer
 	static fs.FS
 	snap   *store.Snapshot // fotos em RAM; carregado no boot
+	// store e a conexao viva com o SQLite. A galeria nao a usa (le do snap),
+	// mas os formularios de briefing ESCREVEM no request -- ver submissions.go.
+	store *store.Store
+	// limiteBriefing: um envio por IP por janela, contra flood de formulario.
+	limiteBriefing *limitador
 	// boot muda a cada restart (= cada deploy). Entra no ETag da galeria para
 	// que uma troca de template/CSS/JS invalide o cache -- o data_version
 	// sozinho so cobre mudanca de DADOS, nao de codigo.
@@ -30,8 +35,10 @@ type Server struct {
 }
 
 // New monta o servidor. `assets` e o FS embutido com templates/ e static/;
-// `snap` e o snapshot da galeria carregado do SQLite no boot.
-func New(cfg *config.Config, assets fs.FS, snap *store.Snapshot) (*Server, error) {
+// `snap` e o snapshot da galeria carregado do SQLite no boot; `banco` e a
+// conexao viva, usada so pela escrita dos formularios de briefing (pode ser nil
+// em teste que nao exercite formulario).
+func New(cfg *config.Config, assets fs.FS, snap *store.Snapshot, banco *store.Store) (*Server, error) {
 	hasher := newAssetHasher(assets)
 	funcs := template.FuncMap{
 		"asset": hasher.url,
@@ -95,8 +102,12 @@ func New(cfg *config.Config, assets fs.FS, snap *store.Snapshot) (*Server, error
 		return nil, err
 	}
 	return &Server{
-		cfg: cfg, render: r, static: static, snap: snap,
-		boot: strconv.FormatInt(time.Now().Unix(), 36),
+		cfg: cfg, render: r, static: static, snap: snap, store: banco,
+		// 30s entre envios do mesmo IP: nao atrapalha quem errou um campo e
+		// reenviou, mas mata flood. Nao e defesa contra ataque distribuido --
+		// para isso existe o Caddy na frente.
+		limiteBriefing: novoLimitador(30 * time.Second),
+		boot:           strconv.FormatInt(time.Now().Unix(), 36),
 	}, nil
 }
 
@@ -112,6 +123,9 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /midiakit/videos", s.midiakitVideos) // fragmento HTMX do portfolio
 	mux.HandleFunc("GET /galeria", s.galeria)               // pagina completa
 	mux.HandleFunc("GET /galeria/fotos", s.galeriaFragment) // fragmento HTMX
+	mux.HandleFunc("GET /briefing", s.briefing)             // briefing de fotografia
+	// POST unico para os dois formularios; o slug escolhe o questionario.
+	mux.HandleFunc("POST /briefing/{slug}", s.enviarBriefing)
 
 	// Espelho em ingles (mesmos handlers; o idioma vem de idioma(r), pela URL).
 	mux.HandleFunc("GET /en", s.home) // /en exato (o {$} da raiz nao cobre)
@@ -121,6 +135,13 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /en/midiakit/videos", s.midiakitVideos)
 	mux.HandleFunc("GET /en/galeria", s.galeria)
 	mux.HandleFunc("GET /en/galeria/fotos", s.galeriaFragment)
+	mux.HandleFunc("GET /en/briefing", s.briefing)
+	mux.HandleFunc("POST /en/briefing/{slug}", s.enviarBriefing)
+
+	// Painel da Isa: le as respostas dos briefings. Protegido por basic-auth e
+	// fora do sitemap/robots -- ver admin.go.
+	mux.Handle("GET /admin", s.exigirAdmin(http.HandlerFunc(s.admin)))
+	mux.Handle("POST /admin/lida/{id}", s.exigirAdmin(http.HandlerFunc(s.adminMarcarLida)))
 	mux.HandleFunc("GET /robots.txt", s.robots)
 	mux.HandleFunc("GET /sitemap.xml", s.sitemap)
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {

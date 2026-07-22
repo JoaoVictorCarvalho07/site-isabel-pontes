@@ -15,6 +15,15 @@ type Config struct {
 	BaseURL      string // URL canonica; entra no og:url, canonical e sitemap
 	Dev          bool   // reparse de template por request
 
+	// Briefings: notificacao por e-mail (Resend) e painel de leitura.
+	// Tudo OPCIONAL -- sem estas variaveis o site funciona igual, as respostas
+	// ficam salvas no SQLite e o /admin responde 404. Ver internal/web/mail.go.
+	ResendAPIKey string
+	MailDe       string // remetente; precisa ser de dominio verificado no Resend
+	MailPara     string // caixa da Isa
+	AdminUser    string
+	AdminSenha   string
+
 	// R2: usado somente pelo `site sync`, nunca ao servir request.
 	R2PublicBase string
 	R2AccountID  string
@@ -58,6 +67,11 @@ func Load(needR2 bool) (*Config, error) {
 		ManifestPath: env("MANIFEST_PATH", "data/manifest.json"),
 		BaseURL:      strings.TrimSuffix(env("BASE_URL", baseURLPadrao), "/"),
 		Dev:          env("DEV", "") != "",
+		ResendAPIKey: os.Getenv("RESEND_API_KEY"),
+		MailDe:       env("MAIL_DE", "briefing@isabelpontes.com.br"),
+		MailPara:     os.Getenv("MAIL_PARA"),
+		AdminUser:    os.Getenv("ADMIN_USER"),
+		AdminSenha:   os.Getenv("ADMIN_SENHA"),
 		R2PublicBase: strings.TrimSuffix(os.Getenv("R2_PUBLIC_BASE"), "/"),
 		R2AccountID:  os.Getenv("R2_ACCOUNT_ID"),
 		R2AccessKey:  os.Getenv("R2_ACCESS_KEY_ID"),

@@ -60,6 +60,19 @@ var traducoes = map[string]ml{
 	"rodape":        {"Todos os direitos reservados", "All rights reserved"},
 	"comum.todos":   {"Todos", "All"},
 
+	// Formularios de briefing (as PERGUNTAS vivem em briefing_content.go; aqui
+	// so o chrome: validacao, rotulos de UI).
+	"form.obrigatorio":   {"Esse campo é obrigatório.", "This field is required."},
+	"form.emailInvalido": {"Confere o e-mail, parece incompleto.", "Please check the email, it looks incomplete."},
+	"form.opcaoInvalida": {"Escolha uma das opções da lista.", "Please pick one of the listed options."},
+	"form.erroGeral":     {"Algo deu errado aqui do meu lado. Tenta de novo ou me chama no WhatsApp.", "Something went wrong on my end. Try again or message me on WhatsApp."},
+	"form.muitosEnvios":  {"Você acabou de enviar um briefing. Espera um minutinho antes de mandar outro.", "You've just sent a briefing. Please wait a moment before sending another."},
+	"form.opcional":      {"opcional", "optional"},
+	"form.escolha":       {"Escolha uma opção", "Choose an option"},
+	"form.enviando":      {"Enviando…", "Sending…"},
+	"form.corrija":       {"Confere os campos marcados abaixo.", "Please check the highlighted fields below."},
+	"form.abrirBriefing": {"Preencher briefing", "Fill out the briefing"},
+
 	"galeria.vazia":   {"Nenhuma foto encontrada.", "No photos found."},
 	"galeria.filtrar": {"Filtrar por tema", "Filter by theme"},
 

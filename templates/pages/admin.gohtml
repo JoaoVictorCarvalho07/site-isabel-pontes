@@ -1,0 +1,58 @@
+{{- /* Painel de briefings. Interface de trabalho, nao pagina de marca: sem
+       hero, sem animacao, densa e legivel. So a Isa ve isto. */ -}}
+{{ define "conteudo" }}
+<section class="admin">
+  <header class="admin__head">
+    <div>
+      <h1>Briefings</h1>
+      <p>{{ .Total }} resposta{{ if ne .Total 1 }}s{{ end }}{{ if .NaoLidas }} · <strong>{{ .NaoLidas }} não lida{{ if ne .NaoLidas 1 }}s{{ end }}</strong>{{ end }}</p>
+    </div>
+    <nav class="admin__filtros">
+      <a href="/admin" {{ if not .FiltroURL }}aria-current="page"{{ end }}>Todos</a>
+      <a href="/admin?form=fotografia" {{ if eq .FiltroURL "fotografia" }}aria-current="page"{{ end }}>Fotografia</a>
+      <a href="/admin?form=ugc" {{ if eq .FiltroURL "ugc" }}aria-current="page"{{ end }}>UGC</a>
+    </nav>
+  </header>
+
+  {{- if not .EmailAtivo }}
+  <p class="admin__aviso">
+    Notificação por e-mail <strong>desligada</strong> — faltam <code>RESEND_API_KEY</code>
+    e <code>MAIL_PARA</code>. As respostas continuam sendo salvas normalmente; só
+    não chega aviso na caixa de entrada.
+  </p>
+  {{- end }}
+
+  {{- if not .Linhas }}
+  <p class="admin__vazio">Nenhum briefing por aqui ainda.</p>
+  {{- end }}
+
+  {{- range .Linhas }}
+  <article class="briefing-card{{ if .Lida }} briefing-card--lida{{ end }}">
+    <header class="briefing-card__head">
+      <div>
+        <h2>{{ with .Destaque }}{{ . }}{{ else }}Briefing #{{ .ID }}{{ end }}</h2>
+        <p class="briefing-card__meta">
+          <span class="briefing-card__tag briefing-card__tag--{{ .Form }}">{{ .Form }}</span>
+          {{ .Quando }}
+        </p>
+      </div>
+      {{- /* POST + redirect, sem JS: o painel precisa funcionar de qualquer
+             lugar, inclusive do celular da Isa com conexao ruim. */}}
+      <form method="post" action="/admin/lida/{{ .ID }}">
+        <input type="hidden" name="lida" value="{{ if .Lida }}0{{ else }}1{{ end }}">
+        <button type="submit" class="briefing-card__lida">
+          {{ if .Lida }}Marcar como não lida{{ else }}Marcar como lida{{ end }}
+        </button>
+      </form>
+    </header>
+
+    <dl class="briefing-card__campos">
+      {{- range .Campos }}
+      <dt>{{ .Label }}</dt>
+      <dd>{{ .Valor }}</dd>
+      {{- end }}
+    </dl>
+  </article>
+  {{- end }}
+</section>
+{{ end }}

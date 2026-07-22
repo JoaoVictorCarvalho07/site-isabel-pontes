@@ -28,6 +28,10 @@ type midiaKitView struct {
 	Metricas      []metricaRede
 	Investimentos []blocoPacotes
 	Portfolio     portfolioView
+	// FormUGC e o briefing embutido na one-page. Fica DENTRO do mídia kit (e
+	// nao numa /midiakit/briefing) para nao tirar a marca do documento no
+	// momento exato em que ela decidiu falar com a Isa. Ver docs §8.
+	FormUGC briefingView
 }
 
 func (s *Server) midiakit(w http.ResponseWriter, r *http.Request) {
@@ -53,6 +57,13 @@ func (s *Server) midiakit(w http.ResponseWriter, r *http.Request) {
 		Metricas:      metricas,
 		Investimentos: investimentos,
 		Portfolio:     buildPortfolio(lang, ""), // "" = todas as categorias
+		FormUGC: briefingView{
+			pageData: dados,
+			Form:     &briefingUGC,
+			Action:   caminhoEnvio(lang, briefingUGC.Slug),
+			Valores:  map[string]string{},
+			Erros:    map[string]string{},
+		},
 	})
 }
 

@@ -1,0 +1,182 @@
+// Painel de briefings. Ferramenta interna, não peça de marca: densidade acima
+// de respiro, nenhuma animação, nenhuma fonte serifada decorativa. A Isa vem
+// aqui para ler rápido e responder — não para admirar.
+
+.admin {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+  font-family: var(--font-sans);
+
+  &__head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+
+    h1 {
+      font-family: var(--font-sans);
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--foreground);
+    }
+
+    p {
+      margin-top: 0.2rem;
+      font-size: 0.9rem;
+      color: var(--muted-foreground);
+    }
+  }
+
+  &__filtros {
+    display: flex;
+    gap: 0.4rem;
+
+    a {
+      padding: 0.35rem 0.85rem;
+      font-size: 0.88rem;
+      color: var(--muted-foreground);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+
+      &[aria-current='page'] {
+        color: var(--primary-foreground);
+        background: var(--primary);
+        border-color: var(--primary);
+      }
+    }
+  }
+
+  &__aviso {
+    padding: 0.85rem 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--foreground);
+    background: hsl(43 38% 63% / 0.16);
+    border-left: 3px solid var(--gold);
+    border-radius: 4px;
+
+    code {
+      padding: 0.1rem 0.35rem;
+      font-size: 0.85em;
+      background: hsl(23 24% 9% / 0.08);
+      border-radius: 3px;
+    }
+  }
+
+  &__vazio {
+    padding: 3rem 0;
+    text-align: center;
+    color: var(--muted-foreground);
+  }
+}
+
+.briefing-card {
+  padding: 1.25rem 1.4rem;
+  margin-bottom: 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  // Lida some para o fundo sem desaparecer: continua acessível, deixa de
+  // competir por atenção com o que ainda não foi respondido.
+  &--lida {
+    opacity: 0.62;
+    background: transparent;
+  }
+
+  &__head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding-bottom: 0.85rem;
+    margin-bottom: 0.85rem;
+    border-bottom: 1px dashed var(--border);
+
+    h2 {
+      font-family: var(--font-sans);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--foreground);
+    }
+  }
+
+  &__meta {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.3rem;
+    font-size: 0.82rem;
+    color: var(--muted-foreground);
+  }
+
+  &__tag {
+    padding: 0.12rem 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 3px;
+
+    &--fotografia {
+      color: var(--accent-foreground);
+      background: var(--accent);
+    }
+
+    &--ugc {
+      color: var(--primary-foreground);
+      background: var(--primary);
+    }
+  }
+
+  &__lida {
+    padding: 0.35rem 0.8rem;
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    color: var(--muted-foreground);
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+
+    &:hover {
+      color: var(--foreground);
+      border-color: var(--muted-foreground);
+    }
+  }
+
+  &__campos {
+    display: grid;
+    gap: 0.85rem;
+
+    // Rótulo à esquerda, resposta à direita: o olho desce pela coluna das
+    // respostas sem reler as perguntas, que são sempre as mesmas.
+    @media (min-width: 40rem) {
+      grid-template-columns: 13rem 1fr;
+      gap: 0.6rem 1.25rem;
+    }
+
+    dt {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--muted-foreground);
+    }
+
+    dd {
+      margin: 0;
+      font-size: 0.98rem;
+      line-height: 1.55;
+      color: var(--foreground);
+      // Respostas longas (motivação) vêm com quebras de linha do textarea.
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+  }
+}

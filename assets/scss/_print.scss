@@ -43,7 +43,10 @@
   .mk-filtros,
   .mk-video__play,
   .mk-btn,
-  [data-imprimir] {
+  [data-imprimir],
+  // Formulário em papel não serve pra nada: a marca não preenche um PDF. No
+  // impresso, o caminho de contato são os dados do rodapé (.mk-contato__print).
+  .no-print {
     display: none !important;
   }
 

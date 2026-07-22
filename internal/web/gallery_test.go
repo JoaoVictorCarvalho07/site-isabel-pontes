@@ -40,7 +40,7 @@ func servidorComFotos(t *testing.T) *Server {
 	if err != nil {
 		t.Fatal(err)
 	}
-	s, err := New(&config.Config{BaseURL: "https://exemplo.test"}, site.Assets, snap)
+	s, err := New(&config.Config{BaseURL: "https://exemplo.test"}, site.Assets, snap, st)
 	if err != nil {
 		t.Fatal(err)
 	}

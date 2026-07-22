@@ -11,7 +11,9 @@ import (
 func (s *Server) robots(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("Cache-Control", "public, max-age=86400")
-	fmt.Fprintf(w, "User-agent: *\nAllow: /\n\nSitemap: %s/sitemap.xml\n", s.cfg.BaseURL)
+	// /admin fica fora do indice. Nao e seguranca (o basic-auth e que protege),
+	// e higiene: um painel indexado convida tentativa de login.
+	fmt.Fprintf(w, "User-agent: *\nAllow: /\nDisallow: /admin\n\nSitemap: %s/sitemap.xml\n", s.cfg.BaseURL)
 }
 
 // sitemap lista as URLs para o Google achar todas as paginas, inclusive uma por
@@ -34,6 +36,7 @@ func (s *Server) sitemap(w http.ResponseWriter, _ *http.Request) {
 	adicionar("/sobre")
 	adicionar("/midiakit")
 	adicionar("/contato")
+	adicionar("/briefing")
 
 	xml.WriteString("</urlset>\n")
 

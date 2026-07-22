@@ -1,0 +1,96 @@
+{{- /* Formulario de briefing. UM partial para os dois questionarios (fotografia
+       e UGC) e para os dois modos: pagina /briefing e embutido no /midiakit.
+       Quem escolhe as perguntas e o .Form; quem escolhe o destino e o .Action.
+
+       O <form> tem action e method REAIS: sem JavaScript ele faz POST normal e
+       recebe a pagina de sucesso. O HTMX so intercepta e troca no lugar. */ -}}
+{{ define "form_briefing" }}
+{{- $en := eq .Lang "en" }}
+<div class="form-briefing" id="form-briefing">
+  {{- if .Enviado }}
+  {{- /* Sucesso: substitui o formulario inteiro. role=status faz o leitor de
+         tela anunciar a troca -- sem isso o usuario cego nao sabe que enviou. */}}
+  <div class="form-briefing__sucesso" role="status">
+    <span class="form-briefing__sucesso-icone" aria-hidden="true">✿</span>
+    <p>{{ .Form.Sucesso.T .Lang }}</p>
+  </div>
+  {{- else }}
+  <form class="form-briefing__form" method="post" action="{{ .Action }}"
+        hx-post="{{ .Action }}" hx-target="#form-briefing" hx-swap="outerHTML"
+        hx-disabled-elt="find button[type=submit]">
+
+    {{- with index .Erros "_geral" }}
+    <p class="form-briefing__erro-geral" role="alert">{{ . }}</p>
+    {{- else }}
+    {{- if .Erros }}
+    <p class="form-briefing__erro-geral" role="alert">{{ t $.Lang "form.corrija" }}</p>
+    {{- end }}
+    {{- end }}
+
+    {{- range .Form.Perguntas }}
+    {{- $erro := index $.Erros .Chave }}
+    {{- $valor := index $.Valores .Chave }}
+    {{- $id := printf "campo-%s-%s" $.Form.Slug .Chave }}
+    <div class="campo{{ if $erro }} campo--erro{{ end }}">
+      <label for="{{ $id }}">
+        {{ .Label.T $.Lang }}
+        {{- if not .Obrigatoria }} <span class="campo__opcional">({{ t $.Lang "form.opcional" }})</span>{{ end }}
+      </label>
+      {{- $ajuda := .Ajuda.T $.Lang }}
+      {{- /* aria-describedby liga ajuda e erro ao campo; sem isso o leitor de
+             tela le o label e para, sem nunca dizer o que deu errado. */}}
+      {{- $descr := "" }}
+      {{- if $ajuda }}{{ $descr = printf "%s-ajuda" $id }}{{ end }}
+      {{- if $erro }}{{ $descr = printf "%s %s-erro" $descr $id }}{{ end }}
+
+      {{- if eq .Tipo "textarea" }}
+      <textarea id="{{ $id }}" name="{{ .Chave }}" rows="4" maxlength="4000"
+                {{ if .Obrigatoria }}required{{ end }}
+                {{ if $erro }}aria-invalid="true"{{ end }}
+                {{ with $descr }}aria-describedby="{{ . }}"{{ end }}>{{ $valor }}</textarea>
+
+      {{- else if eq .Tipo "select" }}
+      <select id="{{ $id }}" name="{{ .Chave }}"
+              {{ if .Obrigatoria }}required{{ end }}
+              {{ if $erro }}aria-invalid="true"{{ end }}
+              {{ with $descr }}aria-describedby="{{ . }}"{{ end }}>
+        <option value="">{{ t $.Lang "form.escolha" }}</option>
+        {{- range .Opcoes }}
+        {{- $texto := .T $.Lang }}
+        <option value="{{ $texto }}" {{ if eq $texto $valor }}selected{{ end }}>{{ $texto }}</option>
+        {{- end }}
+      </select>
+
+      {{- else }}
+      <input id="{{ $id }}" name="{{ .Chave }}" type="{{ .Tipo }}" value="{{ $valor }}"
+             maxlength="4000"
+             {{ if .Obrigatoria }}required{{ end }}
+             {{ if $erro }}aria-invalid="true"{{ end }}
+             {{ with $descr }}aria-describedby="{{ . }}"{{ end }}>
+      {{- end }}
+
+      {{- with $ajuda }}
+      <small class="campo__ajuda" id="{{ $id }}-ajuda">{{ . }}</small>
+      {{- end }}
+      {{- with $erro }}
+      <small class="campo__erro" id="{{ $id }}-erro">{{ . }}</small>
+      {{- end }}
+    </div>
+    {{- end }}
+
+    {{- /* Honeypot: escondido por CSS, nao por type=hidden (bot ignora hidden).
+           tabindex=-1 e autocomplete=off mantem humano e gerenciador de senha
+           longe dele; aria-hidden tira do leitor de tela. Ver campoHoneypot. */}}
+    <div class="campo-armadilha" aria-hidden="true">
+      <label for="website-{{ .Form.Slug }}">Não preencha este campo</label>
+      <input id="website-{{ .Form.Slug }}" name="website" type="text" tabindex="-1" autocomplete="off">
+    </div>
+
+    <button class="form-briefing__enviar" type="submit">
+      <span class="form-briefing__enviar-texto">{{ .Form.Enviar.T .Lang }}</span>
+      <span class="form-briefing__enviando" aria-hidden="true">{{ t .Lang "form.enviando" }}</span>
+    </button>
+  </form>
+  {{- end }}
+</div>
+{{ end }}

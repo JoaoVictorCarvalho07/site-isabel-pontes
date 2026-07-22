@@ -231,6 +231,16 @@
   </section>
   {{- end }}
 
+  {{- /* Briefing UGC embutido: a marca preenche sem sair da one-page.
+         O `no-print` some no PDF -- formulário em papel não serve pra nada. */}}
+  <section class="mk-briefing no-print" id="briefing" aria-labelledby="mk-briefing-titulo">
+    <div class="mk-briefing__texto">
+      <h2 id="mk-briefing-titulo">{{ .FormUGC.Form.Titulo.T .Lang }}</h2>
+      <p>{{ .FormUGC.Form.Subtitulo.T .Lang }}</p>
+    </div>
+    {{ template "form_briefing" .FormUGC }}
+  </section>
+
   {{- /* Rodapé próprio do mídia kit: contato + redes (o layout esconde o padrão). */}}
   <footer class="mk-contato">
     <h2>{{ t .Lang "mk.contatoTitulo" }}</h2>

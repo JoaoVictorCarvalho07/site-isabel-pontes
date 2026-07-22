@@ -1,0 +1,203 @@
+package web
+
+// Conteudo dos formularios de briefing. Editar AQUI e a unica coisa necessaria
+// para mudar o questionario -- nao ha migracao de banco envolvida (o payload e
+// JSON; ver schema.sql) nem template para mexer (o partial itera sobre isto).
+//
+// !! RASCUNHO !! As perguntas abaixo sao minha leitura do que a Isa pediu:
+// motivacao do ensaio, o que a pessoa gosta de comer (ela faz lanche para quem
+// vai ao estudio) e, no UGC, por que a marca escolheu ela como creator. Ela deve
+// revisar a redacao e a ordem antes do lancamento. O EN tambem e rascunho.
+
+// tipoCampo restringe o que o template sabe renderizar. String livre aqui viraria
+// um <input type="qualquer-coisa"> silenciosamente errado.
+type tipoCampo string
+
+const (
+	campoTexto    tipoCampo = "text"
+	campoEmail    tipoCampo = "email"
+	campoTel      tipoCampo = "tel"
+	campoData     tipoCampo = "date"
+	campoTextarea tipoCampo = "textarea"
+	campoSelect   tipoCampo = "select"
+)
+
+// pergunta e um campo do formulario. `Chave` e a identidade: vira o name= do
+// input E a chave no JSON salvo. NUNCA renomeie uma chave ja usada em producao --
+// as respostas antigas ficariam orfas. Para trocar o texto, mude so o Label.
+type pergunta struct {
+	Chave       string
+	Label       ml
+	Ajuda       ml // texto pequeno sob o campo; opcional
+	Tipo        tipoCampo
+	Obrigatoria bool
+	Opcoes      []ml // so para campoSelect
+}
+
+// formBriefing e um questionario completo.
+type formBriefing struct {
+	// Slug identifica o form na URL (/briefing/<slug>) e na coluna `form`.
+	Slug      string
+	Titulo    ml
+	Subtitulo ml
+	Enviar    ml
+	// Sucesso e a mensagem que substitui o form apos o POST (swap do HTMX).
+	Sucesso   ml
+	Perguntas []pergunta
+}
+
+// --- Briefing FOTOGRAFIA -----------------------------------------------------
+
+var briefingFotografia = formBriefing{
+	Slug:   "fotografia",
+	Titulo: ml{"Vamos combinar seu ensaio", "Let's plan your shoot"},
+	Subtitulo: ml{
+		"Responde com calma — quanto mais eu souber, melhor eu preparo tudo pra você.",
+		"Take your time — the more I know, the better I can prepare everything for you.",
+	},
+	Enviar: ml{"Enviar briefing", "Send briefing"},
+	Sucesso: ml{
+		"Recebi seu briefing! 🤍 Vou ler com carinho e te respondo em até 24h úteis.",
+		"Got your briefing! 🤍 I'll read it carefully and reply within 24 business hours.",
+	},
+	Perguntas: []pergunta{
+		{
+			Chave: "nome", Tipo: campoTexto, Obrigatoria: true,
+			Label: ml{"Como você se chama?", "What's your name?"},
+		},
+		{
+			Chave: "contato", Tipo: campoTexto, Obrigatoria: true,
+			Label: ml{"WhatsApp ou e-mail", "WhatsApp or email"},
+			Ajuda: ml{"É por aqui que eu te respondo.", "This is how I'll get back to you."},
+		},
+		{
+			Chave: "tipo", Tipo: campoSelect, Obrigatoria: true,
+			Label: ml{"Que tipo de trabalho você procura?", "What kind of work are you looking for?"},
+			Opcoes: []ml{
+				{"Ensaio individual", "Individual shoot"},
+				{"Ensaio de casal", "Couple shoot"},
+				{"Ensaio temático / conceitual", "Themed / conceptual shoot"},
+				{"Evento", "Event"},
+				{"Ainda não sei", "Not sure yet"},
+			},
+		},
+		{
+			Chave: "data", Tipo: campoData,
+			Label: ml{"Tem uma data em mente?", "Do you have a date in mind?"},
+			Ajuda: ml{"Se ainda não, tudo bem — deixa em branco.", "If not, that's fine — leave it blank."},
+		},
+		{
+			Chave: "local", Tipo: campoTexto,
+			Label: ml{"Cidade ou local", "City or location"},
+		},
+		{
+			// O coracao do pedido da Isa: ela quer entender a PESSOA, nao so agendar.
+			Chave: "motivacao", Tipo: campoTextarea, Obrigatoria: true,
+			Label: ml{"O que te motivou a querer fazer esse ensaio?", "What made you want to do this shoot?"},
+			Ajuda: ml{
+				"Pode ser uma fase, uma conquista, um presente, uma vontade antiga — não existe resposta errada.",
+				"It could be a phase, an achievement, a gift, a long-held wish — there's no wrong answer.",
+			},
+		},
+		{
+			Chave: "referencias", Tipo: campoTextarea,
+			Label: ml{"Tem referências?", "Any references?"},
+			Ajuda: ml{"Link do Pinterest, perfis, ou só descreve o clima que você imagina.", "Pinterest link, profiles, or just describe the mood you picture."},
+		},
+		{
+			// A pergunta do lanche. Parece supérflua e e exatamente o oposto: e a
+			// assinatura da Isa, o motivo de o briefing nao ser um Google Forms.
+			Chave: "lanche", Tipo: campoTexto,
+			Label: ml{"O que você gosta de comer?", "What do you like to eat?"},
+			Ajuda: ml{
+				"Eu preparo um lanchinho pra quem vem ao estúdio ☕ Conta também se tiver alguma restrição ou alergia.",
+				"I prepare a little snack for everyone who comes to the studio ☕ Also let me know about any restrictions or allergies.",
+			},
+		},
+		{
+			Chave: "observacoes", Tipo: campoTextarea,
+			Label: ml{"Mais alguma coisa que eu deva saber?", "Anything else I should know?"},
+		},
+	},
+}
+
+// --- Briefing UGC / CREATOR --------------------------------------------------
+
+var briefingUGC = formBriefing{
+	Slug:   "ugc",
+	Titulo: ml{"Conta sobre o projeto", "Tell me about the project"},
+	Subtitulo: ml{
+		"Poucas perguntas pra eu já chegar na nossa conversa com uma proposta na mão.",
+		"A few questions so I can come to our conversation with a proposal ready.",
+	},
+	Enviar: ml{"Enviar briefing", "Send briefing"},
+	Sucesso: ml{
+		"Briefing recebido! Vou analisar e volto com uma proposta em até 24h úteis.",
+		"Briefing received! I'll review it and come back with a proposal within 24 business hours.",
+	},
+	Perguntas: []pergunta{
+		{
+			Chave: "marca", Tipo: campoTexto, Obrigatoria: true,
+			Label: ml{"Marca / empresa", "Brand / company"},
+		},
+		{
+			Chave: "responsavel", Tipo: campoTexto, Obrigatoria: true,
+			Label: ml{"Seu nome e cargo", "Your name and role"},
+		},
+		{
+			Chave: "email", Tipo: campoEmail, Obrigatoria: true,
+			Label: ml{"E-mail corporativo", "Work email"},
+		},
+		{
+			Chave: "produto", Tipo: campoTextarea, Obrigatoria: true,
+			Label: ml{"Qual produto ou serviço?", "Which product or service?"},
+		},
+		{
+			Chave: "objetivo", Tipo: campoSelect, Obrigatoria: true,
+			Label: ml{"Objetivo principal da campanha", "Main goal of the campaign"},
+			Opcoes: []ml{
+				{"Awareness / alcance", "Awareness / reach"},
+				{"Conversão / vendas", "Conversion / sales"},
+				{"Lançamento de produto", "Product launch"},
+				{"Conteúdo para anúncios (ads)", "Content for ads"},
+				{"Prova social / depoimento", "Social proof / testimonial"},
+			},
+		},
+		{
+			Chave: "pacote", Tipo: campoSelect,
+			Label: ml{"Pacote de interesse", "Package of interest"},
+			Ajuda: ml{"Se ainda não decidiu, escolha a última opção.", "If you haven't decided, pick the last option."},
+			Opcoes: []ml{
+				{"UGC — vídeo avulso", "UGC — single video"},
+				{"UGC — combo de vídeos", "UGC — video bundle"},
+				{"IGC — publicação no meu perfil", "IGC — post on my profile"},
+				{"Quero uma recomendação", "I'd like a recommendation"},
+			},
+		},
+		{
+			// A pergunta que a Isa pediu explicitamente. Vale ouro: a resposta diz
+			// se a marca conhece o trabalho dela ou esta disparando para 50 creators.
+			Chave: "porque", Tipo: campoTextarea, Obrigatoria: true,
+			Label: ml{"Por que você me escolheu como creator?", "Why did you choose me as a creator?"},
+			Ajuda: ml{
+				"Me ajuda muito a entender o que a sua marca enxerga no meu trabalho.",
+				"This really helps me understand what your brand sees in my work.",
+			},
+		},
+		{
+			Chave: "prazo", Tipo: campoData,
+			Label: ml{"Prazo de entrega desejado", "Desired delivery date"},
+		},
+		{
+			Chave: "observacoes", Tipo: campoTextarea,
+			Label: ml{"Outras informações", "Anything else"},
+		},
+	},
+}
+
+// formsPorSlug e o roteamento dos POSTs. Slug desconhecido -> 404, nunca um
+// formulario "generico" salvo com tipo errado.
+var formsPorSlug = map[string]*formBriefing{
+	briefingFotografia.Slug: &briefingFotografia,
+	briefingUGC.Slug:        &briefingUGC,
+}

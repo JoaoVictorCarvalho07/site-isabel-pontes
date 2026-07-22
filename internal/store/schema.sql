@@ -45,3 +45,30 @@ CREATE TABLE IF NOT EXISTS meta (
   k TEXT PRIMARY KEY,
   v TEXT NOT NULL
 );
+
+-- Respostas dos formularios de briefing (fotografia e UGC).
+--
+-- Unica tabela do projeto que quebra o modelo "sync escreve, request le da RAM":
+-- aqui o REQUEST escreve. E o certo -- perder um briefing por ficar so em RAM
+-- seria perder um cliente. Volume e baixissimo (alguns por semana), entao um
+-- INSERT sincrono no request nao pesa.
+--
+-- payload e JSON, nao uma coluna por pergunta: as perguntas sao editaveis (ver
+-- briefing_content.go) e mudam com o tempo. Coluna fixa exigiria migracao a cada
+-- pergunta nova E apagaria o formato antigo das respostas ja recebidas. Com JSON,
+-- cada linha guarda fielmente o que foi perguntado NAQUELE dia.
+CREATE TABLE IF NOT EXISTS submissions (
+  id         INTEGER PRIMARY KEY,
+  form       TEXT NOT NULL,          -- 'fotografia' | 'ugc'
+  lang       TEXT NOT NULL DEFAULT 'pt',
+  payload    TEXT NOT NULL,          -- JSON {chave: resposta}
+  -- Diagnostico de spam/abuso. Nao entra em nenhuma tela.
+  ip         TEXT NOT NULL DEFAULT '',
+  user_agent TEXT NOT NULL DEFAULT '',
+  -- Trilha do que a Isa ja tratou; o painel /admin marca como lida.
+  lida       INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- O painel lista por data decrescente; e a unica query desta tabela.
+CREATE INDEX IF NOT EXISTS idx_submissions_recentes ON submissions (created_at DESC);

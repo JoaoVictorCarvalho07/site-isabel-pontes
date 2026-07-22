@@ -1,0 +1,310 @@
+// Formulários de briefing. Um só arquivo para os dois contextos: a página
+// /briefing (fundo creme) e o bloco embutido no mídia kit. Só o container muda;
+// os campos são idênticos, porque a familiaridade é o que faz um formulário
+// longo parecer curto.
+
+// ── Campo ────────────────────────────────────────────────────────────────────
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.35rem;
+
+  label {
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--foreground);
+    line-height: 1.4;
+  }
+
+  &__opcional {
+    font-weight: 400;
+    font-size: 0.82rem;
+    color: var(--muted-foreground);
+  }
+
+  input,
+  textarea,
+  select {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    color: var(--foreground);
+    background: var(--popover);
+    border: 1px solid var(--input);
+    border-radius: 6px;
+    // Sem isto o iOS dá zoom ao focar um campo com fonte < 16px.
+    -webkit-appearance: none;
+    appearance: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+
+    &::placeholder { color: var(--muted-foreground); }
+
+    &:focus-visible {
+      outline: none;
+      border-color: var(--accent);
+      // Anel próprio em vez do outline do browser: o outline padrão some no
+      // fundo creme em alguns temas. Continua sendo indicador visível de foco.
+      box-shadow: 0 0 0 3px hsl(166 30% 21% / 0.18);
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 6.5rem;
+    line-height: 1.6;
+  }
+
+  // A seta do <select> some com appearance:none — redesenhada como data URI
+  // para não custar um request. Triângulo PREENCHIDO, não chevron: um `d` de
+  // chevron precisaria de stroke, e stroke em data URI encurta mal.
+  select {
+    padding-right: 2.4rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23736357'%3E%3Cpath d='M3 6h10L8 11z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    background-size: 0.7rem;
+
+    // A cor vai codificada dentro do data URI, então currentColor não alcança:
+    // no tema escuro a seta ficaria marrom sobre marrom. Segunda declaração
+    // com a versão clara.
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme='light']) & {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23cfc4b8'%3E%3Cpath d='M3 6h10L8 11z'/%3E%3C/svg%3E");
+      }
+    }
+
+    :root[data-theme='dark'] & {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23cfc4b8'%3E%3Cpath d='M3 6h10L8 11z'/%3E%3C/svg%3E");
+    }
+  }
+
+  &__ajuda {
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--muted-foreground);
+  }
+
+  &__erro {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--destructive);
+  }
+
+  &--erro {
+    input,
+    textarea,
+    select {
+      border-color: var(--destructive);
+    }
+  }
+}
+
+// Honeypot: escondido de olho humano SEM display:none nem visibility:hidden --
+// bots mais espertos pulam campos com essas duas propriedades justamente porque
+// são a assinatura óbvia de armadilha. Tirar do fluxo com posição absoluta
+// funciona igual para o visitante e não denuncia nada.
+.campo-armadilha {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+// ── Formulário ───────────────────────────────────────────────────────────────
+
+.form-briefing {
+  &__form { max-width: 34rem; }
+
+  &__erro-geral {
+    padding: 0.8rem 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    color: var(--destructive);
+    background: hsl(346 50% 24% / 0.07);
+    border-left: 3px solid var(--destructive);
+    border-radius: 4px;
+  }
+
+  &__enviar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 2rem;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--primary-foreground);
+    background: var(--primary);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.18s ease, opacity 0.18s ease;
+
+    &:hover { transform: translateY(-1px); }
+    &:disabled { cursor: wait; opacity: 0.75; }
+  }
+
+  // O texto "Enviando…" só aparece enquanto o HTMX está com o request em voo.
+  // Quem controla é o hx-disabled-elt, que põe [disabled] no botão — então o
+  // estado de carregamento não precisa de uma linha de JavaScript.
+  &__enviando { display: none; }
+  &__enviar:disabled {
+    .form-briefing__enviar-texto { display: none; }
+    .form-briefing__enviando { display: inline; }
+  }
+
+  &__sucesso {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.75rem;
+    background: var(--card);
+    border: 1px solid var(--gold-soft);
+    border-radius: 10px;
+    max-width: 34rem;
+
+    p {
+      margin: 0;
+      font-family: var(--font-sans);
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: var(--foreground);
+    }
+
+    &-icone {
+      flex-shrink: 0;
+      font-size: 1.6rem;
+      color: var(--gold);
+    }
+  }
+}
+
+// ── Página /briefing ─────────────────────────────────────────────────────────
+
+.briefing {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6vw, 4.5rem) 1.25rem clamp(3rem, 7vw, 5rem);
+
+  &__head {
+    margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 5vw, 2.9rem);
+      font-weight: 400;
+      line-height: 1.15;
+      color: var(--foreground);
+    }
+
+    p {
+      margin-top: 0.75rem;
+      font-family: var(--font-sans);
+      font-size: 1.05rem;
+      line-height: 1.65;
+      color: var(--muted-foreground);
+      max-width: 32rem;
+    }
+  }
+
+  &__alternativa {
+    margin-top: 2.5rem;
+    font-size: 0.95rem;
+    color: var(--muted-foreground);
+
+    a {
+      color: var(--accent);
+      text-underline-offset: 3px;
+    }
+  }
+}
+
+// ── Bloco embutido no mídia kit ──────────────────────────────────────────────
+
+.mk-briefing {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: clamp(3rem, 7vw, 5rem) 1.25rem;
+
+  // Duas colunas só quando há espaço real: o texto convida, o formulário
+  // trabalha. Abaixo disso empilha, e o texto vira introdução.
+  @media (min-width: 62rem) {
+    grid-template-columns: 0.85fr 1fr;
+    align-items: start;
+  }
+
+  &__texto {
+    h2 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--foreground);
+    }
+
+    p {
+      margin-top: 0.75rem;
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      line-height: 1.65;
+      color: var(--muted-foreground);
+    }
+
+    @media (min-width: 62rem) {
+      position: sticky;
+      top: 6rem;
+    }
+  }
+
+  .form-briefing__form,
+  .form-briefing__sucesso { max-width: none; }
+}
+
+// ── Ponte do /contato para o briefing ────────────────────────────────────────
+
+.contato__briefing {
+  margin-top: clamp(2rem, 5vw, 3rem);
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+  text-align: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  h2 {
+    font-family: var(--font-serif);
+    font-size: clamp(1.35rem, 3vw, 1.75rem);
+    font-weight: 400;
+    color: var(--foreground);
+  }
+
+  p {
+    margin: 0.5rem auto 1.25rem;
+    max-width: 34rem;
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: var(--muted-foreground);
+  }
+
+  &-cta {
+    display: inline-block;
+    padding: 0.72rem 1.9rem;
+    font-family: var(--font-sans);
+    font-size: 0.98rem;
+    font-weight: 500;
+    color: var(--primary-foreground);
+    background: var(--primary);
+    border-radius: 999px;
+    transition: transform 0.18s ease;
+
+    &:hover { transform: translateY(-1px); }
+  }
+}

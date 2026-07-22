@@ -12,5 +12,7 @@
 @use 'contato';
 @use 'galeria';
 @use 'midiakit';
+@use 'form';
+@use 'admin';
 // por último: as regras de @media print precisam sobrepor as de tela
 @use 'print';

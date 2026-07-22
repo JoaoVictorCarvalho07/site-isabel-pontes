@@ -1,0 +1,18 @@
+{{- /* Pagina dedicada do briefing de fotografia. O UGC nao tem pagina propria:
+       ele vive embutido na one-page do midia kit (decisao "misto", docs §8). */ -}}
+{{ define "conteudo" }}
+{{- $en := eq .Lang "en" }}
+<section class="briefing">
+  <header class="briefing__head">
+    <h1>{{ .Form.Titulo.T .Lang }}</h1>
+    <p>{{ .Form.Subtitulo.T .Lang }}</p>
+  </header>
+
+  {{ template "form_briefing" . }}
+
+  <p class="briefing__alternativa">
+    {{- if $en }}Prefer to talk first? <a href="/en/contato">Message me on WhatsApp</a>.
+    {{- else }}Prefere conversar antes? <a href="/contato">Me chama no WhatsApp</a>.{{ end }}
+  </p>
+</section>
+{{ end }}

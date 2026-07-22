@@ -2,11 +2,13 @@
 
 > Consolida a análise dos dois projetos da Isabel Pontes, as decisões tomadas e o
 > plano para fundir o **Mídia Kit** (UGC/IGC creator) dentro deste app
-> (fotografia, Go+HTMX). Última atualização: 2026-07-21.
+> (fotografia, Go+HTMX). Última atualização: 2026-07-22.
 >
-> **Status:** Fases 7 a 10 implementadas, mais alguns extras (ver §10). Faltam a
-> **Fase 11** (formulários — bloqueada por insumos externos) e a **Fase 12**
-> (SEO/deploy). Tudo na branch `feat/midiakit-fase7`: local, ainda sem push.
+> **Status:** Fases 7 a 11 implementadas, mais alguns extras (ver §10). Falta a
+> **Fase 12** (SEO/deploy final). Fases 7–10 na branch `feat/midiakit-fase7`;
+> a Fase 11 em `feat/briefing-forms`. Ambas locais, ainda sem push.
+>
+> O site está **no ar** em `http://147.15.96.215:8080` (VM Oracle, systemd).
 
 ---
 
@@ -331,30 +333,42 @@ vive na branch `feat/midiakit-fase7` (local, sem push).
   próprio do mídia kit (contato + redes); **seletor de tema claro/escuro**;
   métricas com o celular em *float* fluido; botão "Baixar em PDF" na navbar
   (só no mídia kit).
-- **⬜ Fase 11 — Conversão (formulários de briefing).** Dois forms separados
-  (§8): perguntas em arquivo, handlers Go, tabela `submissions` no SQLite, envio
-  por HTMX, e-mail via Resend. **BLOQUEADA** por dois insumos externos: a lista
-  final de perguntas da Isa e a conta/API key do Resend.
+- **✅ Fase 11 — Conversão (formulários de briefing).** Dois questionários
+  (`briefing_content.go`), tabela `submissions`, envio por HTMX com fallback sem
+  JS, honeypot + rate-limit, painel `/admin` com basic-auth e e-mail opcional
+  via Resend. 12 testes dedicados.
+  - **Colocação: "misto", provisória.** Fotografia em `/briefing` (página
+    dedicada, com ponte a partir de `/contato`); UGC embutido na one-page do
+    mídia kit. O partial e os handlers são independentes de onde o form aparece,
+    então mudar isso depois custa mover uma linha de template.
+  - **Pendências não bloqueantes:** as perguntas são rascunho meu — a Isa revisa;
+    o Resend fica desligado até existir a conta (as respostas são gravadas
+    igual, e o `/admin` já as mostra).
 - **⬜ Fase 12 — SEO/deploy final.** 301 do domínio antigo, JSON-LD de
   `Service`/`Offer` pros pacotes, analytics, OG por rota, auditoria A11y AA,
   atualizar `deploy/README.md`. (O PDF saiu desta fase: já foi feito por
   impressão — §4b.)
 
-**Pode fazer a 12 antes da 11.** A Fase 12 não depende da 11, e a 11 está travada
-nos insumos externos acima. O site já converte sem os formulários (os CTAs de
-WhatsApp funcionam), então dá pra publicar e encaixar os forms depois. Única
-ressalva: a auditoria A11y ganha um complemento quando os forms entrarem
-(labels, mensagens de erro, foco) — delta pequeno, feito junto com eles.
+**Só falta a Fase 12.** Os formulários entraram sem os insumos externos: as
+perguntas foram rascunhadas a partir do que a Isa descreveu, e o e-mail é
+opcional por construção. Trocar a redação das perguntas depois é editar um
+arquivo Go — nenhuma migração de banco, porque o `payload` é JSON (§8).
 
 ---
 
 ## 11. Questões em aberto
 
-### Travam a Fase 11 (formulários)
-1. **As perguntas exatas** de cada form (§8) — a Isa fecha a lista final dos dois
-   briefings (fotografia e UGC).
+### Pendentes dos formulários (não bloqueiam — já estão no ar)
+1. **Revisão das perguntas** pela Isa (`internal/web/briefing_content.go`). Mudar
+   o texto é livre; **mudar a `Chave`** de uma pergunta já usada em produção
+   orfana as respostas antigas.
 2. **Conta/API key do Resend** — criar a conta, gerar a key (`RESEND_API_KEY`) e
-   verificar o domínio `isabelpontes.com.br` no DNS da Cloudflare.
+   verificar o domínio `isabelpontes.com.br` no DNS da Cloudflare. Sem isso, a
+   Isa lê os briefings pelo `/admin`.
+3. **Decidir a colocação definitiva** dos forms (dedicada vs. embutida) — hoje
+   está no arranjo "misto", provisório.
+4. **HTTPS antes de divulgar o `/admin`** — basic-auth manda a senha a cada
+   request; em `http://` puro ela trafega em claro (base64 não é cifra).
 
 ### Travam parte da Fase 12
 3. **Analytics** (§9) — Plausible/GoatCounter self-host vs GA4. (O resto da Fase
