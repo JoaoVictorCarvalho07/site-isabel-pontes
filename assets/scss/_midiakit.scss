@@ -33,6 +33,10 @@
 			color: var(--primary-fixed);
 		}
 	}
+
+	&--cor-claro {
+		color: var(--primary-foreground-fixed);
+	}
 }
 
 // ── Hero ──────────────────────────────────────────────────────────────────────
@@ -54,7 +58,8 @@
 	background-position: center;
 	background-size: cover;
 	background-repeat: no-repeat;
-	// a 1ª declaração é o fallback; quem entende image-set pega o AVIF (menor)
+	// a 1ª declaração é o fallback; quem entende image-set pega o AVIF (30 KB
+	// contra 68 KB do WebP). Navegador que não entende ignora a 2ª linha.
 	background-image: url("/static/img/midiakit/hero-poster.webp");
 	background-image: image-set(
 		url("/static/img/midiakit/hero-poster.avif") type("image/avif"),
