@@ -1,7 +1,8 @@
 // Comando site: um binario, todos os subcomandos.
 //
-//	site serve          sobe o servidor HTTP
-//	site sync [caminho] le o manifest de midia e popula o SQLite
+//	site serve            sobe o servidor HTTP
+//	site sync [caminho]   le o manifest de midia e popula o SQLite
+//	site snapshot [dest]  copia consistente do banco, com o servidor no ar
 //
 // Um binario em vez de scripts separados porque `sync` e `serve` compartilham
 // config e store. O `sync` consome o manifest.json produzido pelo
@@ -44,9 +45,46 @@ func run() error {
 		return serve()
 	case "sync":
 		return sync()
+	case "snapshot":
+		return snapshot()
 	default:
-		return fmt.Errorf("subcomando desconhecido: %q (use: serve | sync)", cmd)
+		return fmt.Errorf("subcomando desconhecido: %q (use: serve | sync | snapshot)", cmd)
 	}
+}
+
+// snapshot grava uma copia consistente do banco, com o servidor no ar.
+//
+//	site snapshot [destino]     # padrao: <DB_PATH>.snapshot
+//
+// Existe como subcomando (e nao como linha no script de backup) porque copiar
+// um SQLite em modo WAL com `cp` produz arquivo corrompido em silencio -- as
+// escritas recentes estao no -wal. Ver store.Snapshot. Assim o backup nao
+// depende do sqlite3 CLI estar instalado na VM.
+func snapshot() error {
+	cfg, err := config.Load(false)
+	if err != nil {
+		return err
+	}
+	destino := cfg.DBPath + ".snapshot"
+	if len(os.Args) > 2 {
+		destino = os.Args[2]
+	}
+
+	banco, err := store.Open(cfg.DBPath)
+	if err != nil {
+		return err
+	}
+	defer banco.Close()
+
+	if err := banco.Snapshot(context.Background(), destino); err != nil {
+		return err
+	}
+	info, err := os.Stat(destino)
+	if err != nil {
+		return err
+	}
+	slog.Info("snapshot gravado", "destino", destino, "kb", info.Size()/1024)
+	return nil
 }
 
 // sync le o manifest de midia (saida do migrate_media.py) e popula o SQLite.

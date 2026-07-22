@@ -1,0 +1,30 @@
+# Unidade de backup, disparada pelo backup.timer (nao habilite esta diretamente).
+# Instalar junto com backup.timer em /etc/systemd/system/. Ver deploy/README.md.
+
+[Unit]
+Description=Backup do site (banco + anexos) para o R2
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=joao
+Group=joao
+WorkingDirectory=/home/joao/apps/site-test
+ExecStart=/home/joao/apps/site-test/backup.sh
+
+# As credenciais do R2 ficam FORA do repositorio, num arquivo so-leitura-do-dono.
+# O rclone tambem as le do proprio rclone.conf; este EnvironmentFile existe para
+# quem preferir passar por variavel (RCLONE_CONFIG_R2BACKUP_*).
+EnvironmentFile=-/home/joao/apps/site-test/.env.backup
+
+# Backup nao pode competir com o site por CPU/disco: o site atende visitante,
+# o backup pode demorar.
+Nice=10
+IOSchedulingClass=idle
+
+NoNewPrivileges=true
+PrivateTmp=false
+
+[Install]
+WantedBy=multi-user.target

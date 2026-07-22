@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 )
 
@@ -116,5 +117,73 @@ func TestShuffleDeterministicoNoDia(t *testing.T) {
 			t.Fatalf("ordem divergiu na pos %d: %s vs %s -- shuffle nao e estavel no dia",
 				i, a[i].Key, b[i].Key)
 		}
+	}
+}
+
+// TestSnapshotComEscritaConcorrente prova o motivo de o snapshot existir: um
+// backup e tirado com o site NO AR, recebendo briefings. Copiar site.db com
+// `cp` nesse estado produz arquivo corrompido em silencio, porque em modo WAL
+// as escritas recentes vivem no arquivo -wal.
+func TestSnapshotComEscritaConcorrente(t *testing.T) {
+	dir := t.TempDir()
+	s, err := Open(filepath.Join(dir, "vivo.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+
+	ctx := context.Background()
+	for i := 0; i < 20; i++ {
+		if _, err := s.SalvarSubmission(ctx, "fotografia", "pt",
+			map[string]string{"nome": "Cliente " + strconv.Itoa(i)}, "", ""); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	// Escreve DURANTE o snapshot: e a condicao real de producao.
+	parar := make(chan struct{})
+	pronto := make(chan struct{})
+	go func() {
+		defer close(pronto)
+		for i := 0; ; i++ {
+			select {
+			case <-parar:
+				return
+			default:
+				_, _ = s.SalvarSubmission(ctx, "ugc", "pt",
+					map[string]string{"marca": "M" + strconv.Itoa(i)}, "", "")
+			}
+		}
+	}()
+
+	destino := filepath.Join(dir, "backup.db")
+	err = s.Snapshot(ctx, destino)
+	close(parar)
+	<-pronto
+	if err != nil {
+		t.Fatalf("Snapshot: %v", err)
+	}
+
+	// O snapshot precisa abrir como banco integro e conter os dados anteriores.
+	copia, err := Open(destino)
+	if err != nil {
+		t.Fatalf("o snapshot nao abre como banco: %v", err)
+	}
+	defer copia.Close()
+
+	var integridade string
+	if err := copia.DB().QueryRow("PRAGMA integrity_check").Scan(&integridade); err != nil {
+		t.Fatal(err)
+	}
+	if integridade != "ok" {
+		t.Errorf("integrity_check = %q, quero \"ok\"", integridade)
+	}
+
+	subs, err := copia.ListarSubmissions(ctx, "fotografia", 100)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(subs) != 20 {
+		t.Errorf("o snapshot tem %d briefings de fotografia, quero 20", len(subs))
 	}
 }

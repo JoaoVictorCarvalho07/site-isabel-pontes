@@ -1,0 +1,22 @@
+# Dispara o backup.service diariamente. Habilite ESTE, nao o .service:
+#   sudo systemctl enable --now backup.timer
+
+[Unit]
+Description=Backup diario do site
+
+[Timer]
+# 03:15 no horario local da VM (que roda em UTC -> 00:15 em Brasilia).
+# Madrugada: e quando ninguem esta preenchendo briefing.
+OnCalendar=*-*-* 03:15:00
+
+# Espalha o disparo em ate 20 min. Sem isto, toda VM com este timer bateria no
+# R2 no mesmo segundo -- irrelevante com uma VM, boa higiene de qualquer forma.
+RandomizedDelaySec=20m
+
+# O ESSENCIAL num free tier: se a VM estiver desligada na hora marcada, roda
+# assim que ela voltar. Sem Persistent, um reboot na hora errada pula o backup
+# do dia inteiro em silencio.
+Persistent=true
+
+[Install]
+WantedBy=timers.target

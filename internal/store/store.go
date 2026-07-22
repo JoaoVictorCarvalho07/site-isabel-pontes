@@ -11,7 +11,9 @@ import (
 	"database/sql"
 	_ "embed"
 	"fmt"
+	"os"
 	"strconv"
+	"strings"
 
 	_ "modernc.org/sqlite" // driver CGO-free: cross-compila p/ ARM sem toolchain C
 )
@@ -85,6 +87,30 @@ func (s *Store) setMeta(chave, valor string) error {
 		"INSERT INTO meta(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v",
 		chave, valor)
 	return err
+}
+
+// Snapshot grava uma copia consistente do banco em `destino`, com o servidor
+// RODANDO.
+//
+// Usa `VACUUM INTO`, que e a forma oficial do SQLite de tirar um snapshot a
+// quente: roda dentro de uma transacao de leitura, entao o arquivo gerado e um
+// banco integro daquele instante. Copiar site.db com `cp` NAO serve -- em modo
+// WAL as escritas mais recentes vivem no -wal, e a copia sai truncada ou
+// corrompida, sem aviso nenhum.
+//
+// Bonus: o arquivo sai desfragmentado, entao costuma ser menor que o original.
+func (s *Store) Snapshot(ctx context.Context, destino string) error {
+	// O SQLite recusa sobrescrever: o destino tem que nao existir.
+	if err := os.Remove(destino); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("limpar destino: %w", err)
+	}
+	// O caminho vai numa string SQL (VACUUM INTO nao aceita parametro), entao
+	// escapa a aspa simples -- unico metacaractere de string literal no SQLite.
+	seguro := strings.ReplaceAll(destino, "'", "''")
+	if _, err := s.db.ExecContext(ctx, "VACUUM INTO '"+seguro+"'"); err != nil {
+		return fmt.Errorf("VACUUM INTO %s: %w", destino, err)
+	}
+	return nil
 }
 
 // DataVersion incrementa a cada sync; entra no ETag para invalidar cache.

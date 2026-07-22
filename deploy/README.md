@@ -150,6 +150,103 @@ VM `sudo -u site ... /opt/site/site sync` + `sudo systemctl restart site`.
 
 ---
 
+## Backup (banco + anexos dos briefings)
+
+**Por que não é só Litestream.** O Litestream replica o SQLite continuamente,
+mas não cobre **arquivo** — e as imagens de referência que o cliente anexa ao
+briefing vivem em `data/uploads/`. Um backup só do banco deixaria a Isa com o
+texto do briefing e sem as referências visuais. Este backup cobre os dois.
+
+**RPO:** até 24 h de perda no pior caso. Para alguns briefings por semana é a
+troca certa. Se o volume crescer, o Litestream entra **por cima** disto (RPO de
+segundos para o banco), não no lugar.
+
+### 1. Bucket dedicado, privado
+
+Crie um bucket **novo** no R2 (ex.: `isabel-site-backup`) e **não** habilite
+acesso público nele. Ele guarda dados pessoais de terceiros — nome, contato,
+motivação e fotos de clientes. Nunca reaproveite o bucket da galeria, que é
+público por definição.
+
+Gere um API token do R2 com escopo **só nesse bucket**, permissão de escrita.
+
+### 2. rclone na VM
+
+```sh
+sudo -v ; curl https://rclone.org/install.sh | sudo bash
+rclone config
+```
+No wizard: `n` (novo) → nome **`r2backup`** → tipo **`s3`** → provider
+**`Cloudflare`** → access key / secret do token → region `auto` → endpoint
+`https://<ACCOUNT_ID>.r2.cloudflarestorage.com`.
+
+Confira que ele enxerga o bucket:
+```sh
+rclone lsd r2backup:
+```
+
+### 3. Instalar o script e o timer
+
+```sh
+cp deploy/backup.sh ~/apps/site-test/backup.sh
+chmod +x ~/apps/site-test/backup.sh
+sudo cp deploy/backup.service deploy/backup.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now backup.timer
+```
+
+Habilite o **`.timer`**, não o `.service` — o service é o que o timer dispara.
+
+Rode uma vez à mão para validar antes de confiar nele:
+```sh
+sudo systemctl start backup.service
+journalctl -u backup.service -n 30 --no-pager
+rclone ls r2backup:isabel-site-backup
+```
+
+Ver quando é o próximo disparo: `systemctl list-timers backup.timer`.
+
+### 4. Restaurar
+
+> Um backup que nunca foi restaurado não é um backup. Faça este teste **uma
+> vez**, agora, com o site no ar — a restauração é para um diretório separado,
+> então não encosta em produção.
+
+```sh
+# banco (pegue o snapshot mais recente)
+rclone ls r2backup:isabel-site-backup/db
+rclone copy r2backup:isabel-site-backup/db/site-AAAA-MM-DD.db /tmp/restore/
+
+# confira que o arquivo é um SQLite íntegro ANTES de promovê-lo
+cd ~/apps/site-test && ./site snapshot /tmp/restore/teste.db && echo "banco OK"
+
+# anexos
+rclone copy r2backup:isabel-site-backup/uploads /tmp/restore/uploads
+```
+
+Para promover de verdade (desastre real):
+```sh
+sudo systemctl stop site
+cp /tmp/restore/site-AAAA-MM-DD.db ~/apps/site-test/data/site.db
+rm -f ~/apps/site-test/data/site.db-wal ~/apps/site-test/data/site.db-shm
+cp -r /tmp/restore/uploads ~/apps/site-test/data/
+sudo systemctl start site
+```
+
+Apagar o `-wal`/`-shm` é obrigatório: eles pertencem ao banco **antigo**, e
+deixá-los ao lado de um site.db restaurado corrompe o resultado.
+
+### Decisões embutidas no script
+
+| Escolha | Por quê |
+|---|---|
+| `site snapshot` (VACUUM INTO) em vez de `cp site.db` | Em modo WAL as escritas recentes estão no `-wal`; `cp` gera arquivo truncado **sem erro nenhum** |
+| `rclone copy`, nunca `sync`, nos uploads | `sync` apaga no destino o que sumiu na origem — um disco corrompido propagaria a perda para o backup |
+| Snapshot vai para `/tmp` e é apagado no fim | Não deixa uma segunda cópia dos dados pessoais parada no disco |
+| Retenção só nos snapshots do banco | Anexo nunca é apagado: ele é a referência que o cliente mandou uma vez só |
+
+---
+
 ## Parte B — Fly.io (fallback)
 
 Com o `Dockerfile`, `deploy/docker-entrypoint.sh` e `fly.toml` já prontos:
