@@ -2,8 +2,11 @@ package web
 
 import (
 	"crypto/subtle"
+	"html/template"
 	"net/http"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/JoaoVictorCarvalho07/site-da-bebel-htmx/internal/store"
@@ -66,11 +69,42 @@ type anexoAdmin struct {
 
 type campoAdmin struct {
 	Label string
-	Valor string
-	// Link faz o template renderizar um <a>. O esquema ja foi validado na
-	// entrada (urlPlausivel), e o html/template recusa href perigoso na saida --
-	// duas camadas, de proposito.
-	Link bool
+	// Valor ja vem escapado e com os links transformados em <a> (ver autoLink).
+	// E template.HTML porque o autoLink monta a marcacao; NUNCA atribua uma
+	// string crua vinda do visitante aqui.
+	Valor template.HTML
+}
+
+// reLinkTexto acha URLs dentro do texto livre das respostas.
+//
+// Casa SOMENTE http:// e https://. Isso e o que torna o autoLink seguro: o
+// esquema nao vem do visitante, vem do proprio padrao -- entao nao existe
+// "javascript:" nem "data:" para escapar daqui. Antes havia um campo de URL
+// dedicado, validado na entrada; ao fundi-lo com o texto livre, a garantia
+// migrou para este ponto, na renderizacao.
+var reLinkTexto = regexp.MustCompile(`https?://[^\s<>"']+`)
+
+// autoLink escapa o texto e transforma URLs em links clicaveis.
+//
+// A Isa recebe board do Pinterest e pasta do Drive colados no meio da resposta;
+// obriga-la a selecionar e copiar cada um seria atrito puro no trabalho dela.
+func autoLink(texto string) template.HTML {
+	var sb strings.Builder
+	fim := 0
+	for _, pos := range reLinkTexto.FindAllStringIndex(texto, -1) {
+		sb.WriteString(template.HTMLEscapeString(texto[fim:pos[0]]))
+
+		bruto := texto[pos[0]:pos[1]]
+		// Pontuacao final quase nunca faz parte do link ("...veja pinterest.com/x.")
+		// -- deixa fora do href e devolve ao texto.
+		limpo := strings.TrimRight(bruto, ".,;:!?)")
+		esc := template.HTMLEscapeString(limpo)
+		sb.WriteString(`<a href="` + esc + `" target="_blank" rel="noopener noreferrer nofollow">` + esc + `</a>`)
+		sb.WriteString(template.HTMLEscapeString(bruto[len(limpo):]))
+		fim = pos[1]
+	}
+	sb.WriteString(template.HTMLEscapeString(texto[fim:]))
+	return template.HTML(sb.String()) //nolint:gosec // tudo escapado acima
 }
 
 type adminView struct {
@@ -125,7 +159,7 @@ func (s *Server) admin(w http.ResponseWriter, r *http.Request) {
 			// resposta. Perder um briefing por refactor seria imperdoavel.
 			linha.Titulo = sub.Form
 			for chave, valor := range sub.Respostas {
-				linha.Campos = append(linha.Campos, campoAdmin{Label: chave, Valor: valor})
+				linha.Campos = append(linha.Campos, campoAdmin{Label: chave, Valor: autoLink(valor)})
 			}
 			linhas = append(linhas, linha)
 			continue
@@ -141,7 +175,7 @@ func (s *Server) admin(w http.ResponseWriter, r *http.Request) {
 				linha.Destaque = valor
 			}
 			linha.Campos = append(linha.Campos, campoAdmin{
-				Label: p.Label.T("pt"), Valor: valor, Link: p.Tipo == campoURL,
+				Label: p.Label.T("pt"), Valor: autoLink(valor),
 			})
 		}
 		linhas = append(linhas, linha)

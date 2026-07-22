@@ -20,7 +20,10 @@ const (
 	campoData     tipoCampo = "date"
 	campoTextarea tipoCampo = "textarea"
 	campoSelect   tipoCampo = "select"
-	campoURL      tipoCampo = "url"
+	// campoContato aceita telefone brasileiro OU e-mail -- e o campo por onde a
+	// Isa responde, entao errar nele custa o cliente inteiro. Renderiza como
+	// text (nao tel: teclado numerico impediria digitar "@"). Ver contatoValido.
+	campoContato tipoCampo = "contato"
 	// campoArquivo aceita ate maxArquivos imagens. Ver upload.go -- o anexo tem
 	// um caminho de dados proprio (disco + tabela submission_files), nao entra
 	// no JSON de respostas.
@@ -37,6 +40,15 @@ type pergunta struct {
 	Tipo        tipoCampo
 	Obrigatoria bool
 	Opcoes      []ml // so para campoSelect
+}
+
+// TipoHTML traduz o tipo interno para o `type=` do input. Os tipos proprios
+// (campoContato) nao sao valores validos de HTML e precisam virar "text".
+func (p pergunta) TipoHTML() string {
+	if p.Tipo == campoContato {
+		return "text"
+	}
+	return string(p.Tipo)
 }
 
 // formBriefing e um questionario completo.
@@ -71,9 +83,9 @@ var briefingFotografia = formBriefing{
 			Label: ml{"Como você se chama?", "What's your name?"},
 		},
 		{
-			Chave: "contato", Tipo: campoTexto, Obrigatoria: true,
+			Chave: "contato", Tipo: campoContato, Obrigatoria: true,
 			Label: ml{"WhatsApp ou e-mail", "WhatsApp or email"},
-			Ajuda: ml{"É por aqui que eu te respondo.", "This is how I'll get back to you."},
+			Ajuda: ml{"É por aqui que eu te respondo — confere se está certinho.", "This is how I'll get back to you — please double-check it."},
 		},
 		{
 			Chave: "tipo", Tipo: campoSelect, Obrigatoria: true,
@@ -105,14 +117,15 @@ var briefingFotografia = formBriefing{
 			},
 		},
 		{
+			// Campo unico de referencia (antes eram dois, texto + link, em
+			// sequencia -- redundante para quem preenche). Link colado aqui
+			// vira clicavel no painel; ver autoLink em admin.go.
 			Chave: "referencias", Tipo: campoTextarea,
 			Label: ml{"Tem referências?", "Any references?"},
-			Ajuda: ml{"Descreve o clima que você imagina, ou cola links (Pinterest, perfis).", "Describe the mood you picture, or paste links (Pinterest, profiles)."},
-		},
-		{
-			Chave: "referencias_link", Tipo: campoURL,
-			Label: ml{"Link de um board ou álbum", "Link to a board or album"},
-			Ajuda: ml{"Pinterest, Google Drive, um perfil — o que for mais fácil pra você.", "Pinterest, Google Drive, a profile — whatever is easiest for you."},
+			Ajuda: ml{
+				"Descreve o clima que você imagina, ou cola links (Pinterest, Drive, perfis).",
+				"Describe the mood you picture, or paste links (Pinterest, Drive, profiles).",
+			},
 		},
 		{
 			Chave: "referencias_imagens", Tipo: campoArquivo,
@@ -207,9 +220,12 @@ var briefingUGC = formBriefing{
 			Label: ml{"Prazo de entrega desejado", "Desired delivery date"},
 		},
 		{
-			Chave: "referencias_link", Tipo: campoURL,
-			Label: ml{"Link de referências ou do briefing da campanha", "Link to references or the campaign brief"},
-			Ajuda: ml{"Drive, Notion, board — se já tiverem material, me manda.", "Drive, Notion, a board — if you already have material, send it over."},
+			Chave: "referencias", Tipo: campoTextarea,
+			Label: ml{"Referências ou briefing da campanha", "References or campaign brief"},
+			Ajuda: ml{
+				"Cola links (Drive, Notion, board) ou descreve o que já tem em mente.",
+				"Paste links (Drive, Notion, a board) or describe what you have in mind.",
+			},
 		},
 		{
 			Chave: "referencias_imagens", Tipo: campoArquivo,

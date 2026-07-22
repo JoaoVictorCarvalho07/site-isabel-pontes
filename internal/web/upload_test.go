@@ -268,41 +268,91 @@ func TestArquivoExigeAutenticacao(t *testing.T) {
 	}
 }
 
-// TestURLDeReferenciaValidada: o link vira <a href> no painel. "javascript:" ali
-// e XSS a um clique da Isa -- nao pode nem chegar ao banco.
-func TestURLDeReferenciaValidada(t *testing.T) {
-	recusadas := []string{
+// TestAutoLinkNoPainel protege o ponto onde a garantia migrou.
+//
+// Antes havia um campo de URL dedicado, validado na ENTRADA. Ao fundi-lo com o
+// texto livre de referencias, a unica defesa passou a ser a RENDERIZACAO: o
+// autoLink so transforma em <a> o que casa com http(s)://, entao esquema
+// perigoso nunca vira link -- e todo o resto sai escapado.
+func TestAutoLinkNoPainel(t *testing.T) {
+	perigosos := []string{
 		"javascript:alert(document.cookie)",
 		"data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==",
 		"file:///etc/passwd",
-		"pinterest.com/board", // sem esquema
+		`<script>alert(1)</script>`,
+		`" onmouseover="alert(1)`,
 	}
-	for _, ruim := range recusadas {
-		t.Run(ruim, func(t *testing.T) {
-			s := novoServidor(t)
-			campos := camposValidos()
-			campos["referencias_link"] = ruim
-
-			w := postMultipart(t, s.Handler(), "/briefing/fotografia", campos, nil)
-			if !strings.Contains(w.Body.String(), "Cola o link completo") {
-				t.Errorf("aceitou o link %q:\n%s", ruim, w.Body.String())
-			}
-			if subs, _ := s.store.ListarSubmissions(context.Background(), "", 10); len(subs) != 0 {
-				t.Errorf("gravou o briefing com o link %q", ruim)
-			}
-		})
-	}
-
-	t.Run("https valido passa", func(t *testing.T) {
-		s := novoServidor(t)
-		campos := camposValidos()
-		campos["referencias_link"] = "https://pinterest.com/user/board"
-
-		w := postMultipart(t, s.Handler(), "/briefing/fotografia", campos, nil)
-		if !strings.Contains(w.Body.String(), "Recebi seu briefing") {
-			t.Errorf("recusou um link valido:\n%s", w.Body.String())
+	for _, ruim := range perigosos {
+		saida := string(autoLink(ruim))
+		if strings.Contains(saida, "<a href") {
+			t.Errorf("virou link: %q -> %q", ruim, saida)
 		}
-	})
+		if strings.Contains(saida, "<script") || strings.Contains(saida, `onmouseover="`) {
+			t.Errorf("marcacao nao escapada: %q -> %q", ruim, saida)
+		}
+	}
+
+	// O caso util: link colado no meio da prosa vira clicavel.
+	saida := string(autoLink("adoro esse board https://pinterest.com/ana/x, o que acha?"))
+	if !strings.Contains(saida, `<a href="https://pinterest.com/ana/x"`) {
+		t.Errorf("nao linkou a URL: %q", saida)
+	}
+	// A virgula final nao pode entrar no href.
+	if strings.Contains(saida, `x,"`) {
+		t.Errorf("pontuacao final entrou no link: %q", saida)
+	}
+}
+
+// TestContatoValidado protege o campo por onde a Isa RESPONDE. Um numero
+// incompleto aqui custa o cliente inteiro, e em silencio -- ninguem descobre
+// que a resposta nao chegou.
+func TestContatoValidado(t *testing.T) {
+	aceitos := []string{
+		"41999998888",       // celular, so digitos
+		"(41) 99999-8888",   // formatado
+		"+55 41 99999-8888", // com DDI
+		"5541999998888",     // DDI colado
+		"4133334444",        // fixo
+		"55999887766",       // DDD 55 (Santa Maria) -- nao pode ser lido como DDI
+		"maria@exemplo.com",
+		"maria.souza@empresa.com.br",
+	}
+	for _, bom := range aceitos {
+		if !contatoValido(bom) {
+			t.Errorf("recusou contato valido: %q", bom)
+		}
+	}
+
+	recusados := []string{
+		"41 9999-888", // digitos de menos
+		"999998888",   // sem DDD
+		"quero conversar",
+		"maria@",
+		"maria@exemplo", // sem ponto no dominio
+		"@exemplo.com",
+		"1199999888812345", // digitos demais
+	}
+	for _, ruim := range recusados {
+		if contatoValido(ruim) {
+			t.Errorf("aceitou contato invalido: %q", ruim)
+		}
+	}
+}
+
+// TestContatoInvalidoBloqueiaEnvio: a validacao precisa estar LIGADA no fluxo,
+// nao so existir como funcao.
+func TestContatoInvalidoBloqueiaEnvio(t *testing.T) {
+	s := novoServidor(t)
+	campos := camposValidos()
+	campos["contato"] = "me liga ai"
+
+	w := postMultipart(t, s.Handler(), "/briefing/fotografia", campos, nil)
+	if !strings.Contains(w.Body.String(), "Confere esse contato") {
+		t.Errorf("aceitou contato invalido:\n%s", w.Body.String())
+	}
+	if subs, _ := s.store.ListarSubmissions(context.Background(), "", 10); len(subs) != 0 {
+		t.Error("gravou o briefing com contato invalido")
+	}
 }
 
 // TestAdminMostraAnexo: a imagem precisa aparecer no painel, apontando para a

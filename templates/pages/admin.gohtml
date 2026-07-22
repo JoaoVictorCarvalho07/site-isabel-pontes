@@ -49,13 +49,9 @@
     <dl class="briefing-card__campos">
       {{- range .Campos }}
       <dt>{{ .Label }}</dt>
-      {{- if .Link }}
-      {{- /* noopener/noreferrer: o link é de terceiro, não damos a ele
-             window.opener nem o referrer do painel. */}}
-      <dd><a href="{{ .Valor }}" target="_blank" rel="noopener noreferrer nofollow">{{ .Valor }}</a></dd>
-      {{- else }}
+      {{- /* .Valor é template.HTML: já vem escapado e com os links colados no
+             texto virando <a>. Ver autoLink em admin.go. */}}
       <dd>{{ .Valor }}</dd>
-      {{- end }}
       {{- end }}
     </dl>
 

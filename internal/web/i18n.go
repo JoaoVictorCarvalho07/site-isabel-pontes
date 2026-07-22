@@ -65,7 +65,10 @@ var traducoes = map[string]ml{
 	"form.obrigatorio":   {"Esse campo é obrigatório.", "This field is required."},
 	"form.emailInvalido": {"Confere o e-mail, parece incompleto.", "Please check the email, it looks incomplete."},
 	"form.opcaoInvalida": {"Escolha uma das opções da lista.", "Please pick one of the listed options."},
-	"form.urlInvalida":   {"Cola o link completo, começando com https://", "Paste the full link, starting with https://"},
+	"form.contatoInvalido": {
+		"Confere esse contato: um WhatsApp com DDD (41 99999-8888) ou um e-mail.",
+		"Please check this: a phone number with area code, or an email address.",
+	},
 	"form.arquivoGrande": {"As imagens somaram mais que o limite. Manda até 4, de 5 MB cada.", "The images exceeded the limit. Send up to 4, 5 MB each."},
 	"form.reanexar":      {"Suas imagens precisam ser anexadas de novo — o navegador não guarda arquivos entre envios.", "You'll need to attach your images again — browsers don't keep files between submissions."},
 	"form.erroGeral":     {"Algo deu errado aqui do meu lado. Tenta de novo ou me chama no WhatsApp.", "Something went wrong on my end. Try again or message me on WhatsApp."},

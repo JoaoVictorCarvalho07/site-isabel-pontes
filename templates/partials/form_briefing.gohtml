@@ -81,9 +81,10 @@
       {{- end }}
 
       {{- else }}
-      <input id="{{ $id }}" name="{{ .Chave }}" type="{{ .Tipo }}" value="{{ $valor }}"
+      {{- /* TipoHTML, não Tipo: tipos próprios (contato) não são valores
+             válidos de `type=` e precisam virar "text". */}}
+      <input id="{{ $id }}" name="{{ .Chave }}" type="{{ .TipoHTML }}" value="{{ $valor }}"
              maxlength="4000"
-             {{ if eq .Tipo "url" }}placeholder="https://"{{ end }}
              {{ if .Obrigatoria }}required{{ end }}
              {{ if $erro }}aria-invalid="true"{{ end }}
              {{ with $descr }}aria-describedby="{{ . }}"{{ end }}>

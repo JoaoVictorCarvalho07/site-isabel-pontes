@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net"
 	"net/http"
-	"net/url"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -130,39 +130,54 @@ func validar(f *formBriefing, r *http.Request, lang string) (map[string]string, 
 		if valor == "" {
 			continue // opcional em branco: nada a validar
 		}
-		// Validacao de e-mail deliberadamente fraca: exigir formato rigido
-		// rejeita enderecos validos e raros. So pega o erro de digitacao obvio.
-		if p.Tipo == campoEmail && (!strings.Contains(valor, "@") || strings.HasSuffix(valor, "@")) {
+		if p.Tipo == campoEmail && !reEmail.MatchString(valor) {
 			erros[p.Chave] = t(lang, "form.emailInvalido")
+		}
+		if p.Tipo == campoContato && !contatoValido(valor) {
+			erros[p.Chave] = t(lang, "form.contatoInvalido")
 		}
 		// Select: a resposta precisa ser uma das opcoes oferecidas. Sem isto, um
 		// POST cru grava qualquer string num campo que a Isa le como categoria.
 		if p.Tipo == campoSelect && !opcaoValida(p, valor) {
 			erros[p.Chave] = t(lang, "form.opcaoInvalida")
 		}
-		if p.Tipo == campoURL && !urlPlausivel(valor) {
-			erros[p.Chave] = t(lang, "form.urlInvalida")
-		}
 	}
 	return valores, erros
 }
 
-// urlPlausivel aceita so http/https absolutos.
-//
-// O esquema importa mais do que parece: a URL vira um <a href> no painel da
-// Isa, e "javascript:..." ali seria XSS com um clique dela. O html/template
-// bloqueia esse esquema na renderizacao, mas depender disso e depender de uma
-// camada so -- guardar lixo no banco ja e o erro.
-func urlPlausivel(valor string) bool {
-	u, err := url.Parse(valor)
-	if err != nil {
-		return false
+// Validacao de contato. Deliberadamente PERMISSIVA na forma e ESTRITA no
+// essencial: nao importa se a pessoa escreveu (41) 99999-8888, 41999998888 ou
+// +55 41 9 9999-8888 -- importa que dê para responder. Rejeitar um formato
+// valido custa um cliente; aceitar um numero incompleto custa o mesmo, so que
+// sem ninguem perceber.
+var (
+	// Exige um ponto no dominio. Nao e o RFC 5322 completo (que aceita coisas
+	// que nenhum provedor real emite) -- e o suficiente para pegar erro de
+	// digitacao, que e o caso que acontece de verdade.
+	reEmail     = regexp.MustCompile(`^[^@\s]+@[^@\s.]+(\.[^@\s.]+)+$`)
+	reNaoDigito = regexp.MustCompile(`\D`)
+)
+
+// contatoValido aceita e-mail OU telefone brasileiro em qualquer formatacao.
+func contatoValido(valor string) bool {
+	if strings.Contains(valor, "@") {
+		return reEmail.MatchString(valor)
 	}
-	if u.Scheme != "http" && u.Scheme != "https" {
-		return false
+	return telefoneBRValido(reNaoDigito.ReplaceAllString(valor, ""))
+}
+
+// telefoneBRValido decide pelo COMPRIMENTO, nunca removendo um "55" do inicio.
+// A pegadinha: 55 e um DDI (Brasil) mas tambem um DDD valido (Santa Maria/RS).
+// Em "5511987654321" o 55 e pais; em "5599887766" e DDD. So o tamanho desfaz a
+// ambiguidade -- por isso nada de TrimPrefix aqui.
+func telefoneBRValido(digitos string) bool {
+	switch len(digitos) {
+	case 10, 11: // DDD + numero (fixo com 8, celular com 9)
+		return true
+	case 12, 13: // DDI 55 + DDD + numero
+		return strings.HasPrefix(digitos, "55")
 	}
-	// Exige host: "https://" sozinho passa no Parse.
-	return u.Host != ""
+	return false
 }
 
 // opcaoValida confere o valor de um select contra as opcoes. Compara nos DOIS
