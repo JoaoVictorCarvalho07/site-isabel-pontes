@@ -5,10 +5,11 @@
 # Caddy, nas portas 80/443. O Go ja faz gzip, entao NAO adicionamos `encode`
 # aqui (evita comprimir de novo).
 #
-# ATENCAO com Cloudflare: se o dominio estiver PROXIADO (nuvem laranja), o
-# desafio ACME do Caddy (HTTP-01) falha porque a Cloudflare intercepta. Ver o
-# README (secao TLS) -- o mais simples e deixar o DNS "DNS only" (nuvem cinza)
-# ate o Caddy emitir o certificado.
+# NOTA: o DNS de isabelpontes.com.br esta no REGISTRO.BR (nameservers
+# *.sec.dns.br), nao na Cloudflare. Entao a armadilha classica do proxy laranja
+# (que intercepta o desafio HTTP-01 e impede a emissao do certificado) nao se
+# aplica aqui. Se um dia o dominio migrar para a Cloudflare, deixe o registro
+# como "DNS only" (nuvem cinza) ate o Caddy emitir.
 
 isabelpontes.com.br, www.isabelpontes.com.br {
 	reverse_proxy 127.0.0.1:8080
@@ -19,7 +20,17 @@ isabelpontes.com.br, www.isabelpontes.com.br {
 
 	# cabecalhos de seguranca basicos
 	header {
-		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		# HSTS COMECA CURTO, DE PROPOSITO (5 min).
+		#
+		# HSTS e uma promessa que o navegador GUARDA: uma vez que ele ve
+		# max-age=31536000, passa um ANO recusando falar http:// com este
+		# dominio -- mesmo que o certificado expire, mesmo que voce precise
+		# voltar atras. Nao da para cancelar do servidor; so esperando o prazo.
+		# Num primeiro deploy de HTTPS isso e uma armadilha de mao unica.
+		#
+		# Depois de ~uma semana com o certificado renovando sozinho, troque
+		# para "max-age=31536000; includeSubDomains" e recarregue o Caddy.
+		Strict-Transport-Security "max-age=300"
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		-Server
@@ -29,3 +40,18 @@ isabelpontes.com.br, www.isabelpontes.com.br {
 		output file /var/log/caddy/site.log
 	}
 }
+
+# Dominio antigo do midia kit -> /midiakit, preservando o link que ja circulou
+# em proposta e assinatura de e-mail (docs §9).
+#
+# DESLIGADO ate confirmar. Hoje `isabelpontesportfolio.com.br` nao resolve em
+# nenhuma grafia (testei com e sem o acento, incluindo o punycode
+# xn--isabelpontesportflio-mzb). Se o dominio existir e for apontado para esta
+# VM, descomente -- e confira a grafia exata no registro.br antes.
+#
+# Dominio com acento vira punycode: o Caddy precisa da forma xn--, nao da
+# forma legivel, senao o certificado nao e emitido.
+#
+# xn--isabelpontesportflio-mzb.com.br, www.xn--isabelpontesportflio-mzb.com.br {
+# 	redir https://isabelpontes.com.br/midiakit{uri} permanent
+# }
