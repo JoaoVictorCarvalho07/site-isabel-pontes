@@ -1,0 +1,41 @@
+# systemd unit SIMPLES -- sem Litestream. Use esta para colocar o site no ar de
+# forma estavel antes de montar o backup. Instalar em /etc/systemd/system/site.service
+#
+# Diferenca para o site.service completo: aquele roda o binario ENVOLVIDO pelo
+# Litestream (replica o SQLite para o R2 continuamente) e exige o Litestream
+# instalado + credenciais R2. Este aqui so mantem o site no ar.
+#   -> Quando montar o bucket de backup, troque por deploy/site.service.
+#
+# Sem EnvironmentFile: o binario gerado por `make.ps1 deploy` ja sai com
+# BASE_URL e ADDR embutidos (ver a config no topo do make.ps1). Se quiser
+# sobrescrever sem recompilar, descomente a linha Environment= abaixo.
+
+[Unit]
+Description=Site Isabel Pontes (Go)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=site
+Group=site
+# Importante: o DB_PATH padrao e "data/site.db", RELATIVO a este diretorio.
+WorkingDirectory=/opt/site
+ExecStart=/opt/site/site serve
+
+# Sobrescreve o que foi embutido no binario, se precisar:
+# Environment=BASE_URL=https://isabelpontes.com.br
+# Environment=ADDR=127.0.0.1:8080
+
+Restart=always
+RestartSec=3
+
+# Endurecimento: o servico so precisa escrever no proprio data/.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/site/data
+
+[Install]
+WantedBy=multi-user.target
