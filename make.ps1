@@ -93,7 +93,12 @@ switch ($Task) {
     # so e possivel porque o driver SQLite e modernc (Go puro) -- com
     # mattn/go-sqlite3 isto exigiria um cross-toolchain C para ARM.
     #
-    #   $env:SITE_HOST='joao@147.15.96.215'; .\make.ps1 deploy
+    #   $env:SITE_HOST='oracle'; .\make.ps1 deploy
+    #
+    # Use o ALIAS do ~/.ssh/config, nao 'joao@IP': a chave privada esta declarada
+    # via IdentityFile no bloco `Host oracle`, e essa linha so vale quando o
+    # destino casa com o alias. Com 'joao@IP' o ssh ignora o bloco inteiro e
+    # falha com "Permission denied (publickey)".
     #
     # Sem SITE_HOST, so compila (voce faz o scp na mao). Primeira instalacao:
     # siga deploy/README.md.
