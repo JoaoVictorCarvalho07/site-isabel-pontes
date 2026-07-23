@@ -10,21 +10,27 @@ import (
 )
 
 var (
-	errCampoObrigatorio = errors.New("preencha os campos obrigatórios")
-	errSelectSemOpcoes  = errors.New("uma lista precisa de ao menos uma opção")
+	errCampoObrigatorio  = errors.New("preencha os campos obrigatórios")
+	errSelectSemOpcoes   = errors.New("uma lista precisa de ao menos uma opção")
+	errApagarComResposta = errors.New("essa pergunta já tem respostas — esconda em vez de apagar, para não perder os briefings antigos")
 )
 
-// Editor de formularios de briefing (Fase B, docs §8b). A Isa edita textos,
-// rotulos, ajuda, opcoes, obrigatoriedade e ordem -- e adiciona perguntas --
-// pelo /admin, sem redeploy. Idioma: ela edita so PT; ao mudar um texto, o EN
-// daquele campo e limpo e a pergunta e marcada en_stale (o dev revisa depois; o
-// visitante EN ve o PT nesse meio-tempo, via fallback em ml.T).
+// Editor de formularios de briefing (Fases B+C, docs §8b). A Isa edita textos,
+// rotulos, ajuda, opcoes, obrigatoriedade e ordem, adiciona perguntas (Fase B),
+// e ainda esconde/apaga/troca o tipo (Fase C) -- tudo pelo /admin, sem redeploy.
+// Idioma: ela edita so PT; ao mudar um texto, o EN daquele campo e limpo e a
+// pergunta e marcada en_stale (o dev revisa depois; o visitante EN ve o PT nesse
+// meio-tempo, via fallback em ml.T).
 //
 // Modelo de UI: cada bloco (textos do form, cada pergunta, "adicionar") e um
 // <form> proprio com POST + redirect (PRG). Sem JS obrigatorio, sem perder
-// edicao de um bloco ao mexer noutro, e cada acao e atomica. O que NAO esta aqui
-// -- trocar tipo, esconder/apagar, criar form novo -- e Fase C (pode orfanar
-// resposta e exige as travas de contagem).
+// edicao de um bloco ao mexer noutro, e cada acao e atomica.
+//
+// A politica destrutiva (Fase C) e simples: esconder e trocar tipo sao sempre
+// permitidos (reversiveis, nao perdem dado); APAGAR so com zero respostas -- com
+// respostas, apagar orfanaria briefings, entao a Isa e mandada a esconder. A
+// contagem de respostas aparece em cada pergunta para ela decidir informada.
+// Ainda FORA: criar formulario novo do zero (precisa de pagina generica; §8b).
 
 // tiposDisponiveis alimenta o seletor de "adicionar pergunta". A ordem e a que a
 // Isa ve; o rotulo e amigavel, o valor e o tipoCampo interno.
@@ -67,10 +73,15 @@ type perguntaEdit struct {
 	store.QuestionDef
 	TipoRotulo  string
 	EhSelect    bool
-	OpcoesTexto string // opcoes PT, uma por linha, para o <textarea>
-	Primeira    bool   // desabilita "subir"
-	Ultima      bool   // desabilita "descer"
+	OpcoesTexto string                           // opcoes PT, uma por linha, para o <textarea>
+	Primeira    bool                             // desabilita "subir"
+	Ultima      bool                             // desabilita "descer"
+	Respostas   int                              // quantas submissions responderam esta pergunta
+	Tipos       []struct{ Valor, Rotulo string } // para o seletor de trocar tipo
 }
+
+// PodeApagar: so sem respostas. Com respostas, o caminho seguro e esconder.
+func (p perguntaEdit) PodeApagar() bool { return p.Respostas == 0 }
 
 // --- Handlers: leitura -------------------------------------------------------
 
@@ -103,6 +114,14 @@ func (s *Server) adminFormEdit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Contagem de respostas por pergunta: alimenta a decisao de apagar/trocar
+	// tipo. Uma query so para o form inteiro.
+	contagem, err := s.store.ContarRespostasPorChave(r.Context(), slug)
+	if err != nil {
+		logger.Error("admin editor: contar respostas", "erro", err)
+		contagem = map[string]int{} // sem contagem, a tela ainda funciona
+	}
+
 	perguntas := make([]perguntaEdit, len(def.Perguntas))
 	for i, q := range def.Perguntas {
 		perguntas[i] = perguntaEdit{
@@ -112,6 +131,8 @@ func (s *Server) adminFormEdit(w http.ResponseWriter, r *http.Request) {
 			OpcoesTexto: opcoesParaTexto(q.OpcoesJSON),
 			Primeira:    i == 0,
 			Ultima:      i == len(def.Perguntas)-1,
+			Respostas:   contagem[q.Chave],
+			Tipos:       tiposDisponiveis,
 		}
 	}
 
@@ -245,6 +266,91 @@ func (s *Server) adminPerguntaAdd(w http.ResponseWriter, r *http.Request) {
 
 	if _, err := s.store.AdicionarPergunta(r.Context(), slug, q); err != nil {
 		s.erroAdmin(w, "adicionar pergunta", err)
+		return
+	}
+	s.aposEditar(w, r, slug)
+}
+
+// adminPerguntaOcultar liga/desliga o soft-delete (esconder/mostrar). Sempre
+// permitido: e reversivel e nao perde dado.
+func (s *Server) adminPerguntaOcultar(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "id inválido", http.StatusBadRequest)
+		return
+	}
+	ocultar := r.PostFormValue("oculta") == "1"
+	if err := s.store.OcultarPergunta(r.Context(), id, ocultar); err != nil {
+		s.erroAdmin(w, "esconder pergunta", err)
+		return
+	}
+	s.aposEditar(w, r, slug)
+}
+
+// adminPerguntaApagar remove a pergunta de vez -- mas SO se ela nao tiver
+// resposta nenhuma. Com respostas, a irreversibilidade orfanaria briefings; a
+// Isa e mandada a esconder. Checa no servidor, nunca confia so na UI.
+func (s *Server) adminPerguntaApagar(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "id inválido", http.StatusBadRequest)
+		return
+	}
+	q, ok := s.acharQuestion(r, slug, id)
+	if !ok {
+		s.notFound(w, r)
+		return
+	}
+	contagem, err := s.store.ContarRespostasPorChave(r.Context(), slug)
+	if err != nil {
+		s.erroAdmin(w, "contar respostas", err)
+		return
+	}
+	if contagem[q.Chave] > 0 {
+		s.erroAdmin(w, "apagar pergunta", errApagarComResposta)
+		return
+	}
+	if err := s.store.ApagarPergunta(r.Context(), id); err != nil {
+		s.erroAdmin(w, "apagar pergunta", err)
+		return
+	}
+	s.aposEditar(w, r, slug)
+}
+
+// adminPerguntaTrocarTipo muda o tipo de uma pergunta existente. Permitido mesmo
+// com respostas (elas mantem o texto gravado); a contagem so aparece na tela
+// para a Isa decidir informada. Trocar PARA lista exige opcoes.
+func (s *Server) adminPerguntaTrocarTipo(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "id inválido", http.StatusBadRequest)
+		return
+	}
+	if _, ok := s.acharQuestion(r, slug, id); !ok {
+		s.notFound(w, r)
+		return
+	}
+	_ = r.ParseForm()
+
+	tipo := campo(r, "tipo")
+	if !tipoValido(tipo) {
+		s.erroAdmin(w, "validar tipo", errCampoObrigatorio)
+		return
+	}
+	opcoesJSON := ""
+	if tipoCampo(tipo) == campoSelect {
+		opcoes := textoParaOpcoes(campo(r, "opcoes"))
+		if len(opcoes) == 0 {
+			s.erroAdmin(w, "validar opcoes", errSelectSemOpcoes)
+			return
+		}
+		opcoesJSON = opcoesToJSON(opcoes)
+	}
+	if err := s.store.TrocarTipoPergunta(r.Context(), id, tipo, opcoesJSON); err != nil {
+		s.erroAdmin(w, "trocar tipo", err)
 		return
 	}
 	s.aposEditar(w, r, slug)

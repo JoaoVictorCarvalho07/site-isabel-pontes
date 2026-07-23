@@ -39,10 +39,12 @@
   {{- /* Perguntas */}}
   <h2 class="editor-secao">Perguntas</h2>
   {{- range .Perguntas }}
-  <article class="q-card">
+  <article class="q-card{{ if .Oculta }} q-card--oculta{{ end }}">
     <div class="q-card__head">
       <span class="q-card__tipo">{{ .TipoRotulo }}</span>
       {{- if .Obrigatoria }}<span class="q-card__obr">obrigatória</span>{{ end }}
+      {{- if .Oculta }}<span class="q-card__off">escondida</span>{{ end }}
+      {{- if gt .Respostas 0 }}<span class="q-card__resp">{{ .Respostas }} resposta{{ if ne .Respostas 1 }}s{{ end }}</span>{{ end }}
       {{- if .ENStale }}<span class="q-card__stale" title="O texto em português mudou; falta atualizar o inglês.">EN a revisar</span>{{ end }}
       <div class="q-card__mover">
         <form method="post" action="/admin/forms/{{ $.Slug }}/perguntas/{{ .ID }}/mover">
@@ -73,6 +75,50 @@
       </label>
       <button type="submit" class="editor-salvar">Salvar pergunta</button>
     </form>
+
+    {{- /* Ações destrutivas (Fase C): trocar tipo, esconder, apagar. Ficam num
+           <details> para não competir com a edição normal. */}}
+    <details class="q-card__avancado">
+      <summary>Mais ações</summary>
+
+      {{- $tipoAtual := .Tipo }}
+      <form method="post" action="/admin/forms/{{ $.Slug }}/perguntas/{{ .ID }}/tipo" class="q-card__tipo-form">
+        <label>Trocar o tipo de resposta
+          <select name="tipo" data-tipo-troca>
+            {{- range .Tipos }}
+            <option value="{{ .Valor }}" {{ if eq .Valor $tipoAtual }}selected{{ end }}>{{ .Rotulo }}</option>
+            {{- end }}
+          </select>
+        </label>
+        {{- /* Sem `hidden` por padrão: sem JS fica sempre visível; o servidor
+               só usa quando o tipo alvo é lista. */}}
+        <label data-opcoes-troca>Opções da lista <span class="q-card__op">(uma por linha, só se o tipo for "Lista")</span>
+          <textarea name="opcoes" rows="3">{{ .OpcoesTexto }}</textarea>
+        </label>
+        <button type="submit">Trocar tipo</button>
+        {{- if gt .Respostas 0 }}
+        <p class="q-card__aviso-mini">Esta pergunta já tem {{ .Respostas }} resposta{{ if ne .Respostas 1 }}s{{ end }}. As respostas antigas continuam guardadas com o texto que era.</p>
+        {{- end }}
+      </form>
+
+      <div class="q-card__perigo">
+        {{- /* Esconder: sempre disponível, reversível */}}
+        <form method="post" action="/admin/forms/{{ $.Slug }}/perguntas/{{ .ID }}/ocultar">
+          <input type="hidden" name="oculta" value="{{ if .Oculta }}0{{ else }}1{{ end }}">
+          <button type="submit">{{ if .Oculta }}Mostrar de novo{{ else }}Esconder do formulário{{ end }}</button>
+        </form>
+
+        {{- /* Apagar: só quando não há respostas. Com respostas, esconder é o caminho. */}}
+        {{- if .PodeApagar }}
+        <form method="post" action="/admin/forms/{{ $.Slug }}/perguntas/{{ .ID }}/apagar"
+              onsubmit="return confirm('Apagar esta pergunta de vez? Não dá para desfazer.');">
+          <button type="submit" class="q-card__apagar">Apagar de vez</button>
+        </form>
+        {{- else }}
+        <p class="q-card__aviso-mini">Não dá para apagar: já tem resposta. Use “Esconder” — as respostas ficam guardadas.</p>
+        {{- end }}
+      </div>
+    </details>
   </article>
   {{- end }}
 
@@ -108,13 +154,21 @@
 {{- /* Um toque de JS opcional: mostra o campo de opções só quando o tipo é
        "lista". Sem ele o campo fica sempre visível (degrada bem). */}}
 <script>
+  // Mostra o campo de opções só quando o tipo escolhido é "lista". Enfeite:
+  // sem JS o campo fica visível e o servidor ignora fora do tipo lista.
   (function () {
-    var sel = document.querySelector('[data-tipo-nova]');
-    var opc = document.querySelector('[data-opcoes-nova]');
-    if (!sel || !opc) return;
-    function sync() { opc.hidden = sel.value !== 'select'; }
-    sel.addEventListener('change', sync);
-    sync();
+    function ligar(sel, opc) {
+      if (!sel || !opc) return;
+      function sync() { opc.hidden = sel.value !== 'select'; }
+      sel.addEventListener('change', sync);
+      sync();
+    }
+    // "Adicionar pergunta"
+    ligar(document.querySelector('[data-tipo-nova]'), document.querySelector('[data-opcoes-nova]'));
+    // "Trocar tipo" de cada pergunta
+    document.querySelectorAll('[data-tipo-troca]').forEach(function (sel) {
+      ligar(sel, sel.closest('form').querySelector('[data-opcoes-troca]'));
+    });
   })();
 </script>
 {{ end }}

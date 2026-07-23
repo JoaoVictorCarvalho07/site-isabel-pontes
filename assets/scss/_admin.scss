@@ -302,6 +302,98 @@
   }
 
   &__op { font-weight: 400; color: var(--muted-foreground); }
+
+  // --- Fase C: estado e ações destrutivas ---
+
+  &--oculta { opacity: 0.6; }
+
+  &__off {
+    font-size: 0.72rem;
+    padding: 0.05rem 0.4rem;
+    color: var(--muted-foreground);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+  }
+
+  &__resp {
+    font-size: 0.72rem;
+    color: var(--gold);
+  }
+
+  &__avancado {
+    margin-top: 0.85rem;
+    padding-top: 0.6rem;
+    border-top: 1px dashed var(--border);
+
+    summary {
+      font-size: 0.82rem;
+      color: var(--muted-foreground);
+      cursor: pointer;
+    }
+    &[open] summary { margin-bottom: 0.85rem; }
+  }
+
+  &__tipo-form {
+    display: grid;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+
+    label { display: grid; gap: 0.3rem; font-size: 0.82rem; color: var(--muted-foreground); }
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.5rem 0.65rem;
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      color: var(--foreground);
+      background: var(--popover);
+      border: 1px solid var(--input);
+      border-radius: 6px;
+    }
+    button {
+      justify-self: start;
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+      color: var(--foreground);
+      background: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      cursor: pointer;
+    }
+  }
+
+  &__perigo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+
+    form { margin: 0; }
+    button {
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+      color: var(--muted-foreground);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      cursor: pointer;
+
+      &:hover { border-color: var(--muted-foreground); }
+    }
+  }
+
+  &__apagar {
+    color: var(--destructive) !important;
+    border-color: var(--destructive) !important;
+  }
+
+  &__aviso-mini {
+    flex-basis: 100%;
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: var(--muted-foreground);
+  }
 }
 
 .briefing-card {

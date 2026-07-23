@@ -165,6 +165,10 @@ func (s *Server) Handler() http.Handler {
 	mux.Handle("POST /admin/forms/{slug}/perguntas", s.exigirAdmin(http.HandlerFunc(s.adminPerguntaAdd)))
 	mux.Handle("POST /admin/forms/{slug}/perguntas/{id}", s.exigirAdmin(http.HandlerFunc(s.adminPerguntaSalvar)))
 	mux.Handle("POST /admin/forms/{slug}/perguntas/{id}/mover", s.exigirAdmin(http.HandlerFunc(s.adminPerguntaMover)))
+	// Fase C -- operacoes destrutivas por pergunta (esconder, apagar, trocar tipo).
+	mux.Handle("POST /admin/forms/{slug}/perguntas/{id}/ocultar", s.exigirAdmin(http.HandlerFunc(s.adminPerguntaOcultar)))
+	mux.Handle("POST /admin/forms/{slug}/perguntas/{id}/apagar", s.exigirAdmin(http.HandlerFunc(s.adminPerguntaApagar)))
+	mux.Handle("POST /admin/forms/{slug}/perguntas/{id}/tipo", s.exigirAdmin(http.HandlerFunc(s.adminPerguntaTrocarTipo)))
 	mux.HandleFunc("GET /robots.txt", s.robots)
 	mux.HandleFunc("GET /sitemap.xml", s.sitemap)
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {

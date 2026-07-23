@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -307,6 +308,75 @@ func (s *Store) MoverPergunta(ctx context.Context, slug string, id int64, paraCi
 		return err
 	}
 	return tx.Commit()
+}
+
+// --- Operacoes destrutivas (editor, Fase C) ----------------------------------
+
+// ContarRespostasPorChave conta, por chave de pergunta, quantas submissions do
+// formulario tem resposta NAO-vazia para ela. E o numero que o editor mostra
+// antes de deixar apagar/trocar tipo -- "essa pergunta ja tem 3 respostas".
+//
+// Uma passada so pelos payloads do form, contada em Go: o volume e baixo e evita
+// um json_extract por pergunta.
+func (s *Store) ContarRespostasPorChave(ctx context.Context, slug string) (map[string]int, error) {
+	linhas, err := s.db.QueryContext(ctx, `SELECT payload FROM submissions WHERE form=?`, slug)
+	if err != nil {
+		return nil, err
+	}
+	defer linhas.Close()
+
+	contagem := map[string]int{}
+	for linhas.Next() {
+		var payload string
+		if err := linhas.Scan(&payload); err != nil {
+			return nil, err
+		}
+		var respostas map[string]string
+		if err := json.Unmarshal([]byte(payload), &respostas); err != nil {
+			continue // payload corrompido nao derruba a contagem
+		}
+		for chave, valor := range respostas {
+			if valor != "" {
+				contagem[chave]++
+			}
+		}
+	}
+	return contagem, linhas.Err()
+}
+
+// OcultarPergunta liga/desliga o soft-delete. Some do formulario mas continua
+// existindo para rotular respostas antigas. Reversivel.
+func (s *Store) OcultarPergunta(ctx context.Context, id int64, oculta bool) error {
+	res, err := s.db.ExecContext(ctx,
+		`UPDATE form_questions SET oculta=?, updated_at=datetime('now') WHERE id=?`, boolInt(oculta), id)
+	if err != nil {
+		return err
+	}
+	return exigeUmaLinha(res, "pergunta", fmt.Sprint(id))
+}
+
+// ApagarPergunta remove a pergunta de vez. O chamador (handler) SO chama isto
+// quando a pergunta nao tem respostas -- apagar uma com respostas orfanaria os
+// briefings antigos, e para esse caso existe OcultarPergunta.
+func (s *Store) ApagarPergunta(ctx context.Context, id int64) error {
+	res, err := s.db.ExecContext(ctx, `DELETE FROM form_questions WHERE id=?`, id)
+	if err != nil {
+		return err
+	}
+	return exigeUmaLinha(res, "pergunta", fmt.Sprint(id))
+}
+
+// TrocarTipoPergunta muda o tipo (e as opcoes, quando o novo tipo e lista). Marca
+// en_stale porque as opcoes novas nao tem traducao. As respostas ja gravadas
+// mantem o texto que era -- o painel as mostra como estao.
+func (s *Store) TrocarTipoPergunta(ctx context.Context, id int64, tipo, opcoesJSON string) error {
+	res, err := s.db.ExecContext(ctx,
+		`UPDATE form_questions SET tipo=?, opcoes_json=?, en_stale=1, updated_at=datetime('now') WHERE id=?`,
+		tipo, opcoesJSON, id)
+	if err != nil {
+		return err
+	}
+	return exigeUmaLinha(res, "pergunta", fmt.Sprint(id))
 }
 
 // gerarChave produz um identificador opaco e estavel para uma pergunta nova.
