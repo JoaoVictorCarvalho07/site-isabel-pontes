@@ -296,6 +296,46 @@ O Go guarda; falta o canal de leitura. Duas camadas:
 > dev no meio. Não é bloqueante pro lançamento; v1 já resolve com perguntas em
 > arquivo + e-mail.
 
+### 8b. Editor de briefing (a "Fase 2") — EM ANDAMENTO (branch `feat/briefing-editor`)
+
+Decidido construir o **form builder completo**: a Isa edita textos/opções/ordem,
+troca tipo de pergunta, apaga, esconde e cria formulários novos — pelo `/admin`,
+sem dev nem redeploy. Idioma: **ela edita só PT**; a versão EN de uma pergunta
+editada é marcada `en_stale` e o dev revisa depois (até lá, `/en` cai pro PT
+naquela pergunta).
+
+**O nó:** as respostas em `submissions` são JSON indexado pela `Chave` da
+pergunta. Renomear/apagar uma chave orfana os briefings antigos. Guarda-corpos:
+a chave é **automática e invisível** pra Isa (a semântica mora no `Label`);
+apagar pergunta com resposta é **esconder** (`oculta=1`), não deletar; trocar
+tipo/apagar checa e **avisa** quantas respostas existem antes.
+
+**Fronteira honesta:** o builder edita o *conteúdo* dos formulários e publica em
+`/briefing/<slug>`. *Onde* um form aparece (ex.: UGC embutido no mídia kit) segue
+sendo template = trabalho de dev. O builder não redesenha a colocação.
+
+**3 acoplamentos soltos na migração:** (1) a `Chave` deixa de ser semântica e
+vira opaca; (2) as referências diretas em Go (`&briefingFotografia`) viram busca
+por slug no cache; (3) a colocação fica no código, de propósito.
+
+**Arquitetura** (espelha a galeria): tabelas `forms` + `form_questions` →
+carregadas pra RAM no boot (`formsCache`) → requests leem da RAM → cada edição
+recarrega o cache. Caminho quente nunca toca o banco.
+
+**Fases:**
+- **A — Migração invisível.** Tabelas + seed a partir dos structs Go atuais +
+  load-pra-RAM + reload + rewire dos call sites. Site idêntico, lendo do banco.
+  Sem UI. É a fase que de-risca. ← **atual**
+- **B — Editor seguro.** Editar textos/rótulos/ajuda/opções/ordem/obrigatório +
+  adicionar perguntas. Via HTMX. Cobre 95% do uso.
+- **C — Poderes destrutivos.** Trocar tipo, esconder/apagar, criar forms novos,
+  com checagem de contagem de respostas e aviso.
+- **D — Fluxo do EN.** Fila de `en_stale` no painel pro dev revisar.
+
+**Resolvido junto:** CSRF nos POSTs do `/admin` (checar `Origin`); validação ao
+salvar (chave única, select com ≥1 opção, slug único); preview; testes por fase
+(incl. o caso de orfanamento).
+
 ---
 
 ## 9. SEO, domínio e redirects

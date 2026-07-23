@@ -1,13 +1,18 @@
 package web
 
-// Conteudo dos formularios de briefing. Editar AQUI e a unica coisa necessaria
-// para mudar o questionario -- nao ha migracao de banco envolvida (o payload e
-// JSON; ver schema.sql) nem template para mexer (o partial itera sobre isto).
+import "github.com/JoaoVictorCarvalho07/site-da-bebel-htmx/internal/store"
+
+// SEED dos formularios de briefing (docs §8b).
 //
-// !! RASCUNHO !! As perguntas abaixo sao minha leitura do que a Isa pediu:
-// motivacao do ensaio, o que a pessoa gosta de comer (ela faz lanche para quem
-// vai ao estudio) e, no UGC, por que a marca escolheu ela como creator. Ela deve
-// revisar a redacao e a ordem antes do lancamento. O EN tambem e rascunho.
+// Desde a Fase 2 (editor), a fonte de verdade dos formularios e o SQLite: a Isa
+// edita pelo /admin. Estes structs sao apenas a SEMENTE -- inseridos uma vez, no
+// primeiro boot com a tabela `forms` vazia (ver seedDefs -> store.SeedFormsIfEmpty).
+// Editar aqui NAO muda um banco ja povoado; para mexer no questionario em
+// producao, use o painel.
+//
+// As perguntas abaixo sao minha leitura do que a Isa pediu: motivacao do ensaio,
+// o que a pessoa gosta de comer (ela faz lanche para quem vai ao estudio) e, no
+// UGC, por que a marca escolheu ela como creator. O EN e rascunho meu.
 
 // tipoCampo restringe o que o template sabe renderizar. String livre aqui viraria
 // um <input type="qualquer-coisa"> silenciosamente errado.
@@ -239,9 +244,35 @@ var briefingUGC = formBriefing{
 	},
 }
 
-// formsPorSlug e o roteamento dos POSTs. Slug desconhecido -> 404, nunca um
-// formulario "generico" salvo com tipo errado.
-var formsPorSlug = map[string]*formBriefing{
-	briefingFotografia.Slug: &briefingFotografia,
-	briefingUGC.Slug:        &briefingUGC,
+// seedDefs converte a semente Go para o shape neutro do store. Chamado uma vez,
+// no primeiro boot (ver novoFormsCache). A ordem aqui vira o sort_order inicial.
+func seedDefs() []store.FormDef {
+	return []store.FormDef{
+		formToDef(briefingFotografia, 10),
+		formToDef(briefingUGC, 20),
+	}
+}
+
+func formToDef(f formBriefing, ordem int) store.FormDef {
+	d := store.FormDef{
+		Slug:        f.Slug,
+		TituloPT:    f.Titulo.pt, TituloEN: f.Titulo.en,
+		SubtituloPT: f.Subtitulo.pt, SubtituloEN: f.Subtitulo.en,
+		EnviarPT:    f.Enviar.pt, EnviarEN: f.Enviar.en,
+		SucessoPT:   f.Sucesso.pt, SucessoEN: f.Sucesso.en,
+		Visivel:     true,
+		Ordem:       ordem,
+	}
+	for i, p := range f.Perguntas {
+		d.Perguntas = append(d.Perguntas, store.QuestionDef{
+			Chave:       p.Chave,
+			LabelPT:     p.Label.pt, LabelEN: p.Label.en,
+			AjudaPT:     p.Ajuda.pt, AjudaEN: p.Ajuda.en,
+			Tipo:        string(p.Tipo),
+			Obrigatoria: p.Obrigatoria,
+			OpcoesJSON:  opcoesToJSON(p.Opcoes),
+			Ordem:       (i + 1) * 10,
+		})
+	}
+	return d
 }

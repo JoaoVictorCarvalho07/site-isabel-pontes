@@ -28,6 +28,9 @@ type Server struct {
 	store *store.Store
 	// limiteBriefing: um envio por IP por janela, contra flood de formulario.
 	limiteBriefing *limitador
+	// forms: os formularios de briefing em RAM (fonte no SQLite, editavel pelo
+	// /admin). Ver forms_cache.go e docs §8b.
+	forms *formsCache
 	// boot muda a cada restart (= cada deploy). Entra no ETag da galeria para
 	// que uma troca de template/CSS/JS invalide o cache -- o data_version
 	// sozinho so cobre mudanca de DADOS, nao de codigo.
@@ -101,8 +104,17 @@ func New(cfg *config.Config, assets fs.FS, snap *store.Snapshot, banco *store.St
 	if err != nil {
 		return nil, err
 	}
+	// Carrega os formularios de briefing para a RAM (semeando o banco no primeiro
+	// boot). Falhar aqui aborta o boot: e melhor nao subir do que servir sem os
+	// formularios.
+	forms, err := novoFormsCache(banco)
+	if err != nil {
+		return nil, fmt.Errorf("carregar formularios: %w", err)
+	}
+
 	return &Server{
 		cfg: cfg, render: r, static: static, snap: snap, store: banco,
+		forms: forms,
 		// 30s entre envios do mesmo IP: nao atrapalha quem errou um campo e
 		// reenviou, mas mata flood. Nao e defesa contra ataque distribuido --
 		// para isso existe o Caddy na frente.

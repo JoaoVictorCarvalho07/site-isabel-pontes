@@ -23,7 +23,8 @@ var schemaSQL string
 
 // 2: tabela submissions (formularios de briefing).
 // 3: tabela submission_files (imagens de referencia anexadas).
-const schemaVersion = 3
+// 4: tabelas forms + form_questions (briefing editavel, docs §8b).
+const schemaVersion = 4
 
 type Store struct {
 	db *sql.DB

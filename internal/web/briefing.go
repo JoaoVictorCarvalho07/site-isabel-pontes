@@ -196,7 +196,12 @@ func opcaoValida(p pergunta, valor string) bool {
 // briefing serve a pagina dedicada do briefing de fotografia (GET /briefing).
 func (s *Server) briefing(w http.ResponseWriter, r *http.Request) {
 	lang := idioma(r)
-	f := &briefingFotografia
+	f, ok := s.forms.get("fotografia")
+	if !ok {
+		// Form de fotografia desligado no painel: a pagina dedicada some.
+		s.notFound(w, r)
+		return
+	}
 
 	titulo := "Briefing — Isabel Pontes"
 	descr := "Conte sobre o ensaio que você quer fazer: tema, data, referências e o que te motivou."
@@ -252,7 +257,7 @@ func caminhoEnvio(lang, slug string) string {
 // enviarBriefing trata o POST dos dois formularios (o slug vem da rota).
 func (s *Server) enviarBriefing(w http.ResponseWriter, r *http.Request) {
 	lang := idioma(r)
-	f, existe := formsPorSlug[r.PathValue("slug")]
+	f, existe := s.forms.get(r.PathValue("slug"))
 	if !existe {
 		s.notFound(w, r)
 		return

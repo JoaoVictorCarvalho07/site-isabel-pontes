@@ -95,3 +95,48 @@ CREATE TABLE IF NOT EXISTS submission_files (
 );
 
 CREATE INDEX IF NOT EXISTS idx_files_submission ON submission_files (submission_id);
+
+-- Formularios de briefing EDITAVEIS (a "Fase 2", ver docs §8b).
+--
+-- Ate agora as perguntas eram structs Go, fixas na compilacao. Aqui elas viram
+-- dado: a Isa edita pelo /admin sem redeploy. O modelo espelha a galeria -- o
+-- boot carrega tudo pra RAM (formsCache), o request le da memoria, uma edicao
+-- recarrega o cache. O caminho quente nunca toca estas tabelas.
+--
+-- No primeiro boot com a tabela vazia, o Go semeia a partir dos structs atuais
+-- (ver web/briefing_content.go) -- nada se perde.
+CREATE TABLE IF NOT EXISTS forms (
+  slug         TEXT PRIMARY KEY,        -- 'fotografia', 'ugc', ou novos
+  titulo_pt    TEXT NOT NULL DEFAULT '', titulo_en    TEXT NOT NULL DEFAULT '',
+  subtitulo_pt TEXT NOT NULL DEFAULT '', subtitulo_en TEXT NOT NULL DEFAULT '',
+  enviar_pt    TEXT NOT NULL DEFAULT '', enviar_en    TEXT NOT NULL DEFAULT '',
+  sucesso_pt   TEXT NOT NULL DEFAULT '', sucesso_en   TEXT NOT NULL DEFAULT '',
+  visivel      INTEGER NOT NULL DEFAULT 1,   -- form desligado some das rotas
+  sort_order   INTEGER NOT NULL DEFAULT 100,
+  updated_at   TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Uma pergunta de um formulario.
+--
+-- `chave` e a IDENTIDADE: vira o name= do input e a chave no JSON de respostas.
+-- E gerada por nos, nunca editada pela Isa -- por isso renomear o rotulo nao
+-- orfana resposta nenhuma (a semantica mora em label_*, a identidade em chave).
+-- `oculta` e o soft-delete: some do formulario mas continua existindo pra dar
+-- rotulo as respostas antigas. `en_stale`: PT editado, EN aguardando revisao.
+CREATE TABLE IF NOT EXISTS form_questions (
+  id          INTEGER PRIMARY KEY,
+  form_slug   TEXT NOT NULL REFERENCES forms(slug) ON DELETE CASCADE,
+  chave       TEXT NOT NULL,
+  label_pt    TEXT NOT NULL DEFAULT '', label_en TEXT NOT NULL DEFAULT '',
+  ajuda_pt    TEXT NOT NULL DEFAULT '', ajuda_en TEXT NOT NULL DEFAULT '',
+  tipo        TEXT NOT NULL,                 -- text/email/date/textarea/select/contato/file
+  obrigatoria INTEGER NOT NULL DEFAULT 0,
+  opcoes_json TEXT NOT NULL DEFAULT '',      -- JSON [{"pt":"","en":""}] (so p/ select)
+  sort_order  INTEGER NOT NULL DEFAULT 100,
+  oculta      INTEGER NOT NULL DEFAULT 0,
+  en_stale    INTEGER NOT NULL DEFAULT 0,
+  updated_at  TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE (form_slug, chave)
+);
+
+CREATE INDEX IF NOT EXISTS idx_questions_form ON form_questions (form_slug, sort_order, id);

@@ -57,14 +57,25 @@ func (s *Server) midiakit(w http.ResponseWriter, r *http.Request) {
 		Metricas:      metricas,
 		Investimentos: investimentos,
 		Portfolio:     buildPortfolio(lang, ""), // "" = todas as categorias
-		FormUGC: briefingView{
-			pageData: dados,
-			Form:     &briefingUGC,
-			Action:   caminhoEnvio(lang, briefingUGC.Slug),
-			Valores:  map[string]string{},
-			Erros:    map[string]string{},
-		},
+		FormUGC:       s.formUGCView(dados, lang),
 	})
+}
+
+// formUGCView monta o briefing embutido na one-page. Se o form de UGC estiver
+// desligado no painel, devolve um view com Form=nil -- o template esconde a
+// secao (ver o {{ with .FormUGC.Form }} em midiakit.gohtml).
+func (s *Server) formUGCView(dados pageData, lang string) briefingView {
+	f, ok := s.forms.get("ugc")
+	if !ok {
+		return briefingView{pageData: dados}
+	}
+	return briefingView{
+		pageData: dados,
+		Form:     f,
+		Action:   caminhoEnvio(lang, f.Slug),
+		Valores:  map[string]string{},
+		Erros:    map[string]string{},
+	}
 }
 
 // ── Portfólio de vídeos (#portfolio, filtro via HTMX) ─────────────────────────

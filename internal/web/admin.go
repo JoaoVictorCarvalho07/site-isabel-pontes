@@ -53,7 +53,6 @@ func (s *Server) exigirAdmin(proximo http.Handler) http.Handler {
 type linhaAdmin struct {
 	ID       int64
 	Form     string
-	Titulo   string
 	Lida     bool
 	Quando   string
 	Campos   []campoAdmin
@@ -120,7 +119,7 @@ type adminView struct {
 
 func (s *Server) admin(w http.ResponseWriter, r *http.Request) {
 	filtro := r.URL.Query().Get("form")
-	if _, existe := formsPorSlug[filtro]; !existe {
+	if filtro != "" && !s.forms.existe(filtro) {
 		filtro = "" // valor invalido na query nao filtra nada, so e ignorado
 	}
 
@@ -147,7 +146,10 @@ func (s *Server) admin(w http.ResponseWriter, r *http.Request) {
 
 	linhas := make([]linhaAdmin, 0, len(subs))
 	for _, sub := range subs {
-		f, conhecido := formsPorSlug[sub.Form]
+		// perguntasDe traz TODAS as perguntas do form (incl. as ocultas), para
+		// que esconder uma pergunta no painel nao apague as respostas antigas
+		// dela desta tela.
+		perguntas, conhecido := s.forms.perguntasDe(sub.Form)
 		linha := linhaAdmin{
 			ID: sub.ID, Form: sub.Form, Lida: sub.Lida, Anexos: paraAnexos(anexos[sub.ID]),
 			// Horario de Brasilia: o banco grava UTC, e a Isa nao deveria
@@ -155,9 +157,8 @@ func (s *Server) admin(w http.ResponseWriter, r *http.Request) {
 			Quando: sub.CriadoEm.In(fusoBrasil).Format("02/01/2006 15:04"),
 		}
 		if !conhecido {
-			// Formulario removido do codigo: mostra o cru em vez de sumir com a
-			// resposta. Perder um briefing por refactor seria imperdoavel.
-			linha.Titulo = sub.Form
+			// Formulario apagado por inteiro: mostra o cru em vez de sumir com a
+			// resposta. Perder um briefing seria imperdoavel.
 			for chave, valor := range sub.Respostas {
 				linha.Campos = append(linha.Campos, campoAdmin{Label: chave, Valor: autoLink(valor)})
 			}
@@ -165,8 +166,7 @@ func (s *Server) admin(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		linha.Titulo = f.Titulo.T("pt")
-		for _, p := range f.Perguntas {
+		for _, p := range perguntas {
 			valor := sub.Respostas[p.Chave]
 			if valor == "" {
 				continue
