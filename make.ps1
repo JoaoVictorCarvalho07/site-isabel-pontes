@@ -38,10 +38,11 @@ $SASS_VERSION = "1.101.0"
 # BASE_URL = o endereco PUBLICO (o que o visitante ve). Entra no canonical,
 # og:url, og:image, hreflang e sitemap -- e o que faz o card do WhatsApp
 # funcionar. Ao apontar o dominio, troque para 'https://isabelpontes.com.br'.
-$PROD_BASE_URL = 'http://147.15.96.215:8080'
-# ADDR = onde o Go ESCUTA. Com o Caddy na frente, mude para '127.0.0.1:8080'
-# (assim a porta 8080 deixa de ser exposta e ninguem pula o HTTPS).
-$PROD_ADDR = ':8080'
+$PROD_BASE_URL = 'https://isabelpontes.com.br'
+# ADDR = onde o Go ESCUTA. Com o Caddy na frente (desde 2026-07-23), escuta so
+# no loopback: a 8080 deixa de ser acessivel pela internet e ninguem pula o
+# HTTPS -- todo trafego passa obrigatoriamente pelo Caddy na 443.
+$PROD_ADDR = '127.0.0.1:8080'
 # Arquitetura da VM: Ampere A1 = arm64; VM.Standard.E2.1.Micro (AMD) = amd64.
 # Confira na VM com:  uname -m     (aarch64 -> arm64, x86_64 -> amd64)
 $PROD_ARCH = 'arm64'
