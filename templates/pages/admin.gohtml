@@ -11,6 +11,7 @@
       <a href="/admin" {{ if not .FiltroURL }}aria-current="page"{{ end }}>Todos</a>
       <a href="/admin?form=fotografia" {{ if eq .FiltroURL "fotografia" }}aria-current="page"{{ end }}>Fotografia</a>
       <a href="/admin?form=ugc" {{ if eq .FiltroURL "ugc" }}aria-current="page"{{ end }}>UGC</a>
+      <a href="/admin/forms" class="admin__filtros-editar">Editar formulários</a>
     </nav>
   </header>
 

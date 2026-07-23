@@ -19,9 +19,13 @@ import (
 // acessa via {{ .Campo.T $.Lang }}, e construir ml{"pt","en"} fica curto.
 type ml struct{ pt, en string }
 
-// T devolve a string no idioma pedido (fallback PT).
+// T devolve a string no idioma pedido. EN vazio cai no PT -- e o que sustenta o
+// fluxo do editor (docs §8b): a Isa edita so PT, o EN daquele campo fica vazio
+// (en_stale) ate o dev traduzir, e nesse meio-tempo o visitante EN ve o PT em
+// vez de um buraco. Sem esse fallback, uma pergunta recem-editada sumiria da
+// versao em ingles.
 func (m ml) T(lang string) string {
-	if lang == "en" {
+	if lang == "en" && m.en != "" {
 		return m.en
 	}
 	return m.pt

@@ -1,0 +1,120 @@
+{{- /* Editor de um formulario (Fase B, docs §8b). Cada bloco e um <form>
+       proprio com POST + redirect: sem JS obrigatorio, cada acao e atomica, e
+       mexer num bloco nao perde a edicao de outro. */ -}}
+{{ define "conteudo" }}
+<section class="admin admin-editor">
+  <header class="admin__head">
+    <div>
+      <h1>{{ .Titulo }}</h1>
+      <p>Edite em português. A versão em inglês de um texto alterado é revista depois.</p>
+    </div>
+    <nav class="admin__filtros">
+      <a href="/admin/forms">← Formulários</a>
+      <a href="{{ .PreviewURL }}" target="_blank" rel="noopener">Ver ao vivo ↗</a>
+    </nav>
+  </header>
+
+  {{- if .Salvo }}
+  <p class="admin__flash" role="status">Salvo ✓</p>
+  {{- end }}
+
+  {{- /* Textos do formulário */}}
+  <form class="editor-bloco" method="post" action="/admin/forms/{{ .Slug }}">
+    <h2 class="editor-bloco__titulo">Textos do formulário</h2>
+    <label>Título
+      <input name="titulo" value="{{ .Textos.TituloPT }}" required maxlength="200">
+    </label>
+    <label>Subtítulo
+      <input name="subtitulo" value="{{ .Textos.SubtituloPT }}" maxlength="400">
+    </label>
+    <label>Texto do botão de envio
+      <input name="enviar" value="{{ .Textos.EnviarPT }}" required maxlength="80">
+    </label>
+    <label>Mensagem depois de enviar
+      <textarea name="sucesso" rows="2" maxlength="400">{{ .Textos.SucessoPT }}</textarea>
+    </label>
+    <button type="submit" class="editor-salvar">Salvar textos</button>
+  </form>
+
+  {{- /* Perguntas */}}
+  <h2 class="editor-secao">Perguntas</h2>
+  {{- range .Perguntas }}
+  <article class="q-card">
+    <div class="q-card__head">
+      <span class="q-card__tipo">{{ .TipoRotulo }}</span>
+      {{- if .Obrigatoria }}<span class="q-card__obr">obrigatória</span>{{ end }}
+      {{- if .ENStale }}<span class="q-card__stale" title="O texto em português mudou; falta atualizar o inglês.">EN a revisar</span>{{ end }}
+      <div class="q-card__mover">
+        <form method="post" action="/admin/forms/{{ $.Slug }}/perguntas/{{ .ID }}/mover">
+          <input type="hidden" name="dir" value="cima">
+          <button type="submit" aria-label="Subir" {{ if .Primeira }}disabled{{ end }}>↑</button>
+        </form>
+        <form method="post" action="/admin/forms/{{ $.Slug }}/perguntas/{{ .ID }}/mover">
+          <input type="hidden" name="dir" value="baixo">
+          <button type="submit" aria-label="Descer" {{ if .Ultima }}disabled{{ end }}>↓</button>
+        </form>
+      </div>
+    </div>
+
+    <form method="post" action="/admin/forms/{{ $.Slug }}/perguntas/{{ .ID }}" class="q-card__edit">
+      <label>Pergunta
+        <input name="label" value="{{ .LabelPT }}" required maxlength="300">
+      </label>
+      <label>Texto de ajuda <span class="q-card__op">(opcional)</span>
+        <input name="ajuda" value="{{ .AjudaPT }}" maxlength="500">
+      </label>
+      {{- if .EhSelect }}
+      <label>Opções <span class="q-card__op">(uma por linha)</span>
+        <textarea name="opcoes" rows="4">{{ .OpcoesTexto }}</textarea>
+      </label>
+      {{- end }}
+      <label class="q-card__check">
+        <input type="checkbox" name="obrigatoria" {{ if .Obrigatoria }}checked{{ end }}> Resposta obrigatória
+      </label>
+      <button type="submit" class="editor-salvar">Salvar pergunta</button>
+    </form>
+  </article>
+  {{- end }}
+
+  {{- /* Nova pergunta */}}
+  <form class="editor-bloco editor-nova" method="post" action="/admin/forms/{{ .Slug }}/perguntas">
+    <h2 class="editor-bloco__titulo">Adicionar pergunta</h2>
+    <label>Pergunta
+      <input name="label" required maxlength="300" placeholder="Ex.: Como você prefere ser chamada?">
+    </label>
+    <label>Texto de ajuda <span class="q-card__op">(opcional)</span>
+      <input name="ajuda" maxlength="500">
+    </label>
+    <label>Tipo de resposta
+      <select name="tipo" data-tipo-nova>
+        {{- range .Tipos }}
+        <option value="{{ .Valor }}">{{ .Rotulo }}</option>
+        {{- end }}
+      </select>
+    </label>
+    {{- /* Sem `hidden` por padrão: sem JS o campo fica sempre visível (o
+           servidor ignora opções fora do tipo lista). O JS abaixo o esconde
+           quando o tipo não é lista, só por elegância. */}}
+    <label data-opcoes-nova>Opções <span class="q-card__op">(uma por linha, só para "Lista de opções")</span>
+      <textarea name="opcoes" rows="4" placeholder="Uma opção por linha"></textarea>
+    </label>
+    <label class="q-card__check">
+      <input type="checkbox" name="obrigatoria"> Resposta obrigatória
+    </label>
+    <button type="submit" class="editor-salvar">Adicionar</button>
+  </form>
+</section>
+
+{{- /* Um toque de JS opcional: mostra o campo de opções só quando o tipo é
+       "lista". Sem ele o campo fica sempre visível (degrada bem). */}}
+<script>
+  (function () {
+    var sel = document.querySelector('[data-tipo-nova]');
+    var opc = document.querySelector('[data-opcoes-nova]');
+    if (!sel || !opc) return;
+    function sync() { opc.hidden = sel.value !== 'select'; }
+    sel.addEventListener('change', sync);
+    sync();
+  })();
+</script>
+{{ end }}

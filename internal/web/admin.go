@@ -4,6 +4,7 @@ import (
 	"crypto/subtle"
 	"html/template"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -44,8 +45,38 @@ func (s *Server) exigirAdmin(proximo http.Handler) http.Handler {
 			http.Error(w, "Não autorizado", http.StatusUnauthorized)
 			return
 		}
+
+		// CSRF: basic-auth tem um furo classico -- o navegador reanexa a
+		// credencial cacheada num POST cross-origin, entao um site malicioso que
+		// a Isa visitasse logada poderia disparar acoes no painel. A defesa e
+		// barata: todo POST tem que vir da MESMA origem. GET e read-only, nao
+		// precisa.
+		if r.Method == http.MethodPost && !mesmaOrigem(r) {
+			logger.Warn("admin: POST cross-origin recusado", "origin", r.Header.Get("Origin"), "referer", r.Header.Get("Referer"))
+			http.Error(w, "Origem inválida", http.StatusForbidden)
+			return
+		}
 		proximo.ServeHTTP(w, r)
 	})
+}
+
+// mesmaOrigem confere que um POST de estado veio da propria pagina do painel,
+// comparando o host do Origin (ou, na falta, do Referer) com o host do request.
+// Ausencia dos dois num POST => recusa: um form legitimo do nosso site sempre
+// manda ao menos um deles.
+func mesmaOrigem(r *http.Request) bool {
+	origem := r.Header.Get("Origin")
+	if origem == "" {
+		origem = r.Header.Get("Referer")
+	}
+	if origem == "" {
+		return false
+	}
+	u, err := url.Parse(origem)
+	if err != nil {
+		return false
+	}
+	return u.Host == r.Host
 }
 
 // linhaAdmin e uma resposta ja casada com as perguntas do formulario, pronta

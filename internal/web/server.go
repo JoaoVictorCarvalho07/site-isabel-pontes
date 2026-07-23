@@ -156,6 +156,15 @@ func (s *Server) Handler() http.Handler {
 	mux.Handle("POST /admin/lida/{id}", s.exigirAdmin(http.HandlerFunc(s.adminMarcarLida)))
 	// Imagens de referencia: fotos de clientes, servidas SO sob autenticacao.
 	mux.Handle("GET /admin/arquivo/{id}", s.exigirAdmin(http.HandlerFunc(s.servirArquivo)))
+
+	// Editor de formularios (Fase B, docs §8b). Todos sob basic-auth; os POST
+	// tambem passam pela checagem de origem (CSRF) dentro do exigirAdmin.
+	mux.Handle("GET /admin/forms", s.exigirAdmin(http.HandlerFunc(s.adminForms)))
+	mux.Handle("GET /admin/forms/{slug}", s.exigirAdmin(http.HandlerFunc(s.adminFormEdit)))
+	mux.Handle("POST /admin/forms/{slug}", s.exigirAdmin(http.HandlerFunc(s.adminFormSalvar)))
+	mux.Handle("POST /admin/forms/{slug}/perguntas", s.exigirAdmin(http.HandlerFunc(s.adminPerguntaAdd)))
+	mux.Handle("POST /admin/forms/{slug}/perguntas/{id}", s.exigirAdmin(http.HandlerFunc(s.adminPerguntaSalvar)))
+	mux.Handle("POST /admin/forms/{slug}/perguntas/{id}/mover", s.exigirAdmin(http.HandlerFunc(s.adminPerguntaMover)))
 	mux.HandleFunc("GET /robots.txt", s.robots)
 	mux.HandleFunc("GET /sitemap.xml", s.sitemap)
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {

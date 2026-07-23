@@ -1,0 +1,29 @@
+{{- /* Lista de formularios de briefing para editar (Fase B, docs §8b). */ -}}
+{{ define "conteudo" }}
+<section class="admin admin-forms">
+  <header class="admin__head">
+    <div>
+      <h1>Formulários</h1>
+      <p>Edite as perguntas dos briefings sem precisar de código.</p>
+    </div>
+    <nav class="admin__filtros">
+      <a href="/admin">← Respostas</a>
+    </nav>
+  </header>
+
+  <ul class="form-lista">
+    {{- range .Forms }}
+    <li class="form-lista__item">
+      <a href="/admin/forms/{{ .Slug }}">
+        <div>
+          <h2>{{ .Titulo }}</h2>
+          <p>{{ .NumPerguntas }} pergunta{{ if ne .NumPerguntas 1 }}s{{ end }}
+             {{- if not .Visivel }} · <span class="form-lista__off">desligado</span>{{ end }}</p>
+        </div>
+        <span class="form-lista__seta" aria-hidden="true">→</span>
+      </a>
+    </li>
+    {{- end }}
+  </ul>
+</section>
+{{ end }}

@@ -57,8 +57,9 @@ func TestTodosOsTemplatesExecutam(t *testing.T) {
 	// fica so o que renderiza com pageData puro (ex.: 404).
 	viewProprio := map[string]bool{
 		"home": true, "sobre": true, "contato": true, "galeria": true, "midiakit": true,
-		// Cobertos pelos testes dedicados de formulario/painel (briefing_test.go).
-		"briefing": true, "admin": true,
+		// Cobertos pelos testes dedicados de formulario/painel (briefing_test.go,
+		// admin_forms_test.go).
+		"briefing": true, "admin": true, "admin_forms": true, "admin_form_edit": true,
 	}
 
 	for _, p := range paginas {
