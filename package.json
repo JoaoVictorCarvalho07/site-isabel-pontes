@@ -1,0 +1,14 @@
+{
+  "name": "site-isabel-pontes",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "paridade:banco": "node paridade/preparar-banco.mjs",
+    "paridade:capturar": "node paridade/capturar.mjs"
+  },
+  "devDependencies": {
+    "pixelmatch": "^7.1.0",
+    "playwright": "1.64.0",
+    "pngjs": "^7.0.0"
+  }
+}

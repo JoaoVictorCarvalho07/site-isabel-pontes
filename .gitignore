@@ -50,3 +50,6 @@ rclone.config
 # bytecode Python do script de migracao
 __pycache__/
 *.pyc
+
+node_modules/
+/paridade/*/
