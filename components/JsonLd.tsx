@@ -1,4 +1,5 @@
 import { BASE_URL, NOME_SITE } from "@/lib/config";
+import { EMAIL, INSTAGRAM } from "@/lib/contato";
 import type { Idioma } from "@/lib/i18n";
 
 export function JsonLd({ idioma }: { idioma: Idioma }) {
@@ -12,7 +13,7 @@ export function JsonLd({ idioma }: { idioma: Idioma }) {
         : "Fotografia artística, ensaios conceituais e direção criativa.",
     url: `${BASE_URL}/`,
     image: `${BASE_URL}/static/img/og-image.jpg`,
-    email: "isabelpontesfotografia@gmail.com",
+    email: EMAIL,
     areaServed: "Curitiba, PR",
     address: {
       "@type": "PostalAddress",
@@ -20,7 +21,7 @@ export function JsonLd({ idioma }: { idioma: Idioma }) {
       addressRegion: "PR",
       addressCountry: "BR",
     },
-    sameAs: ["https://instagram.com/isapontesfoto"],
+    sameAs: [INSTAGRAM],
   };
   const json = JSON.stringify(dados).replace(/</g, "\\u003c");
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: json }} />;

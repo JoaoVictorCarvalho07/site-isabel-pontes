@@ -11,14 +11,9 @@ Cada fase termina com o site Go ainda no ar e intocado; a virada é a Fase 8.
 - Confirmar o que está em produção: versão do binário, `ADMIN_*`, Resend, `backup.timer`.
 - Criar o registro DNS do subdomínio de homologação no registro.br.
 
-## Fase 2 — Páginas estáticas
-
-- Sobre e Contato, com DOM e classes idênticos aos templates.
-- Diff de screenshot contra a linha de base até zerar.
-
 ## Fase 3 — Galeria
 
-- Leitura das fotos publicadas com cache invalidado por tag.
+- Catálogo de fotos em memória, recarregado quando o admin altera algo.
 - Shuffle diário com semente pela data em `America/Sao_Paulo`, fotos com ordem fixa no topo.
 - `/galeria?tema=` renderizado no servidor; filtro sem recarregar a página e sem rolar ao topo.
 - Grid com LQIP e fade-in, lightbox em `<dialog>` com teclado, contador e pré-carga dos vizinhos.
