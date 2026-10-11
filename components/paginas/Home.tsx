@@ -1,6 +1,6 @@
 import { Casca } from "@/components/Casca";
 import { asset } from "@/lib/asset";
-import { fotosPublicadas } from "@/lib/fotos";
+import { catalogo } from "@/lib/fotos";
 import { metadados } from "@/lib/metadados";
 import { prefixo, type Idioma } from "@/lib/i18n";
 
@@ -29,7 +29,7 @@ export function metadadosHome(idioma: Idioma) {
 export function Home({ idioma }: { idioma: Idioma }) {
   const en = idioma === "en";
   const p = prefixo(idioma);
-  const fotoDoDia = fotosPublicadas()[0];
+  const fotoDoDia = catalogo().todas[0];
   return (
     <Casca>
       <section className="hero">

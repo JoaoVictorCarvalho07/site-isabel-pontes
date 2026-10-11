@@ -5,7 +5,6 @@ Tirados dos 67 testes Go (`internal/**/*_test.go`). Cada item vira um teste no N
 ## Páginas e render
 
 - `/`, `/sobre`, `/contato` e `/midiakit` respondem 200 com seus marcadores: "R$ 550", "Mais popular", `wa.me/554191977011`, `conic-gradient`.
-- A home embute a primeira foto da ordem do dia.
 - Toda página tem `<title>`, `description`, canonical absoluto e `<h1>` onde hoje existe.
 - Rota inexistente responde a página 404 com status 404, no idioma do prefixo.
 - `mailto` e `wa.me` codificam espaço como `%20`, nunca `+`.
@@ -22,15 +21,6 @@ Tirados dos 67 testes Go (`internal/**/*_test.go`). Cada item vira um teste no N
 - Open Graph, Twitter Card e JSON-LD `ProfessionalService` em `/`, `/galeria`, `/sobre` e `/contato`, com `og:image` absoluta.
 - `robots.txt` tem a linha `Sitemap:` e bloqueia `/admin`.
 - `sitemap.xml` é XML válido, inclui as páginas e um `/galeria?tema=<slug>` por tema visível, e não inclui o admin.
-
-## Galeria
-
-- A página e a troca de filtro mostram as mesmas fotos, com grid, full e LQIP.
-- O filtro por tema não vaza foto de outro tema e conta certo.
-- Tema inválido responde 404.
-- Duas cargas no mesmo dia dão a mesma ordem.
-- `If-None-Match` com o ETag atual responde 304.
-- Rótulo de tema com acento: "Época".
 
 ## Mídia kit
 

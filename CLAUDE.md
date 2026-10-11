@@ -58,6 +58,21 @@ Protótipo descartável de layout + home em Next 16, com o SCSS atual, rodado na
 - `paridade/comparar.mjs` compara `paridade/atual` com a referência; `paridade/regiao.mjs` mostra onde ficam os pixels diferentes.
 - Não há Go instalado na máquina de desenvolvimento; o binário e os testes rodam pela imagem Docker `golang:1.26`.
 
+### Galeria
+
+- **O filtro navega pelo servidor.** O botão chama `router.push("/galeria?tema=…", { scroll: false })`; o Next renderiza a grade no servidor e troca só ela, sem recarregar o documento e sem rolar. É o equivalente do swap do HTMX, e a URL com `?tema=` continua sendo a página completa.
+- **O catálogo fica em memória** (`lib/fotos.ts`) e é remontado quando o dia vira em `America/Sao_Paulo` ou quando `invalidarCatalogo()` é chamado.
+- **A ordem do dia é função pura da data**: fotos com `sort_order` no topo, o resto embaralhado com a semente AAAAMMDD. No Go a ordem dependia de quando o processo tinha subido.
+- **Lightbox e fade-in das fotos:** o lightbox continua no `app.js`; o fade-in é do componente `ImagemGrid`, porque o `app.js` só o refazia em evento do HTMX.
+- **ETag e 304 da galeria não foram portados.** O Next não os oferece em página dinâmica e não há CDN na frente; cada visita baixa o HTML de novo.
+- **O HTML da galeria ficou maior:** 130 KB comprimido contra 59 KB no Go, porque o App Router embute os dados da página uma segunda vez para hidratar.
+- `aria-label` do botão de foto e textos do lightbox seguem só em português nas duas línguas, como no Go.
+
+### Testes
+
+- `npm run teste`: unitários com o executor do Node, em `testes/*.test.ts`. Módulo testado não pode importar `better-sqlite3` nem usar import sem extensão.
+- `npm run teste:e2e`: interações da galeria com Playwright contra o Next rodando (`-- --base <url>`).
+
 ### Admin de fotos
 
 - **Público:** a Isabel, não técnica, só PT-BR, provavelmente no celular. Interface mobile-first.
