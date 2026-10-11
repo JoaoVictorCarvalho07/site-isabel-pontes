@@ -68,10 +68,18 @@ Protótipo descartável de layout + home em Next 16, com o SCSS atual, rodado na
 - **O HTML da galeria ficou maior:** 130 KB comprimido contra 59 KB no Go, porque o App Router embute os dados da página uma segunda vez para hidratar.
 - `aria-label` do botão de foto e textos do lightbox seguem só em português nas duas línguas, como no Go.
 
+### Mídia kit
+
+- **O conteúdo fica em `lib/midiakit/conteudo.ts`** (pacotes, preços, processo, métricas, vídeos), convertido do Go. Cada texto é um par `[pt, en]`; `resolver()` cai no português quando o inglês está vazio.
+- **O filtro de vídeos é estado no navegador** (`components/midiakit/Portfolio.tsx`): os 26 vídeos já vêm no HTML e a URL não muda, como no Go. Não existe mais a rota `/midiakit/videos`.
+- **O player e a impressão continuam no `app.js`.** Trocar o filtro remonta os grupos, o que descarta um vídeo aberto, igual ao swap do HTMX.
+- **Os formulários são lidos do banco a cada requisição** (`lib/forms.ts`), sem cache: a edição no admin aparece na hora.
+- **Texto colado a um elemento vai no mesmo nó.** O rótulo do campo e o espaço antes de "(opcional)" são uma string só; separados, o React cria dois nós de texto e um glifo se desloca.
+
 ### Testes
 
 - `npm run teste`: unitários com o executor do Node, em `testes/*.test.ts`. Módulo testado não pode importar `better-sqlite3` nem usar import sem extensão.
-- `npm run teste:e2e`: interações da galeria com Playwright contra o Next rodando (`-- --base <url>`).
+- `npm run teste:e2e`: interações da galeria e do mídia kit com Playwright contra o Next rodando na porta 8098.
 
 ### Admin de fotos
 

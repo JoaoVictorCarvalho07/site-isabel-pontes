@@ -11,15 +11,10 @@ Cada fase termina com o site Go ainda no ar e intocado; a virada é a Fase 8.
 - Confirmar o que está em produção: versão do binário, `ADMIN_*`, Resend, `backup.timer`.
 - Criar o registro DNS do subdomínio de homologação no registro.br.
 
-## Fase 4 — Mídia kit
-
-- Página única com as seções-âncora, métricas, pacotes, processo e donuts.
-- Portfólio de vídeos com filtro por categoria e player criado no clique.
-- CSS de impressão e botão de PDF, abrindo os `<details>` e forçando as imagens antes de imprimir.
-
 ## Fase 5 — Briefing e painel atual
 
-- Formulários renderizados a partir de `forms` e `form_questions`.
+- Página `/briefing` com o formulário de fotografia (o componente `FormBriefing` já renderiza o de UGC no mídia kit).
+- Estados do formulário: erros por campo, valores preservados, tela de sucesso, botão desabilitado durante o envio.
 - Envio por Route Handler multipart: mesma validação, honeypot, rate limit de 30 s por IP, anexos conferidos pelos bytes, limites de 5 MB × 4.
 - Funcionar sem JavaScript, como hoje.
 - Aviso por e-mail via Resend.
@@ -55,6 +50,8 @@ Cada fase termina com o site Go ainda no ar e intocado; a virada é a Fase 8.
 - Depois disso: remover o código Go, o Dockerfile, o `fly.toml` e os arquivos de Litestream; marcar a tag `go-final` antes.
 
 ## Depois da virada
+
+- Adaptar `scripts/gen_video_posters.py` para escrever `lib/midiakit/conteudo.ts`; hoje ele reescreve o arquivo Go.
 
 - Corrigir os defeitos visuais herdados, um por mudança: navbar branca sobre creme, folga sob a navbar em `/briefing`, 404 e admin, impressão no tema escuro, pesos 500 e 600 da Jost.
 - Pendências antigas que a reescrita não resolve sozinha: 301 do domínio antigo do mídia kit (o punycode do `Caddyfile` está errado; o certo é `xn--isabelpontesportflio-r8b`), número do WhatsApp com 12 dígitos, dois handles de Instagram, revisão do texto em inglês, HSTS de 5 minutos, analytics.

@@ -7,13 +7,11 @@ Tirados dos 67 testes Go (`internal/**/*_test.go`). Cada item vira um teste no N
 - `/`, `/sobre`, `/contato` e `/midiakit` respondem 200 com seus marcadores: "R$ 550", "Mais popular", `wa.me/554191977011`, `conic-gradient`.
 - Toda página tem `<title>`, `description`, canonical absoluto e `<h1>` onde hoje existe.
 - Rota inexistente responde a página 404 com status 404, no idioma do prefixo.
-- `mailto` e `wa.me` codificam espaço como `%20`, nunca `+`.
 - Asset ausente não derruba a página.
 
 ## Idioma
 
 - `/en` tem `<html lang="en">`, "Welcome to my universe" e hreflang `pt-BR`, `en` e `x-default`.
-- `/en/midiakit` tem "UGC Investment".
 - O seletor de idioma usa caminho relativo; o canonical é absoluto.
 
 ## SEO
@@ -24,8 +22,6 @@ Tirados dos 67 testes Go (`internal/**/*_test.go`). Cada item vira um teste no N
 
 ## Mídia kit
 
-- O filtro de vídeos devolve só a categoria pedida; categoria inválida responde 404.
-- O formulário UGC aparece embutido, com `action="/briefing/ugc"`, sem perguntas do formulário de fotografia.
 - Com o formulário UGC invisível, a página renderiza sem a seção de briefing.
 
 ## Briefing

@@ -59,6 +59,10 @@ export function t(idioma: Idioma, chave: string): string {
   return idioma === "en" && par[1] ? par[1] : par[0];
 }
 
+export function resolver(idioma: Idioma, par: readonly [pt: string, en: string]): string {
+  return idioma === "en" && par[1] ? par[1] : par[0];
+}
+
 export function prefixo(idioma: Idioma): string {
   return idioma === "en" ? "/en" : "";
 }
