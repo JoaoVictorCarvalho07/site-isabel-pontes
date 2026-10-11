@@ -53,6 +53,7 @@ async function estabilizar(pagina) {
         img.complete ? null : new Promise((r) => ((img.onload = r), (img.onerror = r))),
       ),
     );
+    await Promise.all([...document.images].map((img) => img.decode().catch(() => null)));
     await document.fonts.ready;
     document.querySelectorAll("video").forEach((video) => {
       video.pause();

@@ -1,0 +1,24 @@
+name: pacote
+
+on:
+  push:
+    branches: [reescrita-next]
+  workflow_dispatch:
+
+jobs:
+  pacote:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: tar -czf site-next-linux-arm64.tgz -C .next standalone
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site-next-linux-arm64
+          path: site-next-linux-arm64.tgz
+          retention-days: 14

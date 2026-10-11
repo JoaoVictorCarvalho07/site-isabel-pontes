@@ -9,6 +9,8 @@ As tarefas estão em `docs/plano-reescrita-next.md`. Este arquivo guarda só as 
 ### Stack: Next.js sozinho, sem NestJS
 
 - **Next.js (App Router) faz front e back.** Server Components leem o banco direto; Route Handlers recebem formulários e uploads.
+- **Um layout raiz só, com idioma e classe do `<body>` vindos do caminho.** O `proxy.ts` repassa o caminho no cabeçalho `x-caminho` e `lib/requisicao.ts` o traduz em idioma e caminho PT. Vários layouts raiz (um por idioma) foram descartados: com eles o Next entrega o 404 como casca vazia renderizada no navegador. Consequência: toda página é renderizada a cada requisição.
+- **Cada rota tem dois arquivos finos** (`app/x/page.tsx` e `app/en/x/page.tsx`) que chamam o mesmo componente em `components/paginas/`.
 - **NestJS fica de fora.** O site tem um admin de uma usuária e cerca de 25 rotas. Um Nest separado significaria segundo processo Node na VM, segundo deploy e uma API HTTP entre dois pedaços que hoje são um só, sem nada no escopo que precise disso. Volta à mesa se um dia existir app mobile ou outro cliente consumindo a mesma API.
 - **O motivo original de sair do React continua atendido:** o HTML chega pronto do servidor, então o card de preview do WhatsApp e do Instagram funciona.
 - **O que a reescrita abandona:** "um binário, sem Node no servidor". Troca aceita em nome de manter o projeto na stack que o dono domina.
@@ -22,7 +24,7 @@ As tarefas estão em `docs/plano-reescrita-next.md`. Este arquivo guarda só as 
 
 ### Dados: SQLite continua
 
-- Mesmo arquivo `site.db`, com Prisma. Postgres não entra: a VM não tem, e o backup atual (`site snapshot` + rclone) já cobre um arquivo.
+- Mesmo arquivo `site.db`, lido com `better-sqlite3` direto, em funções tipadas em `lib/`. Prisma ficou de fora: a versão 7 exige Node 22.18+ e adaptador de driver, peso demais para sete tabelas. Postgres não entra: a VM não tem, e o backup atual (`site snapshot` + rclone) já cobre um arquivo.
 - As tabelas `submissions`, `submission_files`, `forms` e `form_questions` migram intactas. As `chave` das perguntas são a identidade das respostas antigas e não mudam.
 - **O banco vira a fonte de verdade das fotos.** O fluxo `manifest.json` + `site sync` é aposentado: ele apaga e recria `photos`, o que destruiria qualquer curadoria feita pelo admin.
 
@@ -42,7 +44,7 @@ Protótipo descartável de layout + home em Next 16, com o SCSS atual, rodado na
 
 - **Visual:** a home do Next saiu idêntica à do Go pixel a pixel em 11 de 12 capturas; a 12ª diverge por defeito da referência. Go contra Go dá zero pixel de diferença, então qualquer diferença é real.
 - **Texto com variável vai numa string só.** `© {ano} Isabel` vira dois nós de texto no React e desloca os glifos; usar template string.
-- **`app.js` funciona sem alteração** no Next, porque a navegação é por carga completa.
+- **`app.js` funciona sem alteração** no Next, porque a navegação é por carga completa. Ele continua sendo o JavaScript do site público; só o que era HTMX vira componente.
 - **Memória na VM:** 39 MB ocioso, 121 MB depois de 500 requisições. O Go usa 29 MB.
 - **Resposta na VM:** mediana de 12 ms com leitura do SQLite a cada requisição.
 - **`sharp` e `better-sqlite3`** instalam com binário pronto em linux/arm64.
@@ -53,6 +55,7 @@ Protótipo descartável de layout + home em Next 16, com o SCSS atual, rodado na
 - A referência é o site Go rodando local com `data/paridade.db`: cópia do banco de produção com `sort_order = id` em todas as fotos. Ordem fixa dos dois lados, porque o embaralhamento do Go não é reproduzível em JavaScript.
 - `npm run paridade:capturar` grava em `paridade/referencia` (fora do git): 8 páginas × PT/EN × claro/escuro × 6 larguras, a impressão do mídia kit e o HTML de cada página. Para capturar o Next: `-- --base <url> --saida paridade/atual`.
 - As capturas são cortadas em 14.000 px de altura e os vídeos são mascarados.
+- `paridade/comparar.mjs` compara `paridade/atual` com a referência; `paridade/regiao.mjs` mostra onde ficam os pixels diferentes.
 - Não há Go instalado na máquina de desenvolvimento; o binário e os testes rodam pela imagem Docker `golang:1.26`.
 
 ### Admin de fotos

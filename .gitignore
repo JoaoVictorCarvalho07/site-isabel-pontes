@@ -53,3 +53,7 @@ __pycache__/
 
 node_modules/
 /paridade/*/
+
+/.next/
+next-env.d.ts
+*.tsbuildinfo

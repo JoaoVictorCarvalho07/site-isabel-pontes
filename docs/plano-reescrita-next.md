@@ -11,24 +11,9 @@ Cada fase termina com o site Go ainda no ar e intocado; a virada é a Fase 8.
 - Confirmar o que está em produção: versão do binário, `ADMIN_*`, Resend, `backup.timer`.
 - Criar o registro DNS do subdomínio de homologação no registro.br.
 
-## Antes da Fase 2
-
-- Corrigir `paridade/capturar.mjs` para esperar a pintura das imagens `loading="lazy"` e refazer a referência: a captura `light/pt/home-375` saiu com um card sem foto.
-
-## Fase 1 — Esqueleto
-
-- Projeto Next (App Router, TypeScript) na branch `reescrita-next`.
-- `sass` com o `assets/scss/app.scss` atual como folha global; `static/` movido para `public/static/`.
-- Prisma apontando para o `site.db` existente, com o schema obtido por introspecção.
-- Layout raiz: script de tema antes da pintura, skip link, navbar, rodapé, `<head>` com canonical, hreflang, Open Graph e JSON-LD.
-- Cabeçalhos: `immutable` de 1 ano em `/static/`, e os de segurança que hoje estão no Caddy.
-- i18n por prefixo `/en`, com o dicionário de `i18n.go` portado.
-- Pipeline do GitHub Actions gerando o pacote standalone para linux/arm64.
-
 ## Fase 2 — Páginas estáticas
 
-- Home, Sobre, Contato e 404, com DOM e classes idênticos aos templates.
-- Componentes cliente no lugar do `app.js`: menu mobile, navbar que some no scroll, alternador de tema, carrossel.
+- Sobre e Contato, com DOM e classes idênticos aos templates.
 - Diff de screenshot contra a linha de base até zerar.
 
 ## Fase 3 — Galeria
@@ -74,6 +59,7 @@ Cada fase termina com o site Go ainda no ar e intocado; a virada é a Fase 8.
 
 ## Fase 8 — Virada
 
+- Enviar a branch ao GitHub e conferir que o workflow `pacote` gera o pacote linux/arm64.
 - Subir o Next na VM em `127.0.0.1` numa porta livre, sob o subdomínio de homologação.
 - Conferir o card de preview no WhatsApp e no depurador do Facebook.
 - Adaptar `backup.sh` ao novo caminho e testar uma restauração.
