@@ -94,6 +94,8 @@ for (const tema of TEMAS) {
   });
   await contexto.addInitScript((valor) => localStorage.setItem("tema", valor), tema);
 
+  await (await abrir(contexto, url("", "/"), LARGURAS[0])).close();
+
   for (const [idioma, prefixo] of IDIOMAS) {
     const pasta = join(values.saida, tema, idioma);
     mkdirSync(pasta, { recursive: true });

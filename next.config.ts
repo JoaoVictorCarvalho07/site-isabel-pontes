@@ -5,7 +5,7 @@ const config: NextConfig = {
   devIndicators: false,
   poweredByHeader: false,
   agentRules: false,
-  serverExternalPackages: ["better-sqlite3"],
+  serverExternalPackages: ["better-sqlite3", "sharp"],
   experimental: {
     serverActions: { bodySizeLimit: "22mb" },
     proxyClientMaxBodySize: "22mb",

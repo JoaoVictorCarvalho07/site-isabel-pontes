@@ -5,30 +5,24 @@ Cada fase termina com o site Go ainda no ar e intocado; a virada é a Fase 8.
 
 ## Antes de começar (depende do João)
 
-- Não apagar o bucket `bebels-portifolio-site` até a Fase 6 copiar os originais.
-- Criar uma chave R2 com escrita no bucket `isabel-portfolio-gallery` e rotacionar as chaves antigas que vazaram no histórico do repositório React.
-- Criar o cliente OAuth no Google Cloud e listar os e-mails que entram no admin.
+- Criar o cliente OAuth no Google Cloud e definir `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `AUTH_SECRET` e `ADMIN_EMAILS`.
+- Criar um bucket privado para os originais e definir `R2_BUCKET_ORIGINAIS`; hoje eles iriam para o bucket público.
+- Rotacionar as chaves antigas do R2 que vazaram no histórico do repositório React.
+- Não apagar o bucket `bebels-portifolio-site` até os originais das 190 fotos serem copiados.
 - Confirmar o que está em produção: versão do binário, `ADMIN_*`, Resend, `backup.timer`.
 - Criar o registro DNS do subdomínio de homologação no registro.br.
 
-## Fase 5 — Painel atual
+## Fase 5 — Painel de briefings
 
-- Login por Google OAuth com lista de permitidos.
-- Painel de briefings e editor de formulários com o comportamento coberto pelos testes Go.
+- Painel de briefings e editor de formulários em `/admin`, com o comportamento coberto pelos testes Go.
 - Rota autenticada que serve os anexos.
 - Conferir um envio real de e-mail pelo Resend, com a chave de produção.
 
 ## Fase 6 — Admin de fotos
 
-- Copiar os 190 originais do bucket `bebels-portifolio-site` para o prefixo privado e ligar cada um à sua foto pela `key`.
-- Migração do schema: estado da foto (processando, publicada, oculta, na lixeira), chave do original, e fim da dependência do `sync`.
-- Upload de várias fotos pelo celular: original direto ao R2 por URL assinada, fila de processamento com `sharp`, progresso visível.
-- Por foto: tema, texto alternativo, publicar ou ocultar, fixar no topo, mover para a lixeira.
-- Reordenar as fixadas arrastando.
-- Temas: criar, renomear, ordenar, ocultar.
-- Lixeira com restauração e exclusão definitiva.
-- Toda alteração invalida o cache da galeria na hora.
-- Teste de uso com a Isabel no celular antes de dar por pronto.
+- Testar o login de verdade com o cliente OAuth do Google.
+- Copiar os 190 originais do bucket `bebels-portifolio-site` para o bucket dos originais e preencher `photos.original`.
+- Teste de uso com a Isabel no celular.
 
 ## Fase 7 — Imagens fixas do layout
 

@@ -23,7 +23,7 @@ type Catalogo = {
   porTema: Map<string, Foto[]>;
 };
 
-let atual: Catalogo | undefined;
+const memoria = globalThis as typeof globalThis & { catalogoDeFotos?: Catalogo };
 
 function diaEmSaoPaulo(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date());
@@ -37,8 +37,8 @@ function montar(dia: string): Catalogo {
     .prepare(
       `SELECT id, tema_slug AS tema, w, h, grid, grid2x, full, lqip, alt, sort_order AS ordem
          FROM photos
-        WHERE published = 1
-        ORDER BY tema_slug, sort_order IS NULL, sort_order, id`,
+        WHERE published = 1 AND excluida_em IS NULL
+        ORDER BY sort_order IS NULL, sort_order, tema_slug, id`,
     )
     .all() as Foto[];
   const fixas = fotos.filter((foto) => foto.ordem !== null);
@@ -55,12 +55,12 @@ function montar(dia: string): Catalogo {
 
 export function catalogo(): Catalogo {
   const dia = diaEmSaoPaulo();
-  if (!atual || atual.dia !== dia) atual = montar(dia);
-  return atual;
+  if (!memoria.catalogoDeFotos || memoria.catalogoDeFotos.dia !== dia) memoria.catalogoDeFotos = montar(dia);
+  return memoria.catalogoDeFotos;
 }
 
 export function invalidarCatalogo(): void {
-  atual = undefined;
+  memoria.catalogoDeFotos = undefined;
 }
 
 export function fotosDoTema(slug: string): Foto[] {

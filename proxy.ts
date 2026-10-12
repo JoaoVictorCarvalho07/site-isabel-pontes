@@ -6,4 +6,4 @@ export function proxy(requisicao: NextRequest) {
   return NextResponse.next({ request: { headers: cabecalhos } });
 }
 
-export const config = { matcher: ["/((?!_next/|static/).*)"] };
+export const config = { matcher: ["/((?!_next/|static/|dev-r2/|admin/api/|api/auth/).*)"] };

@@ -1,6 +1,7 @@
 const JANELA_MS = 30_000;
 
-const ultimoEnvio = new Map<string, number>();
+const memoria = globalThis as typeof globalThis & { enviosDeBriefing?: Map<string, number> };
+const ultimoEnvio = (memoria.enviosDeBriefing ??= new Map<string, number>());
 let ultimaLimpeza = Date.now();
 
 export function permitir(ip: string, agora = Date.now()): boolean {

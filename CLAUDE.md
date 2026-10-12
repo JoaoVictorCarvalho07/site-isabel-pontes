@@ -84,25 +84,31 @@ Protótipo descartável de layout + home em Next 16, com o SCSS atual, rodado na
 - **Sem JavaScript, um erro não devolve os valores digitados** nem aponta o campo; só a mensagem geral. O Go devolvia os dois. Os atributos `required` e `type` já barram o caso comum no navegador.
 - **Anexos:** só os quatro primeiros arquivos, 5 MB cada, tipo decidido pelos bytes (`lib/briefing/tipos.ts`), nome em disco gerado. O que não passa é descartado sem derrubar o envio.
 - **O `reply_to` do aviso é o e-mail do visitante** quando ele informou um; no Go era sempre o da Isabel.
-- **Quebras de linha das respostas são gravadas como `
-`**; o navegador envia `
-`.
+- **Quebras de linha das respostas são gravadas como LF**; o navegador envia CRLF.
 - O limite do corpo é 22 MB em `next.config.ts` (`serverActions.bodySizeLimit` e `proxyClientMaxBodySize`); o padrão do proxy é 10 MB.
 
 ### Testes
 
 - `npm run teste`: unitários com o executor do Node, em `testes/*.test.ts`. Módulo testado não pode importar `better-sqlite3` nem usar import sem extensão.
-- `npm run teste:servidor` sobe o pacote compilado na porta 8098 com `data/teste.db` (cópia de `paridade.db`) e `data/teste-uploads`, ambos recriados a cada subida.
-- `npm run teste:e2e`: galeria, mídia kit e briefing com Playwright contra esse servidor. O teste do briefing grava no banco, então exige o servidor recém-subido.
+- `npm run teste:servidor` sobe o pacote compilado na porta 8098 com `data/teste.db` (cópia de `site.db`), `data/teste-uploads` e `data/teste-r2`, recriados a cada subida. `npm run paridade:servidor` faz o mesmo a partir de `paridade.db`, para as capturas.
+- `npm run teste:e2e`: galeria, mídia kit, briefing e admin com Playwright contra esse servidor. Briefing e admin gravam no banco, então exigem o servidor recém-subido. O teste do admin forja o cookie de sessão com o `AUTH_SECRET` de teste.
 
 ### Admin de fotos
 
-- **Público:** a Isabel, não técnica, só PT-BR, provavelmente no celular. Interface mobile-first.
-- **Login:** Google OAuth com lista de e-mails permitidos, o mesmo modelo do imageColor. Substitui o Basic Auth.
-- **Upload:** o navegador envia o original direto ao R2 por URL assinada; o servidor gera as variantes com `sharp` (AVIF 400, 800 e 1600 px + LQIP), nos mesmos tamanhos de hoje. Processamento em fila de um por vez, porque a VM tem 2 núcleos.
-- **Os originais passam a ser guardados** num prefixo privado do R2. Os das 190 fotos atuais estão no bucket antigo `bebels-portifolio-site` (97 MB, nas mesmas chaves da coluna `photos.key`); o bucket `isabel-portfolio-gallery` só tem as variantes.
-- **Apagar é reversível:** a foto vai para uma lixeira antes de sumir do R2.
-- O painel de briefings e o editor de formulários são portados com o mesmo comportamento.
+- **Público:** a Isabel, não técnica, só PT-BR, provavelmente no celular. Interface mobile-first em `/admin`, com folha própria (`app/admin/admin.scss`) sobre os tokens do site.
+- **Login:** Google OAuth pelo Auth.js (`auth.ts`), sessão em cookie JWT de 30 dias, sem tabela de usuários. Só entra e-mail verificado que esteja em `ADMIN_EMAILS`. Substitui o Basic Auth do Go.
+- **Toda página, ação e rota do admin chama `exigirAdmin()` ou `emailAdmin()`.** O `proxy.ts` não protege nada; a checagem é em cada ponto de entrada.
+- **O upload passa pelo servidor**, uma foto por requisição em `POST /admin/api/fotos`, e só responde depois de gerar as variantes e gravar no banco. O navegador envia em fila e mostra o progresso. A URL assinada direto ao R2 foi descartada: exigiria CORS no bucket e uma fila de processamento à parte, e uma foto por vez já respeita os 2 núcleos da VM.
+- **Variantes iguais às de hoje:** AVIF de 400, 800 e 1600 px e LQIP WebP de 24 px (`lib/admin/imagem.ts`), com a orientação EXIF aplicada. Limite de 40 MB por foto; HEIC é recusado porque o `sharp` não o decodifica.
+- **Foto nova entra publicada**, no tema escolhido antes do envio.
+- **Os originais são guardados** em `originais/{tema}/` no bucket de `R2_BUCKET_ORIGINAIS`. Sem essa variável eles caem no bucket público e ficam acessíveis a quem souber o endereço. Os das 190 fotos antigas estão no bucket `bebels-portifolio-site` (97 MB, nas chaves da coluna `photos.key`).
+- **Sem credenciais do R2, o armazenamento é em disco** (`data/r2-local`, servido em `/dev-r2`), para desenvolver e testar. Com credenciais, `/dev-r2` responde 404.
+- **Fixar no topo usa `sort_order`**; a ordem entre as fixadas se troca por botões de subir e descer, não por arrastar.
+- **Apagar é em dois passos:** a lixeira marca `excluida_em` e tira a foto do site; "apagar de vez" remove as variantes e o original do R2 e a linha do banco.
+- **Tema não se apaga**, só se oculta. O slug nasce do nome e não muda ao renomear.
+- **O que precisa ser visto por rotas diferentes fica em `globalThis`** (catálogo de fotos, limitador de envios): cada rota do Next tem a própria cópia dos módulos, então uma variável de módulo invalidada pelo upload não era a mesma lida pela galeria.
+- **Código que monta caminho em disco a partir de variável leva `/* turbopackIgnore: true */`**; sem isso o build empacota o repositório inteiro, inclusive `data/`.
+- **Migrações de esquema** ficam em `lib/migracoes.ts` e rodam ao abrir o banco, pela `schema_version` da tabela `meta`. A versão 5 criou `photos.original` e `photos.excluida_em`. Depois dela o `site sync` do Go não pode mais rodar nesse banco.
 
 ### Repositório e virada
 
