@@ -17,32 +17,13 @@ Tirados dos 67 testes Go (`internal/**/*_test.go`). Cada item vira um teste no N
 ## SEO
 
 - Open Graph, Twitter Card e JSON-LD `ProfessionalService` em `/`, `/galeria`, `/sobre` e `/contato`, com `og:image` absoluta.
-- `robots.txt` tem a linha `Sitemap:` e bloqueia `/admin`.
-- `sitemap.xml` é XML válido, inclui as páginas e um `/galeria?tema=<slug>` por tema visível, e não inclui o admin.
 
 ## Mídia kit
 
 - Com o formulário UGC invisível, a página renderiza sem a seção de briefing.
 
-## Briefing
-
-- Envio válido grava a resposta com o idioma do visitante.
-- Erro de validação preserva os valores digitados e não grava.
-- Honeypot preenchido responde sucesso sem gravar.
-- Select com valor fora da lista é rejeitado.
-- Segundo envio do mesmo IP em menos de 30 s é barrado com "Espera um minutinho".
-- Sem JavaScript: responde a página inteira, com 422 em erro.
-- Slug de formulário desconhecido responde 404; formulário invisível sai das rotas.
-- Em inglês: `action` em `/en/briefing/…` e mensagem "Got your briefing".
-- Contato aceita e-mail ou telefone com 10 ou 11 dígitos, ou 12 ou 13 começando por 55; contato inválido bloqueia o envio.
-
 ## Anexos
 
-- A imagem é gravada com nome gerado, nunca o nome enviado.
-- HTML, shell, PDF e SVG disfarçados de imagem são recusados.
-- JPEG, GIF, HEIC e AVIF são aceitos.
-- Nome com `../` não escapa da pasta de anexos.
-- No máximo 4 anexos por campo.
 - O anexo só é servido com login, com `nosniff` e o `Content-Type` correto.
 
 ## Painel de briefings

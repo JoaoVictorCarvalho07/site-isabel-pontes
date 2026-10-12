@@ -76,10 +76,24 @@ Protótipo descartável de layout + home em Next 16, com o SCSS atual, rodado na
 - **Os formulários são lidos do banco a cada requisição** (`lib/forms.ts`), sem cache: a edição no admin aparece na hora.
 - **Texto colado a um elemento vai no mesmo nó.** O rótulo do campo e o espaço antes de "(opcional)" são uma string só; separados, o React cria dois nós de texto e um glifo se desloca.
 
+### Briefing
+
+- **Toda a regra mora em `processarBriefing`** (`lib/briefing/processar.ts`): honeypot, validação, limite de 30 s por IP, gravação, anexos e aviso por e-mail.
+- **Dois caminhos chegam nela.** Com JavaScript, o formulário chama a server action `enviarBriefing` e troca o próprio conteúdo. Sem JavaScript, o `<form>` posta em `/briefing/{slug}`, que responde 303 para a página com `?briefing=enviado|corrija|espere|erro`.
+- **`useActionState` com `<form action={fn}>` foi descartado:** no envio sem JavaScript o Next 16.4 entra em laço infinito ao renderizar a resposta e trava o processo inteiro.
+- **Sem JavaScript, um erro não devolve os valores digitados** nem aponta o campo; só a mensagem geral. O Go devolvia os dois. Os atributos `required` e `type` já barram o caso comum no navegador.
+- **Anexos:** só os quatro primeiros arquivos, 5 MB cada, tipo decidido pelos bytes (`lib/briefing/tipos.ts`), nome em disco gerado. O que não passa é descartado sem derrubar o envio.
+- **O `reply_to` do aviso é o e-mail do visitante** quando ele informou um; no Go era sempre o da Isabel.
+- **Quebras de linha das respostas são gravadas como `
+`**; o navegador envia `
+`.
+- O limite do corpo é 22 MB em `next.config.ts` (`serverActions.bodySizeLimit` e `proxyClientMaxBodySize`); o padrão do proxy é 10 MB.
+
 ### Testes
 
 - `npm run teste`: unitários com o executor do Node, em `testes/*.test.ts`. Módulo testado não pode importar `better-sqlite3` nem usar import sem extensão.
-- `npm run teste:e2e`: interações da galeria e do mídia kit com Playwright contra o Next rodando na porta 8098.
+- `npm run teste:servidor` sobe o pacote compilado na porta 8098 com `data/teste.db` (cópia de `paridade.db`) e `data/teste-uploads`, ambos recriados a cada subida.
+- `npm run teste:e2e`: galeria, mídia kit e briefing com Playwright contra esse servidor. O teste do briefing grava no banco, então exige o servidor recém-subido.
 
 ### Admin de fotos
 

@@ -1,5 +1,5 @@
 import { Casca } from "@/components/Casca";
-import { FormBriefing } from "@/components/FormBriefing";
+import { FormBriefing, type RetornoSemJS } from "@/components/FormBriefing";
 import { Picture } from "@/components/Picture";
 import { Portfolio } from "@/components/midiakit/Portfolio";
 import { asset } from "@/lib/asset";
@@ -54,9 +54,12 @@ function Legenda({ idioma, fatias }: { idioma: Idioma; fatias: Fatia[] }) {
   );
 }
 
-export function Midiakit({ idioma }: { idioma: Idioma }) {
+export type BuscaMidiakit = Promise<{ briefing?: string | string[] }>;
+
+export async function Midiakit({ idioma, busca }: { idioma: Idioma; busca: BuscaMidiakit }) {
   const en = idioma === "en";
   const formUGC = formularioPublico("ugc");
+  const { briefing } = await busca;
   const grupos = VIDEOS.map((categoria) => ({
     slug: categoria.slug,
     nome: (en && CATEGORIAS_EN[categoria.slug]) || categoria.nome,
@@ -337,7 +340,7 @@ export function Midiakit({ idioma }: { idioma: Idioma }) {
               <h2 id="mk-briefing-titulo">{resolver(idioma, formUGC.titulo)}</h2>
               <p>{resolver(idioma, formUGC.subtitulo)}</p>
             </div>
-            <FormBriefing idioma={idioma} form={formUGC} />
+            <FormBriefing idioma={idioma} form={formUGC} retorno={briefing as RetornoSemJS} />
           </section>
         )}
 

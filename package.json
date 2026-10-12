@@ -9,7 +9,8 @@
     "paridade:banco": "node paridade/preparar-banco.mjs",
     "paridade:capturar": "node paridade/capturar.mjs",
     "teste": "node --experimental-strip-types --test testes/*.test.ts",
-    "teste:e2e": "node testes/galeria.e2e.mjs && node testes/midiakit.e2e.mjs"
+    "teste:e2e": "node testes/galeria.e2e.mjs && node testes/midiakit.e2e.mjs && node testes/briefing.e2e.mjs",
+    "teste:servidor": "node testes/servidor.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",

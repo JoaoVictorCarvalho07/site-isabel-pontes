@@ -11,16 +11,12 @@ Cada fase termina com o site Go ainda no ar e intocado; a virada é a Fase 8.
 - Confirmar o que está em produção: versão do binário, `ADMIN_*`, Resend, `backup.timer`.
 - Criar o registro DNS do subdomínio de homologação no registro.br.
 
-## Fase 5 — Briefing e painel atual
+## Fase 5 — Painel atual
 
-- Página `/briefing` com o formulário de fotografia (o componente `FormBriefing` já renderiza o de UGC no mídia kit).
-- Estados do formulário: erros por campo, valores preservados, tela de sucesso, botão desabilitado durante o envio.
-- Envio por Route Handler multipart: mesma validação, honeypot, rate limit de 30 s por IP, anexos conferidos pelos bytes, limites de 5 MB × 4.
-- Funcionar sem JavaScript, como hoje.
-- Aviso por e-mail via Resend.
 - Login por Google OAuth com lista de permitidos.
 - Painel de briefings e editor de formulários com o comportamento coberto pelos testes Go.
-- `robots.txt` e `sitemap.xml`.
+- Rota autenticada que serve os anexos.
+- Conferir um envio real de e-mail pelo Resend, com a chave de produção.
 
 ## Fase 6 — Admin de fotos
 

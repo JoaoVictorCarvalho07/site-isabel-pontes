@@ -6,6 +6,10 @@ const config: NextConfig = {
   poweredByHeader: false,
   agentRules: false,
   serverExternalPackages: ["better-sqlite3"],
+  experimental: {
+    serverActions: { bodySizeLimit: "22mb" },
+    proxyClientMaxBodySize: "22mb",
+  },
   async headers() {
     return [
       {
