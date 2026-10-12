@@ -1,6 +1,8 @@
 "use server";
 
 import { signIn, signOut } from "@/auth";
+import { marcarLida as gravarLida } from "./briefings";
+import * as formularios from "./formularios";
 import * as fotos from "./fotos";
 import { exigirAdmin } from "./sessao";
 
@@ -70,4 +72,54 @@ export async function mostrarTema(slug: string, visivel: boolean): Promise<void>
 export async function moverTema(slug: string, direcao: "antes" | "depois"): Promise<void> {
   await exigirAdmin();
   fotos.moverTema(slug, direcao);
+}
+
+export async function marcarLida(id: number, lida: boolean): Promise<void> {
+  await exigirAdmin();
+  gravarLida(id, lida);
+}
+
+type Retorno = Promise<{ erro?: string }>;
+
+async function editar(mudanca: () => void): Retorno {
+  await exigirAdmin();
+  try {
+    mudanca();
+    return {};
+  } catch (erro) {
+    if (erro instanceof formularios.EdicaoRecusada) return { erro: erro.message };
+    console.error("admin: edicao de formulario falhou", erro);
+    return { erro: "Não foi possível salvar. Tente de novo." };
+  }
+}
+
+export async function salvarTextosFormulario(slug: string, textos: { titulo: string; subtitulo: string; enviar: string; sucesso: string }): Retorno {
+  return editar(() => formularios.salvarTextos(slug, textos));
+}
+
+export async function salvarPergunta(slug: string, id: number, dados: { label: string; ajuda: string; obrigatoria: boolean; opcoes: string }): Retorno {
+  return editar(() => formularios.salvarPergunta(slug, id, dados));
+}
+
+export async function adicionarPergunta(
+  slug: string,
+  dados: { label: string; ajuda: string; tipo: string; obrigatoria: boolean; opcoes: string },
+): Retorno {
+  return editar(() => formularios.adicionarPergunta(slug, dados));
+}
+
+export async function moverPergunta(slug: string, id: number, direcao: "antes" | "depois"): Retorno {
+  return editar(() => formularios.moverPergunta(slug, id, direcao));
+}
+
+export async function ocultarPergunta(slug: string, id: number, oculta: boolean): Retorno {
+  return editar(() => formularios.ocultarPergunta(slug, id, oculta));
+}
+
+export async function apagarPergunta(slug: string, id: number): Retorno {
+  return editar(() => formularios.apagarPergunta(slug, id));
+}
+
+export async function trocarTipoPergunta(slug: string, id: number, tipo: string, opcoes: string): Retorno {
+  return editar(() => formularios.trocarTipo(slug, id, tipo, opcoes));
 }

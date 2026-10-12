@@ -91,7 +91,7 @@ Protótipo descartável de layout + home em Next 16, com o SCSS atual, rodado na
 
 - `npm run teste`: unitários com o executor do Node, em `testes/*.test.ts`. Módulo testado não pode importar `better-sqlite3` nem usar import sem extensão.
 - `npm run teste:servidor` sobe o pacote compilado na porta 8098 com `data/teste.db` (cópia de `site.db`), `data/teste-uploads` e `data/teste-r2`, recriados a cada subida. `npm run paridade:servidor` faz o mesmo a partir de `paridade.db`, para as capturas.
-- `npm run teste:e2e`: galeria, mídia kit, briefing e admin com Playwright contra esse servidor. Briefing e admin gravam no banco, então exigem o servidor recém-subido. O teste do admin forja o cookie de sessão com o `AUTH_SECRET` de teste.
+- `npm run teste:e2e`: galeria, mídia kit, briefing, admin de fotos e painel com Playwright contra esse servidor. Briefing e admin gravam no banco, então exigem o servidor recém-subido. O teste do admin forja o cookie de sessão com o `AUTH_SECRET` de teste.
 
 ### Admin de fotos
 
@@ -109,6 +109,18 @@ Protótipo descartável de layout + home em Next 16, com o SCSS atual, rodado na
 - **O que precisa ser visto por rotas diferentes fica em `globalThis`** (catálogo de fotos, limitador de envios): cada rota do Next tem a própria cópia dos módulos, então uma variável de módulo invalidada pelo upload não era a mesma lida pela galeria.
 - **Código que monta caminho em disco a partir de variável leva `/* turbopackIgnore: true */`**; sem isso o build empacota o repositório inteiro, inclusive `data/`.
 - **Migrações de esquema** ficam em `lib/migracoes.ts` e rodam ao abrir o banco, pela `schema_version` da tabela `meta`. A versão 5 criou `photos.original` e `photos.excluida_em`. Depois dela o `site sync` do Go não pode mais rodar nesse banco.
+
+### Painel de briefings e editor de formulários
+
+- Ficam em `/admin/briefings` e `/admin/formularios`, no mesmo visual do admin de fotos. O comportamento veio dos testes Go; o layout é novo.
+- **Resposta de visitante nunca vira HTML.** `trechosComLinks` quebra o texto em pedaços e só os que começam com `http://` ou `https://` viram `<a>`; o React escapa o resto.
+- **Anexo só sai por `/admin/arquivo/{id}`**, com login, `nosniff`, CSP `sandbox` e caminho conferido contra a pasta de uploads. Sem login responde 404, não 401, para não revelar que existe.
+- **Editar o português limpa o inglês daquele campo** e marca "EN a revisar"; o site em inglês mostra o português até alguém traduzir. Mexer só em "obrigatória" não toca o inglês.
+- **Opção de lista que não mudou mantém a tradução.** No Go, salvar qualquer coisa numa pergunta de lista apagava o inglês de todas as opções.
+- **A `chave` da pergunta nunca muda**, nem ao trocar o tipo; é ela que liga a pergunta às respostas antigas. Pergunta nova recebe `q_` + 8 hex.
+- **Pergunta com resposta não se apaga**, só se oculta; a resposta antiga continua aparecendo no painel com o rótulo.
+- **O formulário de cada pergunta não é remontado depois de salvar.** Remontar apagava o que a pessoa já estivesse digitando no mesmo cartão.
+- Criar formulário novo e ligar ou desligar um formulário continuam sem tela, como no Go.
 
 ### Repositório e virada
 

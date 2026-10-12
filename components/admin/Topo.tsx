@@ -4,6 +4,8 @@ const LINKS = [
   { href: "/admin/fotos", rotulo: "Fotos" },
   { href: "/admin/temas", rotulo: "Temas" },
   { href: "/admin/lixeira", rotulo: "Lixeira" },
+  { href: "/admin/briefings", rotulo: "Briefings" },
+  { href: "/admin/formularios", rotulo: "Formulários" },
 ];
 
 export function Topo({ atual }: { atual: string }) {

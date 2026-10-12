@@ -14,8 +14,6 @@ Cada fase termina com o site Go ainda no ar e intocado; a virada é a Fase 8.
 
 ## Fase 5 — Painel de briefings
 
-- Painel de briefings e editor de formulários em `/admin`, com o comportamento coberto pelos testes Go.
-- Rota autenticada que serve os anexos.
 - Conferir um envio real de e-mail pelo Resend, com a chave de produção.
 
 ## Fase 6 — Admin de fotos
