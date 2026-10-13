@@ -22,6 +22,8 @@ As tarefas estão em `docs/plano-reescrita-next.md`. Este arquivo guarda só as 
 - **O build nunca roda na VM.** O workflow `pacote` do GitHub Actions compila num runner linux/arm64, dentro da mesma imagem `node:22-slim`, e publica o pacote standalone como artefato. O `better-sqlite3` não tem binário pronto e é compilado ali.
 - **`npm run implantar`** baixa o pacote do commit atual, envia à VM e roda `deploy/next/subir.sh`, que extrai em `~/apps/site-next/versoes/`, recria o contêiner, espera responder e guarda as três versões mais recentes.
 - **Na VM, fora do git:** `~/apps/site-next/.env` (segredos, modo 600) e `~/apps/site-next/data/` (banco e anexos, montado em `/dados`).
+- **Backup diário:** o `backup.timer` que já existia chama `~/apps/site-test/backup.sh`, que agora só repassa para `deploy/next/backup.sh`. Esse copia o banco pelo próprio contêiner (API de backup do SQLite) e envia banco e anexos ao bucket `isabel-site-backup` com rclone. Restauração testada em 2026-10-13.
+- **O binário do Go nunca pode abrir o banco do Next:** ao abrir, ele regrava `schema_version = 4`, e o Next tentaria reaplicar as migrações 5 e 6 e não subiria.
 - **O que exige `sudo` fica com o dono:** editar `/etc/caddy/Caddyfile` e recarregar o Caddy.
 - Uma instância só. Cache e rate limit em memória dependem disso.
 
