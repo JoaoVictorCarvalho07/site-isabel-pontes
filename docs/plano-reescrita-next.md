@@ -10,7 +10,7 @@ Cada fase termina com o site Go ainda no ar e intocado; a virada é a Fase 8.
 - Rotacionar as chaves antigas do R2 que vazaram no histórico do repositório React.
 - Não apagar o bucket `bebels-portifolio-site` até os originais das 190 fotos serem copiados.
 - Confirmar o que está em produção: versão do binário, `ADMIN_*`, Resend, `backup.timer`.
-- Criar o registro DNS do subdomínio de homologação no registro.br.
+- Opcional: registro DNS de um subdomínio de teste, para a Isabel experimentar pelo celular antes da virada.
 
 ## Fase 5 — Painel de briefings
 
@@ -24,12 +24,12 @@ Cada fase termina com o site Go ainda no ar e intocado; a virada é a Fase 8.
 
 ## Fase 8 — Virada
 
-- Enviar a branch ao GitHub e conferir que o workflow `pacote` gera o pacote linux/arm64.
-- Subir o Next na VM em `127.0.0.1` numa porta livre, sob o subdomínio de homologação.
+- Trocar no `.env` da VM `BASE_URL` e `AUTH_URL` de `http://localhost:3000` para o endereço público, e recriar o contêiner.
 - Conferir o card de preview no WhatsApp e no depurador do Facebook.
-- Adaptar `backup.sh` ao novo caminho e testar uma restauração.
-- Copiar o banco e os anexos mais recentes, trocar o `reverse_proxy` do Caddy e validar.
-- Manter o binário Go parado na VM por duas semanas como retorno.
+- Adaptar `backup.sh` ao banco e aos anexos de `~/apps/site-next/data` e testar uma restauração.
+- Conferir que o banco do Go não recebeu briefing desde a cópia de 2026-10-13; se recebeu, copiar as linhas.
+- Trocar o `reverse_proxy` do Caddy de `127.0.0.1:8080` para `127.0.0.1:8082` e validar.
+- Manter o serviço `site` do Go parado na VM por duas semanas como retorno.
 - Depois disso: remover o código Go, o Dockerfile, o `fly.toml` e os arquivos de Litestream; marcar a tag `go-final` antes.
 
 ## Depois da virada

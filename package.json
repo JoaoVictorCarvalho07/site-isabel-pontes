@@ -12,7 +12,8 @@
     "teste:e2e": "node testes/galeria.e2e.mjs && node testes/midiakit.e2e.mjs && node testes/briefing.e2e.mjs && node testes/admin.e2e.mjs && node testes/painel.e2e.mjs && node testes/site.e2e.mjs",
     "teste:servidor": "node testes/servidor.mjs",
     "paridade:servidor": "node testes/servidor.mjs data/paridade.db",
-    "teste:login": "node testes/servidor-login.mjs"
+    "teste:login": "node testes/servidor-login.mjs",
+    "implantar": "node scripts/implantar.mjs"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",

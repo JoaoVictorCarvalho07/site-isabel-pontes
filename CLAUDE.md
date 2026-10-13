@@ -17,9 +17,12 @@ As tarefas estão em `docs/plano-reescrita-next.md`. Este arquivo guarda só as 
 
 ### Hospedagem: a mesma VM Oracle
 
-- Next com `output: "standalone"`, serviço systemd, atrás do Caddy que já existe.
+- **O Next roda num contêiner Docker** (`node:22-slim`, nome `site-next`), com `--restart unless-stopped`, 1 GB de limite e porta só em loopback (`127.0.0.1:8082`), atrás do Caddy que já existe. Um serviço systemd foi descartado: a VM não tem Node instalado e o `sudo` pede senha, então nada disso seria automatizável.
 - **Vercel descartada:** o plano gratuito proíbe uso comercial, o corpo de request é limitado (o briefing aceita 21 MB) e não há disco para SQLite nem para os anexos.
-- **O build nunca roda na VM.** O `sharp` e o driver do SQLite têm binário nativo, então o build sai de um runner linux/arm64 do GitHub Actions e chega à VM como pacote pronto.
+- **O build nunca roda na VM.** O workflow `pacote` do GitHub Actions compila num runner linux/arm64, dentro da mesma imagem `node:22-slim`, e publica o pacote standalone como artefato. O `better-sqlite3` não tem binário pronto e é compilado ali.
+- **`npm run implantar`** baixa o pacote do commit atual, envia à VM e roda `deploy/next/subir.sh`, que extrai em `~/apps/site-next/versoes/`, recria o contêiner, espera responder e guarda as três versões mais recentes.
+- **Na VM, fora do git:** `~/apps/site-next/.env` (segredos, modo 600) e `~/apps/site-next/data/` (banco e anexos, montado em `/dados`).
+- **O que exige `sudo` fica com o dono:** editar `/etc/caddy/Caddyfile` e recarregar o Caddy.
 - Uma instância só. Cache e rate limit em memória dependem disso.
 
 ### Dados: SQLite continua
