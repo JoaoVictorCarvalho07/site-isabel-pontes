@@ -16,8 +16,6 @@ export async function responderEnvio(requisicao: NextRequest, slug: string, idio
 
   const estado =
     resultado.tipo === "enviado" ? "enviado" : resultado.tipo === "invalido" ? "corrija" : resultado.motivo === "form.muitosEnvios" ? "espere" : "erro";
-  const destino = new URL(`${prefixo(idioma)}${PAGINA[slug] ?? "/briefing"}`, requisicao.nextUrl.origin);
-  destino.searchParams.set("briefing", estado);
-  destino.hash = "form-briefing";
-  return NextResponse.redirect(destino, 303);
+  const destino = `${prefixo(idioma)}${PAGINA[slug] ?? "/briefing"}?briefing=${estado}#form-briefing`;
+  return new NextResponse(null, { status: 303, headers: { Location: destino } });
 }

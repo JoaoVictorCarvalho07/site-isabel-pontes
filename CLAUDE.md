@@ -83,6 +83,7 @@ Protótipo descartável de layout + home em Next 16, com o SCSS atual, rodado na
 
 - **Toda a regra mora em `processarBriefing`** (`lib/briefing/processar.ts`): honeypot, validação, limite de 30 s por IP, gravação, anexos e aviso por e-mail.
 - **Dois caminhos chegam nela.** Com JavaScript, o formulário chama a server action `enviarBriefing` e troca o próprio conteúdo. Sem JavaScript, o `<form>` posta em `/briefing/{slug}`, que responde 303 para a página com `?briefing=enviado|corrija|espere|erro`.
+- **O redirecionamento usa caminho relativo no `Location`.** Atrás do Caddy, `request.nextUrl.origin` é o endereço interno do contêiner (`0.0.0.0:3000`), não o do site.
 - **`useActionState` com `<form action={fn}>` foi descartado:** no envio sem JavaScript o Next 16.4 entra em laço infinito ao renderizar a resposta e trava o processo inteiro.
 - **Sem JavaScript, um erro não devolve os valores digitados** nem aponta o campo; só a mensagem geral. O Go devolvia os dois. Os atributos `required` e `type` já barram o caso comum no navegador.
 - **Anexos:** só os quatro primeiros arquivos, 5 MB cada, tipo decidido pelos bytes (`lib/briefing/tipos.ts`), nome em disco gerado. O que não passa é descartado sem derrubar o envio.
