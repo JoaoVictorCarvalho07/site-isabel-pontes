@@ -534,3 +534,16 @@
   color: var(--accent);
   text-decoration: underline;
 }
+
+.adm-grade--carrossel {
+  margin-top: 0.75rem;
+}
+
+.adm-foto__acoes label.adm-botao {
+  cursor: pointer;
+
+  &[aria-disabled="true"] {
+    opacity: 0.6;
+    cursor: default;
+  }
+}

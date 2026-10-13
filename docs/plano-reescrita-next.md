@@ -22,11 +22,6 @@ Cada fase termina com o site Go ainda no ar e intocado; a virada é a Fase 8.
 - Copiar os 190 originais do bucket `bebels-portifolio-site` para o bucket dos originais e preencher `photos.original`.
 - Teste de uso com a Isabel no celular.
 
-## Fase 7 — Imagens fixas do layout
-
-- Tirar do pacote as imagens que hoje exigem redeploy: hero da home, carrossel do Sobre, card do mídia kit.
-- Tela no admin para trocar cada uma, gerando as mesmas larguras e formatos usados hoje.
-
 ## Fase 8 — Virada
 
 - Enviar a branch ao GitHub e conferir que o workflow `pacote` gera o pacote linux/arm64.

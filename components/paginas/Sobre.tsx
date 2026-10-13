@@ -1,18 +1,8 @@
 import { Casca } from "@/components/Casca";
 import { Picture } from "@/components/Picture";
+import { carrossel, imagemFixa } from "@/lib/layout/imagens";
 import { metadados } from "@/lib/metadados";
 import type { Idioma } from "@/lib/i18n";
-
-const CARROSSEL = [
-  { base: "/static/img/sobre/SobreMim1", w: 800, h: 1066 },
-  { base: "/static/img/sobre/SobreMim2", w: 800, h: 600 },
-  { base: "/static/img/sobre/SobreMim3", w: 800, h: 450 },
-  { base: "/static/img/sobre/SobreMim4", w: 800, h: 1200 },
-  { base: "/static/img/sobre/SobreMim5", w: 800, h: 1200 },
-  { base: "/static/img/sobre/SobreMim6", w: 433, h: 728 },
-  { base: "/static/img/sobre/SobreMim7", w: 361, h: 560 },
-  { base: "/static/img/sobre/SobreMim8", w: 706, h: 1280 },
-];
 
 const TEXTO = {
   pt: {
@@ -52,14 +42,16 @@ export function metadadosSobre(idioma: Idioma) {
 export function Sobre({ idioma }: { idioma: Idioma }) {
   const en = idioma === "en";
   const texto = TEXTO[idioma];
+  const primeira = imagemFixa("sobre-bio-1");
+  const segunda = imagemFixa("sobre-bio-2");
   return (
     <Casca>
       <div className="sobre">
         <div className="sobre__bloco">
           <Picture
-            base="/static/img/sobre/SobreMim4"
-            w={800}
-            h={1200}
+            base={primeira.base}
+            w={primeira.w}
+            h={primeira.h}
             alt={`Isabel Pontes, ${en ? "photographer" : "fotógrafa"}`}
             className="sobre__float sobre__float--esq"
           />
@@ -67,9 +59,9 @@ export function Sobre({ idioma }: { idioma: Idioma }) {
         </div>
         <div className="sobre__bloco">
           <Picture
-            base="/static/img/sobre/SobreMim6"
-            w={433}
-            h={728}
+            base={segunda.base}
+            w={segunda.w}
+            h={segunda.h}
             alt={`${en ? "Photo shoot by" : "Ensaio de"} Isabel Pontes`}
             className="sobre__float sobre__float--dir"
           />
@@ -81,9 +73,9 @@ export function Sobre({ idioma }: { idioma: Idioma }) {
             ‹
           </button>
           <div className="carrossel" data-carrossel>
-            {CARROSSEL.map((imagem) => (
-              <div className="carrossel__item" key={imagem.base}>
-                <Picture {...imagem} alt={en ? "Photography by Isabel Pontes" : "Fotografia de Isabel Pontes"} className="carrossel__img" />
+            {carrossel().map((imagem) => (
+              <div className="carrossel__item" key={imagem.id}>
+                <Picture base={imagem.base} w={imagem.w} h={imagem.h} alt={en ? "Photography by Isabel Pontes" : "Fotografia de Isabel Pontes"} className="carrossel__img" />
               </div>
             ))}
           </div>

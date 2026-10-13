@@ -1,14 +1,14 @@
 import { Casca } from "@/components/Casca";
-import { asset } from "@/lib/asset";
 import { catalogo } from "@/lib/fotos";
+import { endereco, imagemFixa } from "@/lib/layout/imagens";
+import { arquivo, SLOTS, type NomeSlot } from "@/lib/layout/slots";
 import { metadados } from "@/lib/metadados";
 import { prefixo, type Idioma } from "@/lib/i18n";
 
-const PAISAGEM = [960, 1280, 1920, 2560];
-const RETRATO = [640, 960, 1280, 1920];
-
-function srcset(base: string, extensao: string, larguras: number[]) {
-  return larguras.map((largura) => `${asset(`/static/img/hero/${base}-${largura}.${extensao}`)} ${largura}w`).join(", ");
+function srcset(nome: NomeSlot, formato: "avif" | "webp") {
+  const slot = SLOTS[nome];
+  const { base } = imagemFixa(nome);
+  return slot.larguras.map((largura) => `${endereco(arquivo(base, slot, largura, formato))} ${largura}w`).join(", ");
 }
 
 export function metadadosHome(idioma: Idioma) {
@@ -30,19 +30,21 @@ export function Home({ idioma }: { idioma: Idioma }) {
   const en = idioma === "en";
   const p = prefixo(idioma);
   const fotoDoDia = catalogo().todas[0];
+  const retrato = imagemFixa("hero-retrato");
+  const cartao = imagemFixa("card-midiakit");
   return (
     <Casca>
       <section className="hero">
         <picture>
-          <source media="(min-width:768px)" type="image/avif" sizes="100vw" srcSet={srcset("hero-land", "avif", PAISAGEM)} />
-          <source media="(min-width:768px)" type="image/webp" sizes="100vw" srcSet={srcset("hero-land", "webp", PAISAGEM)} />
-          <source type="image/avif" sizes="100vw" srcSet={srcset("hero", "avif", RETRATO)} />
-          <source type="image/webp" sizes="100vw" srcSet={srcset("hero", "webp", RETRATO)} />
+          <source media="(min-width:768px)" type="image/avif" sizes="100vw" srcSet={srcset("hero-paisagem", "avif")} />
+          <source media="(min-width:768px)" type="image/webp" sizes="100vw" srcSet={srcset("hero-paisagem", "webp")} />
+          <source type="image/avif" sizes="100vw" srcSet={srcset("hero-retrato", "avif")} />
+          <source type="image/webp" sizes="100vw" srcSet={srcset("hero-retrato", "webp")} />
           <img
-            src={asset("/static/img/hero/hero-1280.webp")}
+            src={endereco(arquivo(retrato.base, SLOTS["hero-retrato"], 1280, "webp"))}
             alt={en ? "Isabel Pontes, photographer and creative director, in an artistic shoot" : "Isabel Pontes, fotógrafa e diretora criativa, em ensaio artístico"}
-            width={4000}
-            height={6000}
+            width={retrato.w}
+            height={retrato.h}
             fetchPriority="high"
             decoding="async"
             className="hero__img"
@@ -74,7 +76,7 @@ export function Home({ idioma }: { idioma: Idioma }) {
         <a href={`${p}/midiakit`} className="card-ed">
           <img
             className="card-ed__img"
-            src={asset("/static/img/MidiaKit.jpg")}
+            src={endereco(arquivo(cartao.base, SLOTS["card-midiakit"], 1080, "jpg"))}
             alt={en ? "Media kit and creator content" : "Mídia kit e conteúdo de creator"}
             loading="lazy"
             decoding="async"

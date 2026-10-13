@@ -9,7 +9,7 @@
     "paridade:banco": "node paridade/preparar-banco.mjs",
     "paridade:capturar": "node paridade/capturar.mjs",
     "teste": "node --experimental-strip-types --test testes/*.test.ts",
-    "teste:e2e": "node testes/galeria.e2e.mjs && node testes/midiakit.e2e.mjs && node testes/briefing.e2e.mjs && node testes/admin.e2e.mjs && node testes/painel.e2e.mjs",
+    "teste:e2e": "node testes/galeria.e2e.mjs && node testes/midiakit.e2e.mjs && node testes/briefing.e2e.mjs && node testes/admin.e2e.mjs && node testes/painel.e2e.mjs && node testes/site.e2e.mjs",
     "teste:servidor": "node testes/servidor.mjs",
     "paridade:servidor": "node testes/servidor.mjs data/paridade.db",
     "teste:login": "node testes/servidor-login.mjs"

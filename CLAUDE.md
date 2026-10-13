@@ -115,7 +115,17 @@ Protótipo descartável de layout + home em Next 16, com o SCSS atual, rodado na
 - **Tema não se apaga**, só se oculta. O slug nasce do nome e não muda ao renomear.
 - **O que precisa ser visto por rotas diferentes fica em `globalThis`** (catálogo de fotos, limitador de envios): cada rota do Next tem a própria cópia dos módulos, então uma variável de módulo invalidada pelo upload não era a mesma lida pela galeria.
 - **Código que monta caminho em disco a partir de variável leva `/* turbopackIgnore: true */`**; sem isso o build empacota o repositório inteiro, inclusive `data/`.
-- **Migrações de esquema** ficam em `lib/migracoes.ts` e rodam ao abrir o banco, pela `schema_version` da tabela `meta`. A versão 5 criou `photos.original` e `photos.excluida_em`. Depois dela o `site sync` do Go não pode mais rodar nesse banco.
+- **Migrações de esquema** ficam em `lib/migracoes.ts` e rodam ao abrir o banco, pela `schema_version` da tabela `meta`. A versão 5 criou `photos.original` e `photos.excluida_em`; a 6, `layout_imagens` e `sobre_carrossel`. Depois dela o `site sync` do Go não pode mais rodar nesse banco.
+
+### Imagens fixas do site
+
+- **A Isabel troca pelo painel, em `/admin/site`:** capa da home (uma foto em pé para celular e uma deitada para computador), cartão do mídia kit, as duas fotos do texto do Sobre e o carrossel do Sobre.
+- **Cada lugar é um "slot"** descrito em `lib/layout/slots.ts`, com as larguras e formatos que o HTML atual espera. Sem troca, o slot aponta para o arquivo de `public/static/`, e o site fica idêntico ao Go.
+- **A troca gera os mesmos tamanhos de hoje** e grava em `layout/{slot}/` no R2; a imagem anterior enviada pelo painel é apagada. "Voltar à original" apaga a linha e volta ao arquivo do pacote.
+- **O carrossel mora na tabela `sobre_carrossel`**, semeada com as oito fotos originais. Remover uma original só tira a linha; o arquivo continua no pacote.
+- **Foto menor que a largura pedida não é ampliada.**
+- **O enquadramento da capa continua fixo no CSS** (`object-position`); o painel não tem ajuste de corte.
+- Ficaram de fora, ainda no pacote: o vídeo e o pôster da abertura do mídia kit, os prints de celular das métricas, os pôsteres dos vídeos e a imagem de preview de link (`og-image.jpg`).
 
 ### Painel de briefings e editor de formulários
 

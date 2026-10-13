@@ -4,6 +4,7 @@ const LINKS = [
   { href: "/admin/fotos", rotulo: "Fotos" },
   { href: "/admin/temas", rotulo: "Temas" },
   { href: "/admin/lixeira", rotulo: "Lixeira" },
+  { href: "/admin/site", rotulo: "Capa e Sobre" },
   { href: "/admin/briefings", rotulo: "Briefings" },
   { href: "/admin/formularios", rotulo: "Formulários" },
 ];

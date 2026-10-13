@@ -4,6 +4,8 @@ import { signIn, signOut } from "@/auth";
 import { marcarLida as gravarLida } from "./briefings";
 import * as formularios from "./formularios";
 import * as fotos from "./fotos";
+import * as layout from "./layout";
+import { ehSlot } from "../layout/slots";
 import { exigirAdmin } from "./sessao";
 
 export async function entrar(): Promise<void> {
@@ -122,4 +124,30 @@ export async function apagarPergunta(slug: string, id: number): Retorno {
 
 export async function trocarTipoPergunta(slug: string, id: number, tipo: string, opcoes: string): Retorno {
   return editar(() => formularios.trocarTipo(slug, id, tipo, opcoes));
+}
+
+async function mexerNoLayout(mudanca: () => void | Promise<void>): Retorno {
+  await exigirAdmin();
+  try {
+    await mudanca();
+    return {};
+  } catch (erro) {
+    if (erro instanceof fotos.FotoRecusada) return { erro: erro.message };
+    console.error("admin: imagem fixa falhou", erro);
+    return { erro: "Não foi possível salvar. Tente de novo." };
+  }
+}
+
+export async function restaurarImagemFixa(slot: string): Retorno {
+  return mexerNoLayout(async () => {
+    if (ehSlot(slot)) await layout.restaurarImagem(slot);
+  });
+}
+
+export async function removerDoCarrossel(id: number): Retorno {
+  return mexerNoLayout(() => layout.removerDoCarrossel(id));
+}
+
+export async function moverNoCarrossel(id: number, direcao: "antes" | "depois"): Retorno {
+  return mexerNoLayout(() => layout.moverNoCarrossel(id, direcao));
 }
