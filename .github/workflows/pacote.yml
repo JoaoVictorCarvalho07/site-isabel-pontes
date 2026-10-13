@@ -11,7 +11,7 @@ jobs:
     container: node:22-slim
     steps:
       - uses: actions/checkout@v4
-      - run: npm ci --omit=optional --ignore-scripts=false
+      - run: npm ci
       - run: npm run teste
       - run: npm run build
       - run: node -e "require('./.next/standalone/node_modules/better-sqlite3')(':memory:').exec('select 1'); require('./.next/standalone/node_modules/sharp'); console.log(process.arch, 'nativos ok')"
