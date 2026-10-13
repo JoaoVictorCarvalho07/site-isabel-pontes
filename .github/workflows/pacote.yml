@@ -11,6 +11,7 @@ jobs:
     container: node:22-slim
     steps:
       - uses: actions/checkout@v4
+      - run: apt-get update && apt-get install -y --no-install-recommends python3 make g++
       - run: npm ci
       - run: npm run teste
       - run: npm run build
