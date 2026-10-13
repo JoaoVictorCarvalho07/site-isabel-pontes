@@ -1,7 +1,7 @@
 # Plano: reescrita em Next.js + admin de fotos
 
 As decisões e os porquês estão no `CLAUDE.md` da raiz. Aqui fica só o que falta fazer.
-Cada fase termina com o site Go ainda no ar e intocado; a virada é a Fase 8.
+O Next está em produção; o site Go segue na VM só como retorno.
 
 ## Antes de começar (depende do João)
 
@@ -22,11 +22,12 @@ Cada fase termina com o site Go ainda no ar e intocado; a virada é a Fase 8.
 - Copiar os 190 originais do bucket `bebels-portifolio-site` para o bucket dos originais e preencher `photos.original`.
 - Teste de uso com a Isabel no celular.
 
-## Fase 8 — Virada
+## Fase 8 — Virada (no ar desde 2026-10-13)
 
-- Trocar o `reverse_proxy` do Caddy de `127.0.0.1:8080` para `127.0.0.1:8082` (exige `sudo`) e validar o site público, o login e o card de preview no WhatsApp.
-- Manter o serviço `site` do Go parado na VM por duas semanas como retorno.
-- Depois disso: remover o código Go, o Dockerfile, o `fly.toml` e os arquivos de Litestream; marcar a tag `go-final` antes.
+- Colar um link do site no WhatsApp e conferir o card de preview.
+- Testar o login do painel em produção e um upload pelo celular da Isabel.
+- Até 2026-10-27: manter o serviço `site` do Go ativo na VM como retorno. Depois, parar o serviço, marcar a tag `go-final` e remover o código Go, o Dockerfile, o `fly.toml` e os arquivos de Litestream.
+- Fazer o merge de `reescrita-next` na `main`.
 
 ## Depois da virada
 

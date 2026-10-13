@@ -1,7 +1,7 @@
 # Site Isabel Pontes
 
 Site da fotógrafa Isabel Pontes (fotografia + mídia kit), em https://isabelpontes.com.br.
-Hoje em Go + HTMX + SQLite. Em reescrita para Next.js, com admin de fotos para a própria Isabel.
+Em Next.js desde 2026-10-13, com painel para a própria Isabel gerenciar fotos, briefings e formulários. Antes era Go + HTMX; o código Go ainda está no repositório e o serviço segue na VM como retorno.
 As tarefas estão em `docs/plano-reescrita-next.md`. Este arquivo guarda só as decisões.
 
 ## Decisões da reescrita (2026-10-08)
@@ -147,5 +147,6 @@ Protótipo descartável de layout + home em Next 16, com o SCSS atual, rodado na
 
 ### Repositório e virada
 
-- Mesmo repositório, branch `reescrita-next`. O Go segue na `main` e em produção até a virada.
-- O Next sobe na VM em outra porta, sob um subdomínio de homologação. A virada é trocar o `reverse_proxy` do Caddy; voltar atrás é desfazer essa linha.
+- A branch `reescrita-next` é a que está em produção; a `main` ainda tem o Go.
+- **A virada foi trocar uma linha do Caddy:** `reverse_proxy 127.0.0.1:8080` (Go) por `127.0.0.1:8082` (Next). Voltar atrás é desfazer essa linha e recarregar o Caddy; o serviço `site` do Go continua ativo para isso.
+- O banco do Next nasceu de uma cópia do banco do Go tirada em 2026-10-13, quando o Go tinha zero briefings.
