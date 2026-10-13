@@ -8,14 +8,13 @@ on:
 jobs:
   pacote:
     runs-on: ubuntu-24.04-arm
+    container: node:22-slim
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
+      - run: npm ci --omit=optional --ignore-scripts=false
+      - run: npm run teste
       - run: npm run build
+      - run: node -e "require('./.next/standalone/node_modules/better-sqlite3')(':memory:').exec('select 1'); require('./.next/standalone/node_modules/sharp'); console.log(process.arch, 'nativos ok')"
       - run: tar -czf site-next-linux-arm64.tgz -C .next standalone
       - uses: actions/upload-artifact@v4
         with:
