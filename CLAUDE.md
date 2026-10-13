@@ -93,10 +93,16 @@ Protótipo descartável de layout + home em Next 16, com o SCSS atual, rodado na
 - **Quebras de linha das respostas são gravadas como LF**; o navegador envia CRLF.
 - O limite do corpo é 22 MB em `next.config.ts` (`serverActions.bodySizeLimit` e `proxyClientMaxBodySize`); o padrão do proxy é 10 MB.
 
+### Rodapé geral
+
+- `components/Rodape.tsx` aparece em todas as páginas públicas pela `Casca`: logo, frase, links das páginas, redes e, na base, direitos autorais e o link da política de privacidade.
+- **É a primeira mudança visual feita depois da virada.** As capturas de `paridade/referencia` continuam sendo o site Go e servem só de histórico; o rodapé diverge delas de propósito.
+- No mídia kit o rodapé entra colado ao bloco verde de contato (`rodape--colado`) e substitui a linha de direitos autorais que havia ali. Na impressão ele some.
+
 ### Página de privacidade
 
 - `/privacidade` e `/en/privacidade` descrevem o que o site realmente faz com dados; mudou a coleta, muda o texto em `components/paginas/Privacidade.tsx`.
-- Ela está no sitemap, mas nenhuma página aponta para ela ainda: um link no rodapé mudaria todas as capturas de paridade, então fica para depois da virada.
+- Ela está no sitemap e tem link no rodapé geral.
 - O cliente OAuth do Google está em modo de teste, com os e-mails permitidos também cadastrados lá como usuários de teste. Publicar o app exige essa página no ar.
 
 ### Testes
@@ -114,7 +120,7 @@ Protótipo descartável de layout + home em Next 16, com o SCSS atual, rodado na
 - **O upload passa pelo servidor**, uma foto por requisição em `POST /admin/api/fotos`, e só responde depois de gerar as variantes e gravar no banco. O navegador envia em fila e mostra o progresso. A URL assinada direto ao R2 foi descartada: exigiria CORS no bucket e uma fila de processamento à parte, e uma foto por vez já respeita os 2 núcleos da VM.
 - **Variantes iguais às de hoje:** AVIF de 400, 800 e 1600 px e LQIP WebP de 24 px (`lib/admin/imagem.ts`), com a orientação EXIF aplicada. Limite de 40 MB por foto; HEIC é recusado porque o `sharp` não o decodifica.
 - **Foto nova entra publicada**, no tema escolhido antes do envio.
-- **Os originais são guardados** em `originais/{tema}/` no bucket de `R2_BUCKET_ORIGINAIS`. Sem essa variável eles caem no bucket público e ficam acessíveis a quem souber o endereço. Os das 190 fotos antigas estão no bucket `bebels-portifolio-site` (97 MB, nas chaves da coluna `photos.key`).
+- **Os originais são guardados** em `originais/{tema}/` no bucket de `R2_BUCKET_ORIGINAIS`. Sem essa variável eles caem no bucket público e ficam acessíveis a quem souber o endereço. Os das 190 fotos antigas foram copiados para lá em 2026-10-13, em `originais/` + a `photos.key` de cada uma; o bucket antigo `bebels-portifolio-site` deixou de ser necessário.
 - **Sem credenciais do R2, o armazenamento é em disco** (`data/r2-local`, servido em `/dev-r2`), para desenvolver e testar. Com credenciais, `/dev-r2` responde 404.
 - **Fixar no topo usa `sort_order`**; a ordem entre as fixadas se troca por botões de subir e descer, não por arrastar.
 - **Apagar é em dois passos:** a lixeira marca `excluida_em` e tira a foto do site; "apagar de vez" remove as variantes e o original do R2 e a linha do banco.

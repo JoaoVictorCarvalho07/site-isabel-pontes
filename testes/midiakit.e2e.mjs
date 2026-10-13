@@ -11,7 +11,7 @@ for (const marcador of ["R$ 550", "Mais popular", "wa.me/554191977011", "conic-g
   assert.ok(html.includes(marcador), `o HTML do servidor tem ${marcador}`);
 }
 const links = [...html.matchAll(/href="(https:\/\/wa\.me\/[^"]+)"/g)].map((m) => m[1]);
-assert.equal(links.length, 7, "seis pacotes e o contato geral");
+assert.equal(links.length, 8, "seis pacotes, o contato geral e o rodape");
 assert.ok(links.every((link) => !link.includes("+")), "os links nao usam + como espaco");
 assert.ok(!html.includes('name="lanche"'), "o formulario UGC nao traz pergunta de fotografia");
 

@@ -81,7 +81,7 @@ export async function Midiakit({ idioma, busca }: { idioma: Idioma; busca: Busca
   }));
 
   return (
-    <Casca mostrarPdf ocultarRodape>
+    <Casca mostrarPdf rodapeColado>
       <div className="midiakit">
         <section className="mk-hero">
           <video
@@ -354,7 +354,6 @@ export async function Midiakit({ idioma, busca }: { idioma: Idioma; busca: Busca
             <a href="https://www.tiktok.com/@isabelpontesfoto" target="_blank" rel="noopener" aria-label="TikTok" dangerouslySetInnerHTML={{ __html: svg("img/social/tiktok.svg") }} />
           </div>
           <p className="mk-contato__print">{`${EMAIL} · instagram.com/isapontesfoto · wa.me/${WHATSAPP}`}</p>
-          <p className="mk-contato__copy">{`© ${new Date().getFullYear()} Isa Pontes`}</p>
         </footer>
       </div>
     </Casca>
