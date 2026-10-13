@@ -15,6 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/midiakit",
     "/contato",
     ...(formularioPublico("fotografia") ? ["/briefing"] : []),
+    "/privacidade",
   ];
   return caminhos.flatMap((caminhoPT) => [{ url: BASE_URL + caminhoPT }, { url: BASE_URL + caminho("en", caminhoPT) }]);
 }

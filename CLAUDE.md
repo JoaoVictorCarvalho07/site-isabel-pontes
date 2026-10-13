@@ -87,10 +87,17 @@ Protótipo descartável de layout + home em Next 16, com o SCSS atual, rodado na
 - **Quebras de linha das respostas são gravadas como LF**; o navegador envia CRLF.
 - O limite do corpo é 22 MB em `next.config.ts` (`serverActions.bodySizeLimit` e `proxyClientMaxBodySize`); o padrão do proxy é 10 MB.
 
+### Página de privacidade
+
+- `/privacidade` e `/en/privacidade` descrevem o que o site realmente faz com dados; mudou a coleta, muda o texto em `components/paginas/Privacidade.tsx`.
+- Ela está no sitemap, mas nenhuma página aponta para ela ainda: um link no rodapé mudaria todas as capturas de paridade, então fica para depois da virada.
+- O cliente OAuth do Google está em modo de teste, com os e-mails permitidos também cadastrados lá como usuários de teste. Publicar o app exige essa página no ar.
+
 ### Testes
 
 - `npm run teste`: unitários com o executor do Node, em `testes/*.test.ts`. Módulo testado não pode importar `better-sqlite3` nem usar import sem extensão.
 - `npm run teste:servidor` sobe o pacote compilado na porta 8098 com `data/teste.db` (cópia de `site.db`), `data/teste-uploads` e `data/teste-r2`, recriados a cada subida. `npm run paridade:servidor` faz o mesmo a partir de `paridade.db`, para as capturas.
+- `npm run teste:login` sobe o mesmo pacote em `http://localhost:3000` com as credenciais de login do `.env.local`, para testar o Google de verdade. Banco e armazenamento continuam descartáveis; nada vai para o R2.
 - `npm run teste:e2e`: galeria, mídia kit, briefing, admin de fotos e painel com Playwright contra esse servidor. Briefing e admin gravam no banco, então exigem o servidor recém-subido. O teste do admin forja o cookie de sessão com o `AUTH_SECRET` de teste.
 
 ### Admin de fotos

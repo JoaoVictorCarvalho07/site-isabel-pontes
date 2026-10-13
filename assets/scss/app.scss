@@ -14,5 +14,6 @@
 @use 'midiakit';
 @use 'form';
 @use 'admin';
+@use 'legal';
 // por último: as regras de @media print precisam sobrepor as de tela
 @use 'print';

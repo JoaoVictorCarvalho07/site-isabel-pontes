@@ -39,6 +39,9 @@ Cada fase termina com o site Go ainda no ar e intocado; a virada é a Fase 8.
 
 ## Depois da virada
 
+- Link para `/privacidade` no rodapé e junto ao botão de enviar do briefing.
+- Tela para apagar um briefing, para atender pedido de exclusão de dados; hoje só direto no banco.
+
 - Adaptar `scripts/gen_video_posters.py` para escrever `lib/midiakit/conteudo.ts`; hoje ele reescreve o arquivo Go.
 
 - Corrigir os defeitos visuais herdados, um por mudança: navbar branca sobre creme, folga sob a navbar em `/briefing`, 404 e admin, impressão no tema escuro, pesos 500 e 600 da Jost.
